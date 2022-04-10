@@ -125,21 +125,23 @@ class SqueezingExpandDecoder(nn.Module):
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
         
-        feat_map_32x = self.block_32x(feat_map_32x)
+        # feat_map_32x = self.block_32x(feat_map_32x)
         
-        feat_map_16x = self.block_32x(feat_map_16x)
+        # feat_map_16x = self.block_32x(feat_map_16x)
         
-        feat_map_8x = self.block_8x(feat_map_8x)
+        # feat_map_8x = self.block_8x(feat_map_8x)
         
         feat_map_4x = self.block_4x(feat_map_4x)
         
-        a = torch.cat((feat_map_32x, feat_map_16x), 1)
+        # a = torch.cat((feat_map_32x, feat_map_16x), 1)
         
-        b = torch.cat((feat_map_4x, feat_map_8x), 1)
+        # b = torch.cat((feat_map_4x, feat_map_8x), 1)
         
-        z = torch.cat((a, b), 1)
+        # z = torch.cat((a, b), 1)
         
-        x = self.conv_new(z)
+        # x = self.conv_new(z)
+        
+        x = feat_map_4x
         
         """
 
