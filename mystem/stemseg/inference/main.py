@@ -19,8 +19,8 @@ from stemseg.utils import Timer, RepoPaths
 import os
 import torch
 
-os.environ['/kaggle/working/STEm-Seg/'] = '/kaggle/working/STEm-Seg/'
-os.environ['/kaggle/working/STEm-Seg/']='/kaggle/working/STEm-Seg/'
+os.environ['/kaggle/working/'] = '/kaggle/working/'
+
 def get_subsequence_frames(seq_len, subseq_len, dataset_name, frame_overlap=-1):
     subseq_idxes = []
 
