@@ -69,7 +69,7 @@ class SqueezingExpandDecoder(nn.Module):
         )
 
         self.block_4x = nn.Sequential(
-            ConvType(in_channels, inter_channels[3], 3, stride=1, padding=1),
+            nn.ConvTranspose3d(in_channels, inter_channels[3], 3, stride=1, padding=1),
             NormType(inter_channels[3]),
             nn.ReLU(inplace=True)
         )
