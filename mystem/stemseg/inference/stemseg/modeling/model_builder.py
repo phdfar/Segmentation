@@ -9,7 +9,7 @@ from stemseg.utils.global_registry import GlobalRegistry
 from stemseg.modeling.backbone import BACKBONE_REGISTRY
 from stemseg.modeling.embedding_utils import get_nb_free_dims
 
-from stemseg.modeling.embedding_decoder_test import EMBEDDING_HEAD_REGISTRY
+from stemseg.modeling.embedding_decoder import EMBEDDING_HEAD_REGISTRY
 from stemseg.modeling.semseg_decoder import SEMSEG_HEAD_REGISTRY
 from stemseg.modeling.seediness_decoder import SEEDINESS_HEAD_REGISTRY
 
