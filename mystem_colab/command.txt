@@ -1,0 +1,2 @@
+python stemseg/training_m/main.py --model_dir some_dir_name --cfg youtube_vis.yaml
+python stemseg/inference/main.py youtube_vis.pth -o STEm-Seg/output_dir --save_vis --dataset ytvis --resize_embeddings
