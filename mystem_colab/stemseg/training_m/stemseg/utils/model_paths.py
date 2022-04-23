@@ -14,11 +14,11 @@ class ModelPaths(object):
 
     @staticmethod
     def checkpoint_base_dir():
-        return os.path.join(_get_env_var('/kaggle/working/STEm-Seg/'), 'checkpoints')
+        return os.path.join(_get_env_var('/content/stemseg/mystem_colab/'), 'checkpoints')
 
     @staticmethod
     def pretrained_backbones_dir():
-        return os.path.join(_get_env_var('/kaggle/working/STEm-Seg/'), 'pretrained')
+        return os.path.join(_get_env_var('/content/stemseg/mystem_colab/'), 'pretrained')
 
     @staticmethod
     def pretrained_maskrcnn_x101_fpn():

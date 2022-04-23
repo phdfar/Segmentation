@@ -1,11 +1,6 @@
 import os
 
-os.environ['/kaggle/working/STEm-Seg/'] = '/kaggle/working/STEm-Seg/'
-os.environ['/kaggle/working/STEm-Seg/']='/kaggle/working/STEm-Seg/'
-
-
-os.environ['/kaggle/working/STEm-Seg/'] = '/kaggle/working/STEm-Seg/'
-os.environ['/kaggle/working/STEm-Seg/']='/kaggle/working/STEm-Seg/'
+os.environ['/content/'] = '/content/'
 
 from argparse import ArgumentParser
 from datetime import timedelta
