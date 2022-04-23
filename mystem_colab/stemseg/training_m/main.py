@@ -1,6 +1,8 @@
 import os
 
 os.environ['/content/'] = '/content/'
+os.environ['/content/stemseg/mystem_colab/'] = '/content/stemseg/mystem_colab/'
+
 
 from argparse import ArgumentParser
 from datetime import timedelta
