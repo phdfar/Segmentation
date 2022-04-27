@@ -20,10 +20,16 @@ def getinfo(args):
         if c in list(args.classid):
           valid.append(i['id'])
           print(i)
+          
+  allframe=[]
+  for seq in dataset:
+    if seq['id'] in valid:
+      for frame in seq['image_paths']:
+        allframe.append({frame:seq})
+        
+  #splitdata(valid)
 
-  splitdata(valid)
-
-def splitdata(valid):
+#def splitdata(valid):
   
 
 class dataloader(keras.utils.Sequence):
