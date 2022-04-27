@@ -11,4 +11,11 @@ def start(args):
   train_gen = path.dataloader(args,allframe_train)
   val_gen = path.dataloader(args,allframe_val)
   test_gen = path.dataloader(args,allframe_test)
+  
+  X, y = next(iter(train_gen))
+  print(X.shape, y.shape)
+
+  import pickle
+  with open('loader.pickle', 'wb') as handle:
+    pickle.dump([X,y], handle, protocol=pickle.HIGHEST_PROTOCOL)
 
