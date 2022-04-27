@@ -47,7 +47,7 @@ class GenericVideoSequence(object):
         self.image_paths = seq_dict["image_paths"]
         self.image_dims = (seq_dict["height"], seq_dict["width"])
         self.id = seq_dict["id"]
-
+        self.length = seq_dict["length"]
         self.segmentations = seq_dict.get("segmentations", None)
         self.instance_categories = seq_dict.get("categories", None)
         """
