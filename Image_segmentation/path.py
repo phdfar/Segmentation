@@ -1,5 +1,6 @@
 import data
 import pickle
+import random
 
 from tensorflow import keras
 import numpy as np
@@ -13,24 +14,37 @@ def getinfo(args):
   dataset,meta_info,seqs =  data.parse_generic_video_dataset(base_dir, dataset_json)
   with open(meta_plus_path, 'rb') as handle:
     meta_plus = pickle.load(handle)
-  valid=[]
+  valid=[];
+  lenf=0;
   for i in meta_plus:
     if i['number_instances']==args.num_instance and i['number_unique_class']==args.unq_class:
       for c in i['unique_class']:
         if c in list(args.classid):
           valid.append(i['id'])
-          print(i)
+          #lenf+=i['clip_length']
+          #print(i)
           
-  allframe=[]
+  allframe_train=[];allframe_val=[];allframe_test=[]
   for seq in dataset:
     if seq['id'] in valid:
-      for frame in seq['image_paths']:
-        allframe.append({frame:seq})
-        
-  #splitdata(valid)
+      a = int(np.floor(seq['length']*0.67))
+      b = a + int(np.ceil(seq['length']*0.1))
+      p=0; allpath = seq['image_paths']; random.shuffle(allpath)
+      for frame in allpath:
+        if p<=a:
+          allframe_train.append({frame:seq})
+        elif p>a and p<=b:
+          allframe_val.append({frame:seq})
+        else:
+          allframe_test.append({frame:seq})
+        p+=1;
 
-#def splitdata(valid):
-  
+      
+
+  print('Number Train frame : ',len(allframe_train))
+  print('Number Val frame : ',len(allframe_val))
+  print('Number Test frame : ',len(allframe_test))
+
 
 class dataloader(keras.utils.Sequence):
     """Helper to iterate over the data (as Numpy arrays)."""
