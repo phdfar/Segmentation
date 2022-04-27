@@ -101,6 +101,26 @@ class GenericVideoSequence(object):
             masks.append(masks_t)
 
         return masks
+
+    def load_one_masks(self, frame_idxes=None):
+        if frame_idxes is None:
+            frame_idxes = list(range(len(self.image_paths)))
+
+        for t in frame_idxes:
+
+            for instance_id in self.instance_ids:
+                if instance_id in self.segmentations[t]:
+                    rle_mask = {
+                        "counts": self.segmentations[t][instance_id].encode('utf-8'),
+                        "size": self.image_dims
+                    }
+                    masks_t=np.ascontiguousarray(masktools.decode(rle_mask).astype(np.uint8))
+                else:
+                    masks_t=np.zeros(self.image_dims, np.uint8)
+
+
+        return masks_t
+    
     
 """
 base_dir='/content/train/'
