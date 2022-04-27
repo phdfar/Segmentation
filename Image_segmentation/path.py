@@ -1,7 +1,7 @@
 import data
 import pickle
 import random
-
+import cv2
 from tensorflow import keras
 import numpy as np
 from tensorflow.keras.preprocessing.image import load_img
@@ -29,14 +29,17 @@ def getinfo(args):
     if seq.id in valid:
       a = int(np.floor(seq.length*0.67))
       b = a + int(np.ceil(seq.length*0.1))
-      p=0; allpath = seq.image_paths; random.shuffle(allpath)
-      for frame in allpath:
+      p=0; 
+      allindex = list(range(len(seq.image_paths)))
+      allpath = seq.image_paths;
+      random.shuffle(allindex)
+      for frame in allindex:
         if p<=a:
-          allframe_train.append({frame:seq})
+          allframe_train.append({frame:[allpath[frame],seq]})
         elif p>a and p<=b:
-          allframe_val.append({frame:seq})
+          allframe_val.append({frame:[allpath[frame],seq]})
         else:
-          allframe_test.append({frame:seq})
+          allframe_test.append({frame:[allpath[frame],seq]})
         p+=1;
 
       
@@ -67,10 +70,14 @@ class dataloader(keras.utils.Sequence):
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
 
         for j, path in enumerate(batch_input_img_paths):
-            imagepath=list(path.keys())[0]
+            frameindex= list(path.keys())[0]
+            imagepath = path[frameindex][0]
             img = load_img(imagepath, target_size=self.img_size)
             x[j] = np.asarray(img)
-            #path[imagepath].
+            seq = path[frameindex][1]
+            mask = seq.load_one_masks([frameindex])
+            # resize image
+            y[j] = cv2.resize(mask, self.img_size, interpolation = cv2.INTER_NEAREST)
             
         """
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
