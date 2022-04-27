@@ -102,7 +102,8 @@ class GenericVideoSequence(object):
 
         return masks
     
-
+"""
 base_dir='/content/train/'
 dataset_json = '/content/youtube_vis_train.json'
 dataset,meta_info,seqs =  parse_generic_video_dataset(base_dir, dataset_json)
+"""
