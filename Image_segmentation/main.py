@@ -1,13 +1,13 @@
 from argparse import ArgumentParser
 import path
-
+import train
 def tuple_type(strings):
     strings = strings.replace("(", "").replace(")", "")
     mapped_int = map(int, strings.split(","))
     return tuple(mapped_int)
 
 def main(args):
-  data = path.getinfo(args)
+  train.start(args)
   return args 
 
 if __name__ == '__main__':

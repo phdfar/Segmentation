@@ -4,15 +4,11 @@ import path
 
 def start(args):
 
-  val_samples = 1000
-  random.Random(1337).shuffle(input_img_paths)
-  random.Random(1337).shuffle(target_img_paths)
-  train_input_img_paths = input_img_paths[:-val_samples]
-  train_target_img_paths = target_img_paths[:-val_samples]
-  val_input_img_paths = input_img_paths[-val_samples:]
-  val_target_img_paths = target_img_paths[-val_samples:]
-
+  allframe_train,allframe_val,allframe_test = path.getinfo(args)
+  random.Random(1337).shuffle(allframe_train)
+  
   # Instantiate data Sequences for each split
-  train_gen = path.dataloader(args)
-  val_gen = path.dataloader(args)
+  train_gen = path.dataloader(args,allframe_train)
+  val_gen = path.dataloader(args,allframe_val)
+  test_gen = path.dataloader(args,allframe_test)
 

@@ -45,18 +45,18 @@ def getinfo(args):
   print('Number Val frame : ',len(allframe_val))
   print('Number Test frame : ',len(allframe_test))
 
+  return allframe_train,allframe_val,allframe_test
 
 class dataloader(keras.utils.Sequence):
     """Helper to iterate over the data (as Numpy arrays)."""
 
-    def __init__(self, args):
+    def __init__(self, args,input_img_paths):
         self.batch_size = args.batchsize
         self.img_size = args.imagesize
         self.input_img_paths = input_img_paths
-        self.target_img_paths = target_img_paths
 
     def __len__(self):
-        return len(self.target_img_paths) // self.batch_size
+        return len(self.input_img_paths) // self.batch_size
 
     def __getitem__(self, idx):
         """Returns tuple (input, target) correspond to batch #idx."""
