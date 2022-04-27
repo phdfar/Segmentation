@@ -7,7 +7,7 @@ def tuple_type(strings):
     return tuple(mapped_int)
 
 def main(args):
-  print(args)
+  data = path.getinfo(args)
   return args 
 
 if __name__ == '__main__':
@@ -18,9 +18,11 @@ if __name__ == '__main__':
     parser.add_argument('--epoch', type=int, default=15 , required=False)
     parser.add_argument('--batchsize', type=int, default=32, required=False)
 
-    parser.add_argument('--class', type=tuple_type, default=(0) , required=False)
+    parser.add_argument('--num_instance', type=int, default=1 , required=False)
     parser.add_argument('--unq_class', type=int, default=1, required=False)
-    parser.add_argument('--num_instance', type=int, default=1, required=False)
+
+
+    parser.add_argument('--classid', type=tuple_type, default=(0) , required=False)
 
 
     args = parser.parse_args()
