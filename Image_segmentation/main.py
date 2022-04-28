@@ -1,17 +1,18 @@
 from argparse import ArgumentParser
 import path
-import train
+import run
 def tuple_type(strings):
     strings = strings.replace("(", "").replace(")", "")
     mapped_int = map(int, strings.split(","))
     return tuple(mapped_int)
 
 def main(args):
-  train.start(args)
+  run.start(args)
   return args 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
+    parser.add_argument('--mode', type=str ,default='train', required=True)
     parser.add_argument('--network', type=str , required=True)
     parser.add_argument('--model_dir', type=str , required=True)
     parser.add_argument('--basepath', type=str , default='/content/', required=False)
