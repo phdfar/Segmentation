@@ -57,6 +57,7 @@ class dataloader(keras.utils.Sequence):
         self.batch_size = args.batchsize
         self.img_size = args.imagesize
         self.input_img_paths = input_img_paths
+        self.trainpath = args.trainpath
 
     def __len__(self):
         return len(self.input_img_paths) // self.batch_size
@@ -65,19 +66,19 @@ class dataloader(keras.utils.Sequence):
         """Returns tuple (input, target) correspond to batch #idx."""
         i = idx * self.batch_size
         batch_input_img_paths = self.input_img_paths[i : i + self.batch_size]
-        batch_target_img_paths = self.target_img_paths[i : i + self.batch_size]
         x = np.zeros((self.batch_size,) + self.img_size + (3,), dtype="float32")
-        y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
+        y = np.zeros((self.batch_size,) + self.img_size , dtype="uint8")
 
         for j, path in enumerate(batch_input_img_paths):
             frameindex= list(path.keys())[0]
             imagepath = path[frameindex][0]
-            img = load_img(imagepath, target_size=self.img_size)
+            img = load_img(self.trainpath+imagepath, target_size=self.img_size)
             x[j] = np.asarray(img)
             seq = path[frameindex][1]
             mask = seq.load_one_masks([frameindex])
             # resize image
-            y[j] = cv2.resize(mask, self.img_size, interpolation = cv2.INTER_NEAREST)
+            dim = (self.img_size[1],self.img_size[0])
+            y[j] = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
             
         """
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")

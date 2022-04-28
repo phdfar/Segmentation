@@ -13,6 +13,8 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--model_dir', type=str , required=True)
+    parser.add_argument('--trainpath', type=str , default='/content/train/', required=False)
+
     parser.add_argument('--imagesize', type=tuple_type, required=True)
 
     parser.add_argument('--epoch', type=int, default=15 , required=False)
