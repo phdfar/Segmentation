@@ -32,7 +32,7 @@ def getinfo(args):
       p=0; 
       allindex = list(range(len(seq.image_paths)))
       allpath = seq.image_paths;
-      random.shuffle(allindex)
+      random.Random(1337).shuffle(allindex)
       for frame in allindex:
         if p<=a:
           allframe_train.append({frame:[allpath[frame],seq]})
