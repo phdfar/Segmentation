@@ -67,7 +67,7 @@ class dataloader(keras.utils.Sequence):
         i = idx * self.batch_size
         batch_input_img_paths = self.input_img_paths[i : i + self.batch_size]
         x = np.zeros((self.batch_size,) + self.img_size + (3,), dtype="float32")
-        y = np.zeros((self.batch_size,) + self.img_size , dtype="uint8")
+        y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
 
         for j, path in enumerate(batch_input_img_paths):
             frameindex= list(path.keys())[0]
@@ -78,7 +78,8 @@ class dataloader(keras.utils.Sequence):
             mask = seq.load_one_masks([frameindex])
             # resize image
             dim = (self.img_size[1],self.img_size[0])
-            y[j] = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
+            temp = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
+            y[j] = np.expand_dims(temp, 2)
             
         """
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
