@@ -8,9 +8,9 @@ from tensorflow.keras.preprocessing.image import load_img
 
   
 def getinfo(args):
-  base_dir='/content/train/'
-  dataset_json = '/content/youtube_vis_train.json'
-  meta_plus_path = '/content/stemseg/meta_plus_youtube_vis.pickle'
+  base_dir=args.basepath+'train/'
+  dataset_json = args.basepath +'youtube_vis_train.json'
+  meta_plus_path = args.basepath+ 'stemseg/meta_plus_youtube_vis.pickle'
   dataset,meta_info,seqs =  data.parse_generic_video_dataset(base_dir, dataset_json)
   with open(meta_plus_path, 'rb') as handle:
     meta_plus = pickle.load(handle)
@@ -57,7 +57,7 @@ class dataloader(keras.utils.Sequence):
         self.batch_size = args.batchsize
         self.img_size = args.imagesize
         self.input_img_paths = input_img_paths
-        self.trainpath = args.trainpath
+        self.basepath = args.basepath
 
     def __len__(self):
         return len(self.input_img_paths) // self.batch_size
@@ -72,7 +72,7 @@ class dataloader(keras.utils.Sequence):
         for j, path in enumerate(batch_input_img_paths):
             frameindex= list(path.keys())[0]
             imagepath = path[frameindex][0]
-            img = load_img(self.trainpath+imagepath, target_size=self.img_size)
+            img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
             x[j] = np.asarray(img)
             seq = path[frameindex][1]
             mask = seq.load_one_masks([frameindex])

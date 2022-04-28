@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--network', type=str , required=True)
     parser.add_argument('--model_dir', type=str , required=True)
-    parser.add_argument('--trainpath', type=str , default='/content/train/', required=False)
+    parser.add_argument('--basepath', type=str , default='/content/', required=False)
 
     parser.add_argument('--imagesize', type=tuple_type, required=True)
 
