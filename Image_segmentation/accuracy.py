@@ -1,6 +1,6 @@
 from tensorflow.keras.preprocessing.image import load_img
 import pandas as pd
-def print_accuracy(test_target_img_paths,test_preds):
+def run(test_gen,name):
   Taccuracy=0
   Tprecision=0
   Trecall=0
@@ -77,7 +77,4 @@ def print_accuracy(test_target_img_paths,test_preds):
   TT = [] ; TT.append(('Total',Taccuracy/lendata,Tprecision/lendata,Trecall/lendata,TFS/lendata))
   full_result = TT + full_result
   df = pd.DataFrame(full_result,columns =['Names','accuracy','precision','recall','FS'])
-  df.to_csv('result_rgb[160,160].csv')
-
-
-print_accuracy(val_target_img_paths,val_preds)
+  df.to_csv('result_'+name+'.csv')
