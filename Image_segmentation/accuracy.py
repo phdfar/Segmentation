@@ -1,6 +1,10 @@
 from tensorflow.keras.preprocessing.image import load_img
 import pandas as pd
 import data
+import cv2
+import numpy as np
+import os
+from tensorflow import keras
 
 def run(test_preds,allpath,name,args):
   Taccuracy=0
@@ -12,7 +16,7 @@ def run(test_preds,allpath,name,args):
 
     path = allpath[ii]
     frameindex= list(path.keys())[0]
-    #imagepath = path[frameindex][0]
+    imagepath = path[frameindex][0]
     #tep.append(imagepath)
     seq = path[frameindex][1]
     mask = seq.load_one_masks([frameindex])
@@ -34,11 +38,13 @@ def run(test_preds,allpath,name,args):
     fg[fg<0.6]=0;
     #new_frame=np.concatenate((bg.reshape(320,320,1),fg.reshape(320,320,1)),axis=2)
     """
+    frame=test_preds[ii]
+
     mask = np.argmax(frame, axis=-1)
     mask = np.expand_dims(mask, axis=-1)
     mask = mask[:,:,0];
 
-    result = np.zeros((img_size[0],img_size[1],3),'uint8')
+    result = np.zeros((args.imagesize[0],args.imagesize[1],3),'uint8')
     TP=0;FP=0;FN=0;TN=0;
     for i in range(mask.shape[0]):
       for j in range(mask.shape[1]):
@@ -75,13 +81,13 @@ def run(test_preds,allpath,name,args):
     TFS+=FS
 
     res = keras.preprocessing.image.array_to_img(result)
-    name = test_target_img_paths[ii].split('/'); name=name[-1]
-    full_result.append((name,accuracy,precision,recall,FS))
+    filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
+    full_result.append((filename,accuracy,precision,recall,FS))
     try:
       os.mkdir('result')
     except:
       pass
-    res.save('result/'+name)
+    res.save('result/'+filename)
   lendata=len(test_preds)
   print("accuracy",Taccuracy/lendata)
   print("precision",Tprecision/lendata)
