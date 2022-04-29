@@ -15,6 +15,27 @@ def start(args):
   val_gen = path.dataloader(args,allframe_val)
   test_gen = path.dataloader(args,allframe_test)
 
+  tap=[];vap=[];tep=[]
+  
+  for path in allframe_train:
+    frameindex= list(path.keys())[0]
+    imagepath = path[frameindex][0]
+    tap.append(imagepath)
+    
+  for path in allframe_val:
+    frameindex= list(path.keys())[0]
+    imagepath = path[frameindex][0]
+    vap.append(imagepath)
+    
+  for path in allframe_test:
+    frameindex= list(path.keys())[0]
+    imagepath = path[frameindex][0]
+    tep.append(imagepath)
+  
+  import pickle
+  with open('allpath1.pickle', 'wb') as handle:
+    pickle.dump([tap,vap,tep], handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
   keras.backend.clear_session()
   if args.mode=='train':
     mymodel=model.network(args)
