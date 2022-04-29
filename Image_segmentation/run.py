@@ -3,6 +3,7 @@ import random
 import path
 from tensorflow import keras
 import model
+import accuracy
 from keras.models import load_model
 
 def start(args):
@@ -32,7 +33,10 @@ def start(args):
   if args.mode=='test':
     mymodel = load_model(args.model_dir)
     mymodel.evaluate(test_gen)
-
+    test_preds = mymodel.predict(test_gen)
+    accuracy.run(test_preds,allframe_test,args.model_dir)
+    
+    
 
   """
   tap=[];vap=[];tep=[]
