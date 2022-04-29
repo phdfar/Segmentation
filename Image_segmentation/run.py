@@ -34,7 +34,7 @@ def start(args):
     mymodel = load_model(args.model_dir)
     mymodel.evaluate(test_gen)
     test_preds = mymodel.predict(test_gen)
-    accuracy.run(test_preds,allframe_test,args.model_dir)
+    accuracy.run(test_preds,allframe_test,args.model_dir,args)
     
     
 
