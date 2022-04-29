@@ -17,19 +17,19 @@ def start(args):
 
   tap=[];vap=[];tep=[]
   
-  for path in allframe_train:
-    frameindex= list(path.keys())[0]
-    imagepath = path[frameindex][0]
+  for pathx in allframe_train:
+    frameindex= list(pathx.keys())[0]
+    imagepath = pathx[frameindex][0]
     tap.append(imagepath)
     
-  for path in allframe_val:
-    frameindex= list(path.keys())[0]
-    imagepath = path[frameindex][0]
+  for pathx in allframe_val:
+    frameindex= list(pathx.keys())[0]
+    imagepath = pathx[frameindex][0]
     vap.append(imagepath)
     
-  for path in allframe_test:
-    frameindex= list(path.keys())[0]
-    imagepath = path[frameindex][0]
+  for pathx in allframe_test:
+    frameindex= list(pathx.keys())[0]
+    imagepath = pathx[frameindex][0]
     tep.append(imagepath)
   
   import pickle
@@ -37,7 +37,7 @@ def start(args):
     pickle.dump([tap,vap,tep], handle, protocol=pickle.HIGHEST_PROTOCOL)
     
   keras.backend.clear_session()
-  if args.mode=='train':
+  if args.mode=='trainx':
     mymodel=model.network(args)
     mymodel.summary()
 
