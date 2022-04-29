@@ -1,6 +1,6 @@
 from tensorflow.keras.preprocessing.image import load_img
 import pandas as pd
-def run(test_gen,name):
+def run(test_preds,allpath,name):
   Taccuracy=0
   Tprecision=0
   Trecall=0
