@@ -15,29 +15,8 @@ def start(args):
   val_gen = path.dataloader(args,allframe_val)
   test_gen = path.dataloader(args,allframe_test)
 
-  tap=[];vap=[];tep=[]
-  
-  for pathx in allframe_train:
-    frameindex= list(pathx.keys())[0]
-    imagepath = pathx[frameindex][0]
-    tap.append(imagepath)
-    
-  for pathx in allframe_val:
-    frameindex= list(pathx.keys())[0]
-    imagepath = pathx[frameindex][0]
-    vap.append(imagepath)
-    
-  for pathx in allframe_test:
-    frameindex= list(pathx.keys())[0]
-    imagepath = pathx[frameindex][0]
-    tep.append(imagepath)
-  
-  import pickle
-  with open('allpath1.pickle', 'wb') as handle:
-    pickle.dump([tap,vap,tep], handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
   keras.backend.clear_session()
-  if args.mode=='trainx':
+  if args.mode=='train':
     mymodel=model.network(args)
     mymodel.summary()
 
@@ -56,6 +35,28 @@ def start(args):
 
 
   """
+  tap=[];vap=[];tep=[]
+  
+  for pathx in allframe_train:
+    frameindex= list(pathx.keys())[0]
+    imagepath = pathx[frameindex][0]
+    tap.append(imagepath)
+    
+  for pathx in allframe_val:
+    frameindex= list(pathx.keys())[0]
+    imagepath = pathx[frameindex][0]
+    vap.append(imagepath)
+    
+  for pathx in allframe_test:
+    frameindex= list(pathx.keys())[0]
+    imagepath = pathx[frameindex][0]
+    tep.append(imagepath)
+  
+  import pickle
+  with open('allpath2.pickle', 'wb') as handle:
+    pickle.dump([tap,vap,tep], handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+
   X, y = next(iter(test_gen))
   print(X.shape, y.shape)
 
