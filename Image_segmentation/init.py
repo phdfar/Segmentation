@@ -1,7 +1,8 @@
 import os
 from IPython.display import clear_output
+from argparse import ArgumentParser
 
-def main(args):
+def init(args):
   if args.mode=='google':
     os.system('pip install -U --no-cache-dir gdown --pre')
     os.system('gdown --no-cookies 1j7ua5QKVNc3QSBSG6XSXiRAyBlRWz-2b')
@@ -25,6 +26,14 @@ def main(args):
 
     
   os.system('wget https://omnomnom.vision.rwth-aachen.de/data/STEm-Seg/dataset_jsons/youtube_vis_train.json')
+
+
+if __name__ == '__init__':
+    parser = ArgumentParser()
+    parser.add_argument('--mode', type=str ,default='google', required=False)
+    args = parser.parse_args()
+    init(args)
+
 
 clear_output()
 
