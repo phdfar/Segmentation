@@ -71,7 +71,8 @@ def inception_default(img_size, num_classes):
     ### [First half of the network: downsampling inputs] ###
 
     # Entry block
-    x = layers.Conv2D(32, 3, strides=2, padding="same")(inputs)
+    #x = layers.Conv2D(32, 3, strides=2, padding="same")(inputs)
+    x = DeformableConvLayer(32, [3, 3],strides=2, num_deformable_group=1,padding="same")(inputs)
     x = layers.BatchNormalization()(x)
     x = layers.Activation("relu")(x)
 
