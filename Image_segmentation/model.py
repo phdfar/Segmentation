@@ -65,7 +65,7 @@ def inception_default(img_size, num_classes):
     model = keras.Model(inputs, outputs)
     return model
 
-  def inception_deform(img_size, num_classes):
+def inception_deform(img_size, num_classes):
     inputs = keras.Input(shape=img_size + (3,))
 
     ### [First half of the network: downsampling inputs] ###
