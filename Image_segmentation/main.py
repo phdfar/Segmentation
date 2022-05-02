@@ -13,6 +13,7 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--mode', type=str ,default='train', required=False)
+    parser.add_argument('--restore', type=bool ,default='False', required=False)
     parser.add_argument('--network', type=str , required=True)
     parser.add_argument('--model_dir', type=str , required=True)
     parser.add_argument('--basepath', type=str , default='/content/', required=False)
