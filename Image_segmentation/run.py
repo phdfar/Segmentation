@@ -29,7 +29,9 @@ def start(args):
     callbacks = [
         keras.callbacks.ModelCheckpoint(args.model_dir, save_best_only=True),CSVLogger(args.model_dir+'_log.csv', append=True, separator=';')
     ]
-
+    if args.restore==True:
+      mymodel = load_model(args.model_dir)
+      
     mymodel.fit(train_gen, epochs=args.epoch, validation_data=val_gen, callbacks=callbacks)
   
   if args.mode=='test':
