@@ -104,7 +104,7 @@ def inception_mobilenet(img_size, num_classes):
     z = keras.applications.mobilenet_v2.preprocess_input(inputs)
     z = backbone(z)
     z = layers.SeparableConv2D(480, 3, strides=1, padding="valid")(z)
-    z = layers.Reshape((12,20,64))(z)
+    z = layers.Reshape((24,40,90))(z)
 
     x = layers.Concatenate(axis=-1)([x, z])
 

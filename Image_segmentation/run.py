@@ -16,7 +16,7 @@ def start(args):
   # Instantiate data Sequences for each split
   train_gen = path.dataloader(args,allframe_train)
   val_gen = path.dataloader(args,allframe_val)
-  test_gen = path.dataloader(args,allframe_test)
+  test_gen = path.dataloader(args,allframe_test[:1200])
 
   keras.backend.clear_session()
   if args.mode=='train':
@@ -39,7 +39,7 @@ def start(args):
     mymodel.evaluate(test_gen)
     test_preds = mymodel.predict(test_gen)
     print('check accuracy')
-    accuracy.run(test_preds,allframe_test,args.model_dir,args)
+    accuracy.run(test_preds,allframe_test[:1200],args.model_dir,args)
     
     
 
