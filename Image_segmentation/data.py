@@ -106,7 +106,6 @@ class GenericVideoSequence(object):
         if frame_idxes is None:
             frame_idxes = list(range(len(self.image_paths)))
 
-        masks = []
         masks_t = 0;
         for t in frame_idxes:
 
@@ -120,9 +119,9 @@ class GenericVideoSequence(object):
                 else:
                     masks_t = masks_t + np.zeros(self.image_dims, np.uint8)
                     
-        mask_t[mask_t!=0]=1;mask = mask_t.copy()
+        masks_t[masks_t!=0]=1;
 
-        return masks
+        return mask_t
     def load_one_masks(self, frame_idxes=None):
         if frame_idxes is None:
             frame_idxes = list(range(len(self.image_paths)))
