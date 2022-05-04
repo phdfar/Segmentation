@@ -115,7 +115,7 @@ class GenericVideoSequence(object):
                         "counts": self.segmentations[t][instance_id].encode('utf-8'),
                         "size": self.image_dims
                     }
-                    masks_t = masks_t + np.ascontiguousarray(masktools.decode(rle_mask).astype(np.uint8)))
+                    masks_t = masks_t + np.ascontiguousarray(masktools.decode(rle_mask).astype(np.uint8))
                 else:
                     masks_t = masks_t + np.zeros(self.image_dims, np.uint8)
                     
