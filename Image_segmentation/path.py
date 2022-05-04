@@ -93,6 +93,9 @@ class dataloader(keras.utils.Sequence):
             flagmulti = path[frameindex][2]
             if flagmulti==0:
               mask = seq.load_one_masks([frameindex])
+            else:
+              mask = seq.load_masks([frameindex])
+              
             # resize image
             dim = (self.img_size[1],self.img_size[0])
             temp = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
