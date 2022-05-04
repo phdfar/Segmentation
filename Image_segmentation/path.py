@@ -16,6 +16,10 @@ def getinfo(args):
     meta_plus = pickle.load(handle)
   valid=[];
   lenf=0;
+  flag_multi=0;
+  if  args.num_instance>1
+    flag_multi=1;
+    
   for i in meta_plus:
     if  args.num_instance=1000 and args.unq_class==1000:
       for c in i['unique_class']:
@@ -46,11 +50,11 @@ def getinfo(args):
       random.Random(1337).shuffle(allindex)
       for frame in allindex:
         if p<=a:
-          allframe_train.append({frame:[allpath[frame],seq]})
+          allframe_train.append({frame:[allpath[frame],seq,flag_multi]})
         elif p>a and p<=b:
-          allframe_val.append({frame:[allpath[frame],seq]})
+          allframe_val.append({frame:[allpath[frame],seq,flag_multi]})
         else:
-          allframe_test.append({frame:[allpath[frame],seq]})
+          allframe_test.append({frame:[allpath[frame],seq,flag_multi]})
         p+=1;
 
       
@@ -86,7 +90,9 @@ class dataloader(keras.utils.Sequence):
             img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
             x[j] = np.asarray(img)
             seq = path[frameindex][1]
-            mask = seq.load_one_masks([frameindex])
+            flagmulti = path[frameindex][2]
+            if flagmulti==0:
+              mask = seq.load_one_masks([frameindex])
             # resize image
             dim = (self.img_size[1],self.img_size[0])
             temp = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
