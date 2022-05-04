@@ -17,7 +17,18 @@ def getinfo(args):
   valid=[];
   lenf=0;
   for i in meta_plus:
-    if i['number_instances']==args.num_instance and i['number_unique_class']==args.unq_class:
+    if  args.num_instance=1000 and args.unq_class==1000:
+      for c in i['unique_class']:
+        if c in list(args.classid):
+          valid.append(i['id'])
+          
+    elif args.num_instance=1000 and args.unq_class!=1000:
+      if i['number_unique_class']==args.unq_class:
+        for c in i['unique_class']:
+          if c in list(args.classid):
+            valid.append(i['id'])
+          
+    elif i['number_instances']==args.num_instance and i['number_unique_class']==args.unq_class:
       for c in i['unique_class']:
         if c in list(args.classid):
           valid.append(i['id'])
