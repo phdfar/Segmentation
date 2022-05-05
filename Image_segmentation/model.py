@@ -7,7 +7,8 @@ def network(args):
     return inception_default(args.imagesize,2)
   if args.network=='inception_mobilenet':
     return inception_mobilenet(args.imagesize,2)
-  
+  if args.network=='mobilenet_s1':
+    return mobilenet_s1(args.imagesize,2)
 def inception_default(img_size, num_classes):
     inputs = keras.Input(shape=img_size + (3,))
 
