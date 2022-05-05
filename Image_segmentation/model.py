@@ -131,3 +131,32 @@ def inception_mobilenet(img_size, num_classes):
     # Define the model
     model = keras.Model(inputs, outputs)
     return model
+def mobilenet_s1(img_size, num_classes):
+  
+    inputs = keras.Input(shape=img_size + (3,))
+    x = keras.applications.mobilenet_v2.preprocess_input(inputs)
+    x = backbone(x)
+    x = layers.SeparableConv2D(640, 3, strides=1, padding="valid")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Activation("relu")(x)
+    x = layers.Reshape((48,80,30))(x)
+    x = layers.UpSampling2D(2)(x)
+    x = layers.SeparableConv2D(32, 3, strides=1, padding="same")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Activation("relu")(x)
+
+    x = layers.UpSampling2D(2)(x)
+    x = layers.SeparableConv2D(16, 3, strides=1, padding="same")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Activation("relu")(x)
+
+    x = layers.UpSampling2D(2)(x)
+    x = layers.SeparableConv2D(8, 3, strides=1, padding="same")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Activation("relu")(x)
+
+    outputs = layers.Conv2D(num_classes, 3, activation="softmax", padding="same")(x)
+
+    model = keras.Model(inputs, outputs)
+    return model
+
