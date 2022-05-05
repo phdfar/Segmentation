@@ -135,6 +135,11 @@ def inception_mobilenet(img_size, num_classes):
 def mobilenet_s1(img_size, num_classes):
   
     inputs = keras.Input(shape=img_size + (3,))
+    backbone = keras.applications.MobileNetV2(
+        weights="imagenet", include_top=False, input_shape=img_size + (3,)
+    )
+    backbone.trainable = False
+    
     x = keras.applications.mobilenet_v2.preprocess_input(inputs)
     x = backbone(x)
     x = layers.SeparableConv2D(640, 3, strides=1, padding="valid")(x)
