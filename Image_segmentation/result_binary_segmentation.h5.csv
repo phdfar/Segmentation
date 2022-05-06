@@ -7,3 +7,5 @@ Inception default TOP5,30,32,192-320,1.2.3.4.11,0.86,0.06
 Inception default TOP5,30,14,384-640,1.2.3.4.11,0.84,0.06 
 Inception default TOP5 In TOP2_7,30,14,384-640,5.6.7.8.9.10.14,0.38,1.0 
 Inception mobilenet TOP5,30,14,384-640,1.2.3.4.11,0.87,0.06 
+Mobilenet_False TOP5 S1,30,14,384-640,1.2.3.4.11,0.48,0.25
+Mobilenet_True TOP5 S1,30,14,384-640,1.2.3.4.11,0.85,0.07 
