@@ -6,14 +6,13 @@ import numpy as np
 import os
 from tensorflow import keras
 
-def run2(test_preds,allpath,name,args):
+def run(test_preds,allpath,name,args):
   Taccuracy=0
   Tprecision=0
   Trecall=0
   TFS=0
   full_result=[]
   for ii in range(len(test_preds)):
-
     path = allpath[ii]
     frameindex= list(path.keys())[0]
     imagepath = path[frameindex][0]
@@ -32,24 +31,33 @@ def run2(test_preds,allpath,name,args):
     mask = mask[:,:,0];
 
     result = np.zeros((args.imagesize[0],args.imagesize[1],3),'uint8')
+    temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
     TP=0;FP=0;FN=0;TN=0;
     
     fast_res=mask-gtn
-    
-    tp = np.where(fast_res==0) and np.where(mask==1)
-    TP = TP + len(tp[0])
+    tpc = np.where(fast_res==0);temp[tpc]=1;
+    tp = np.where(temp+mask==2)
+    TP = len(tp[0])
     result[tp]=(0,255,0)
     
-    fp = np.where(fast_res!=0) and np.where(mask==1)
-    FP = FP + len(fp[0])
+    #import matplotlib.pyplot as plt
+    #plt.figure()
+    #plt.imshow(result)
+    #break
+    tn = np.where(temp+mask==1)
+    TN = len(tn[0])
+    
+    
+    temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
+
+    fp = np.where(fast_res==1);
+    FP = len(fp[0])
     result[fp]=(255,0,0)
     
-    fn = np.where(fast_res!=0) and np.where(mask==0)
-    FN = FN + len(fn[0])
+    fn  = np.where(fast_res==-1)
+    FN =  len(fn[0])
     result[fn]=(255,255,0)
    
-    tn = np.where(fast_res==0) and np.where(mask==0)
-    TN = TN + len(tn[0])
     
     """
     for i in range(mask.shape[0]):
@@ -105,7 +113,8 @@ def run2(test_preds,allpath,name,args):
   df.to_csv('result_'+name+'.csv')
 
   
-def run(test_preds,allpath,name,args):
+  
+def run2(test_preds,allpath,name,args):
   Taccuracy=0
   Tprecision=0
   Trecall=0
