@@ -121,7 +121,7 @@ class GenericVideoSequence(object):
                     
         masks_t[masks_t!=0]=1;
 
-        return mask_t
+        return masks_t
     def load_one_masks(self, frame_idxes=None):
         if frame_idxes is None:
             frame_idxes = list(range(len(self.image_paths)))
