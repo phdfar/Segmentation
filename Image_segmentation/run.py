@@ -6,15 +6,12 @@ import model
 import accuracy
 from keras.models import load_model
 from keras.callbacks import CSVLogger
+import os
+
 
 def upload(args):
   if args.upload=='git':
-    os.system('cd /content/model_segmentation')
-    os.system('git add .')
-    os.system('git commit -m "add model"')
-    os.system("git config --global user.email '"+args.email+"'")
-    os.system("git config --global user.name '"+args.username+"'")
-    os.system("git push -f '"+args.token+"'")
+    os.system('. 'args.basepath+'/upload.sh')
   
 
 def start(args):
