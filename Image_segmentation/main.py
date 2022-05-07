@@ -18,7 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('--network', type=str , required=True)
     parser.add_argument('--model_dir', type=str , required=True)
     parser.add_argument('--basepath', type=str , default='/content/', required=False)
-
+    parser.add_argument('--upload', type=str ,default='local', required=False)
     parser.add_argument('--imagesize', type=tuple_type, required=True)
 
     parser.add_argument('--epoch', type=int, default=15 , required=False)
