@@ -9,7 +9,12 @@ from keras.callbacks import CSVLogger
 
 def upload(args):
   if args.upload=='git':
-    do
+    os.system('cd /content/model_segmentation')
+    os.system('git add .')
+    os.system('git commit -m "add model"')
+    os.system("git config --global user.email '"+args.email+"'")
+    os.system("git config --global user.name '"+args.username+"'")
+    os.system("git push -f '"+args.token+"'")
   
 
 def start(args):
