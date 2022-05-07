@@ -42,7 +42,7 @@ def start(args):
     mymodel.compile(optimizer="adam", loss="sparse_categorical_crossentropy")
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint(args.model_dir, save_best_only=True),CSVLogger(args.model_dir+'_log.csv', append=True, separator=';'),CustomCallback()
+        keras.callbacks.ModelCheckpoint(args.model_dir, save_best_only=True),CSVLogger(args.model_dir+'_log.csv', append=True, separator=','),CustomCallback()
     ]
     if args.restore==True:
       mymodel = load_model(args.model_dir)
