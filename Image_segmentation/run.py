@@ -8,14 +8,23 @@ from keras.models import load_model
 from keras.callbacks import CSVLogger
 import os
 
+global argss
 
+
+class CustomCallback(keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+      if argss.upload=='git':
+        os.system('. '+argss.basepath+'upload.sh')
+
+        
 def upload(args):
-  if args.upload=='git':
-    os.system('. 'args.basepath+'/upload.sh')
+  if args.upload=='gi2t':
+    os.system('. '+args.basepath+'upload.sh')
   
 
 def start(args):
-
+  global argss
+  argss=args
   allframe_train,allframe_val,allframe_test = path.getinfo(args)
   random.Random(1337).shuffle(allframe_train)
 
@@ -33,7 +42,7 @@ def start(args):
     mymodel.compile(optimizer="adam", loss="sparse_categorical_crossentropy")
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint(args.model_dir, save_best_only=True),CSVLogger(args.model_dir+'_log.csv', append=True, separator=';'),upload(args)
+        keras.callbacks.ModelCheckpoint(args.model_dir, save_best_only=True),CSVLogger(args.model_dir+'_log.csv', append=True, separator=';'),CustomCallback()
     ]
     if args.restore==True:
       mymodel = load_model(args.model_dir)
