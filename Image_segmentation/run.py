@@ -12,7 +12,7 @@ global argss
 
 
 class CustomCallback(keras.callbacks.Callback):
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_begin(self, epoch, logs=None):
       if argss.upload=='git':
         os.system('. '+argss.basepath+'upload.sh')
 
