@@ -36,6 +36,10 @@ def start(mymodel,allframe_test,name,args):
     df.to_csv('result_'+name+'.csv')
         
 def run(test_preds,allpath,name,args,full_result):
+  flag_multi=0;
+  if  args.num_instance>1:
+        flag_multi=1;
+    
   Taccuracy=0
   Tprecision=0
   Trecall=0
@@ -46,7 +50,12 @@ def run(test_preds,allpath,name,args,full_result):
     imagepath = path[frameindex][0]
     #tep.append(imagepath)
     seq = path[frameindex][1]
-    mask = seq.load_one_masks([frameindex])
+    flagmulti = path[frameindex][2]
+    if flagmulti==0:
+      mask = seq.load_one_masks([frameindex])
+    else:
+      mask = seq.load_multi_masks([frameindex]);
+            
     # resize image
     dim = (args.imagesize[1],args.imagesize[0])
     gtn = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
