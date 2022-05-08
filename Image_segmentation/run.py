@@ -16,12 +16,6 @@ class CustomCallback(keras.callbacks.Callback):
       if argss.upload=='git':
         os.system('. '+argss.basepath+'upload.sh')
 
-        
-def upload(args):
-  if args.upload=='gi2t':
-    os.system('. '+args.basepath+'upload.sh')
-  
-
 def start(args):
   global argss
   argss=args
@@ -31,7 +25,6 @@ def start(args):
   # Instantiate data Sequences for each split
   train_gen = path.dataloader(args,allframe_train)
   val_gen = path.dataloader(args,allframe_val)
-  test_gen = path.dataloader(args,allframe_test)
 
   keras.backend.clear_session()
   if args.mode=='train':
@@ -50,11 +43,11 @@ def start(args):
     mymodel.fit(train_gen, epochs=args.epoch, validation_data=val_gen, callbacks=callbacks)
   
   if args.mode=='test':
+    test_gen = path.dataloader(args,allframe_test)    
     mymodel = load_model(args.model_dir)
-    mymodel.evaluate(test_gen)
-    test_preds = mymodel.predict(test_gen)
-    print('check accuracy')
-    accuracy.run(test_preds,allframe_test,args.model_dir,args)
+    mymodel.evaluate(test_gen);
+    accuracy.start(mymodel,allframe_test,args.model_dir,args)
+
     
     
 
