@@ -6,12 +6,39 @@ import numpy as np
 import os
 from tensorflow import keras
 
+def start(mymodel,allframe_test,name,args)
+    x = 1200;full_result=[];tac=0,tpr=0,tre=0,fts=0;
+    final_list= lambda test_list, x: [test_list[i:i+x] for i in range(0, len(test_list), x)]
+    allframe_test_chunk=final_list(allframe_test, x);
+    for batch_test in allframe_test_chunk:
+      test_gen_batch = path.dataloader(args,batch_test)    
+      test_preds_batch = mymodel.predict(test_gen_batch)
+      print('check accuracy')
+      tacx,tprx,trex,ftsx,full_result = accuracy.run(test_preds_batch,batch_test,name,args,full_result)
+      tac+=tacx; tpr+=tprx; tre+=trex; fts+=ftsx;
+      
+    lendata=len(allframe_test)
+    tac = tac/lendata
+    tpr = tpr/lendata
+    tre = tre/lendata
+    tfs = tfs/lendata
+    
+    print("accuracy",tac)
+    print("precision",tpr)
+    print("recall",tre)
+    print("FS",tfs)
+    print('---------')
+  
+    TT = [] ; TT.append(('Total',tac,tpr,tre,tfs))
+    full_result = TT + full_result
+    df = pd.DataFrame(full_result,columns =['Names','accuracy','precision','recall','FS'])
+    df.to_csv('result_'+name+'.csv')
+        
 def run(test_preds,allpath,name,args):
   Taccuracy=0
   Tprecision=0
   Trecall=0
   TFS=0
-  full_result=[]
   for ii in range(len(test_preds)):
     path = allpath[ii]
     frameindex= list(path.keys())[0]
@@ -103,14 +130,18 @@ def run(test_preds,allpath,name,args):
       pass
     res.save('result/'+filename)
   lendata=len(test_preds)
-  print("accuracy",Taccuracy/lendata)
-  print("precision",Tprecision/lendata)
-  print("recall",Trecall/lendata)
-  print("FS",TFS/lendata)
-  TT = [] ; TT.append(('Total',Taccuracy/lendata,Tprecision/lendata,Trecall/lendata,TFS/lendata))
-  full_result = TT + full_result
-  df = pd.DataFrame(full_result,columns =['Names','accuracy','precision','recall','FS'])
-  df.to_csv('result_'+name+'.csv')
+  tac = Taccuracy/lendata
+  tpr = Tprecision/lendata
+  tre = Trecall/lendata
+  tfs = TFS/lendata
+  
+  print("accuracy",tac)
+  print("precision",tpr)
+  print("recall",tre)
+  print("FS",tfs)
+  print('---------')
+  return Taccuracy,Tprecision,Trecall,TFS,full_result
+
 
   
   
@@ -197,11 +228,17 @@ def run2(test_preds,allpath,name,args):
       pass
     res.save('result/'+filename)
   lendata=len(test_preds)
-  print("accuracy",Taccuracy/lendata)
-  print("precision",Tprecision/lendata)
-  print("recall",Trecall/lendata)
-  print("FS",TFS/lendata)
-  TT = [] ; TT.append(('Total',Taccuracy/lendata,Tprecision/lendata,Trecall/lendata,TFS/lendata))
+  tac = Taccuracy/lendata
+  tpr = Tprecision/lendata
+  tre = Trecall/lendata
+  tfs = TFS/lendata
+  
+  print("accuracy",tac)
+  print("precision",tpr)
+  print("recall",tre)
+  print("FS",tfs)
+  TT = [] ; TT.append(('Total',tac,tpr,tre,tfs))
   full_result = TT + full_result
   df = pd.DataFrame(full_result,columns =['Names','accuracy','precision','recall','FS'])
   df.to_csv('result_'+name+'.csv')
+  return Taccuracy,Tprecision,Trecall,TFS
