@@ -1,0 +1,14 @@
+!cat sda1.backup.tar.gz.* | tar xzf -
+
+#train
+https://www.dropbox.com/s/7uv3w6j5whxw7zs/sda1.backup.tar.gz.aa
+https://www.dropbox.com/s/94ng0s3k3l35udb/sda1.backup.tar.gz.ab
+https://www.dropbox.com/s/l0m89q4kvz7usqi/sda1.backup.tar.gz.ac
+https://www.dropbox.com/s/yhbxvueb9pv12ga/sda1.backup.tar.gz.ad
+https://www.dropbox.com/s/x2awgr0klyuc029/sda1.backup.tar.gz.ae
+
+#valid
+https://www.dropbox.com/s/3chm2ns5e03t0rp/valid.zip
+
+
+
