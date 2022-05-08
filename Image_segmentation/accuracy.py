@@ -22,12 +22,12 @@ def start(mymodel,allframe_test,name,args)
     tpr = tpr/lendata
     tre = tre/lendata
     tfs = tfs/lendata
-    
+    print('*********')
     print("accuracy",tac)
     print("precision",tpr)
     print("recall",tre)
     print("FS",tfs)
-    print('---------')
+    print('*********')
   
     TT = [] ; TT.append(('Total',tac,tpr,tre,tfs))
     full_result = TT + full_result
