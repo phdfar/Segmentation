@@ -10,7 +10,7 @@ from tensorflow.keras.preprocessing.image import load_img
 def getinfo(args):
   base_dir=args.basepath+'train/'
   dataset_json = args.basepath +'youtube_vis_train.json'
-  meta_plus_path = args.basepath+ 'stemseg/meta_plus_youtube_vis.pickle'
+  meta_plus_path = args.basepath+ 'Segmentation/meta_plus_youtube_vis.pickle'
   dataset,meta_info,seqs =  data.parse_generic_video_dataset(base_dir, dataset_json)
   with open(meta_plus_path, 'rb') as handle:
     meta_plus = pickle.load(handle)
