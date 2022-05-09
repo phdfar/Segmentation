@@ -40,11 +40,12 @@ def getinfo(args):
           #print(i)
           
     elif i['number_instances']==args.num_instance and i['number_unique_class']==args.unq_class:
-      for c in i['unique_class']:
-        if c not in list(args.classid):
-          flag=1;  
-        if flag==0:
-          valid.append(i['id'])
+      if i['clip_length']>=20:
+        for c in i['unique_class']:
+          if c not in list(args.classid):
+            flag=1;  
+          if flag==0:
+            valid.append(i['id'])
           #print(i)
 
           #lenf+=i['clip_length']
@@ -53,6 +54,10 @@ def getinfo(args):
   allframe_train=[];allframe_val=[];allframe_test=[]
   for seq in seqs:
     if seq.id in valid:
+      train_a = 0; train_b=seq.length-(args.clip_length*2);
+      val_a = train_b; val_b=val_a+args.clip_length
+      test_a = val_b;test_a = args.clip_length
+      
       a = int(np.floor(seq.length*0.67))
       b = a + int(np.ceil(seq.length*0.1))
       p=0; 
