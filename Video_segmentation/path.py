@@ -56,7 +56,7 @@ def getinfo(args):
     if seq.id in valid:
       train_a = 0; train_b=seq.length-(args.clip_length*2);
       val_a = train_b; val_b=val_a+args.clip_length
-      test_a = val_b;test_a = args.clip_length
+      test_a = val_b;test_b = args.clip_length
       
       a = int(np.floor(seq.length*0.67))
       b = a + int(np.ceil(seq.length*0.1))
