@@ -8,9 +8,10 @@ from tensorflow.keras.preprocessing.image import load_img
 import itertools
 
 
-def create_frame_index(subseq_length,clip_length):
+def create_frame_index(subseq_length,start,finish):
     niter =  subseq_length*15;
     subseq_span_range = [3];subsequence_idxes=[]
+    clip_length = finish-start
     for _ in range(niter):
         subseq_span = min(random.choice(subseq_span_range), clip_length - 1)
         max_start_idx = clip_length - subseq_span - 1
@@ -18,7 +19,7 @@ def create_frame_index(subseq_length,clip_length):
 
         start_idx = 0 if max_start_idx == 0 else random.randint(0, max_start_idx)
         end_idx = start_idx + subseq_span
-        sample_idxes = np.round(np.linspace(start_idx, end_idx, subseq_length)).astype(np.int32).tolist()
+        sample_idxes = start + np.round(np.linspace(start_idx, end_idx, subseq_length)).astype(np.int32).tolist()
 
         assert len(set(sample_idxes)) == len(sample_idxes)  # sanity check: ascertain no duplicate indices
         subsequence_idxes.append(sample_idxes)
@@ -75,11 +76,19 @@ def getinfo(args):
   allframe_train=[];allframe_val=[];allframe_test=[]
   for seq in seqs:
     if seq.id in valid:
-      train_a = 0; train_b=seq.length-(args.clip_length*2);
-      val_a = train_b; val_b=val_a+args.clip_length
-      test_a = val_b;test_b = args.clip_length
+      train_a = 0; train_b=seq.length-(args.subseq_length*2);
+      val_a = train_b; val_b=val_a+args.subseq_length
+      test_a = val_b;test_b = args.subseq_length
       
+      train_index=create_frame_index(args.subseq_length,0,train_b)
+      val_index=create_frame_index(args.subseq_length,val_a,val_b)
+      test_index=create_frame_index(args.subseq_length,test_a,test_b)
       
+      allframe_train.append({clip:[train_index,seq,flag_multi]})
+      allframe_val.append({clip:[val_index,seq,flag_multi]})
+      allframe_test.append({clip:[test_index,seq,flag_multi]})
+    
+      """
       a = int(np.floor(seq.length*0.67))
       b = a + int(np.ceil(seq.length*0.1))
       p=0; 
@@ -94,7 +103,7 @@ def getinfo(args):
         else:
           allframe_test.append({frame:[allpath[frame],seq,flag_multi]})
         p+=1;
-
+      """
       
 
   print('Number Train frame : ',len(allframe_train))
