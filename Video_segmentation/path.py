@@ -84,9 +84,12 @@ def getinfo(args):
       val_index=create_frame_index(args.subseq_length,val_a,val_b)
       test_index=create_frame_index(args.subseq_length,test_a,test_b)
       
-      allframe_train.append({clip:[train_index,seq,flag_multi]})
-      allframe_val.append({clip:[val_index,seq,flag_multi]})
-      allframe_test.append({clip:[test_index,seq,flag_multi]})
+      for t in train_index:
+        allframe_train.append({clip:[t,seq,flag_multi]})
+      for t in allframe_val:
+        allframe_val.append({clip:[t,seq,flag_multi]})
+      for t in test_index:
+        allframe_test.append({clip:[t,seq,flag_multi]})
     
       """
       a = int(np.floor(seq.length*0.67))
