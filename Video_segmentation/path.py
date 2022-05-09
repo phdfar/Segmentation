@@ -5,7 +5,28 @@ import cv2
 from tensorflow import keras
 import numpy as np
 from tensorflow.keras.preprocessing.image import load_img
+import itertools
 
+
+def create_frame_index(subseq_length,clip_length):
+    niter =  subseq_length*15;
+    subseq_span_range = [3];subsequence_idxes=[]
+    for _ in range(niter):
+        subseq_span = min(random.choice(subseq_span_range), clip_length - 1)
+        max_start_idx = clip_length - subseq_span - 1
+        assert max_start_idx >= 0
+
+        start_idx = 0 if max_start_idx == 0 else random.randint(0, max_start_idx)
+        end_idx = start_idx + subseq_span
+        sample_idxes = np.round(np.linspace(start_idx, end_idx, subseq_length)).astype(np.int32).tolist()
+
+        assert len(set(sample_idxes)) == len(sample_idxes)  # sanity check: ascertain no duplicate indices
+        subsequence_idxes.append(sample_idxes)
+    
+    subsequence_idxes.sort()
+    subsequence_idxes=list(k for k,_ in itertools.groupby(subsequence_idxes))
+    print('subsequence_idxes',subsequence_idxes)
+    return subsequence_idxes
   
 def getinfo(args):
   base_dir=args.basepath+'train/'
@@ -57,6 +78,7 @@ def getinfo(args):
       train_a = 0; train_b=seq.length-(args.clip_length*2);
       val_a = train_b; val_b=val_a+args.clip_length
       test_a = val_b;test_b = args.clip_length
+      
       
       a = int(np.floor(seq.length*0.67))
       b = a + int(np.ceil(seq.length*0.1))
