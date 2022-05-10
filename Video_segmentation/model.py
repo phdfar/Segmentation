@@ -5,14 +5,14 @@ import tensorflow as tf
 
 def network(args):
   if args.network=='inception_3d_default':
-    return inception_default(args.imagesize,2)
-  if args.network=='inception_3d_mobilenet':
+    return inception_3d_default(args.imagesize,2)
+  if args.network=='inception_mobilenet':
     return inception_mobilenet(args.imagesize,2)
   if args.network=='mobilenet_s1':
     return mobilenet_s1(args.imagesize,2)
   
 def inception_3d_default(img_size, num_classes):
-  inputs = keras.Input(shape=img_size + (3,1))
+  inputs = keras.Input(shape=img_size + (3*4,1))
 
   x = tf.keras.layers.Conv3D(32, 3,strides=(2, 2, 1),padding='same')(inputs)
   x = layers.BatchNormalization()(x)
@@ -64,7 +64,7 @@ def inception_3d_default(img_size, num_classes):
   outputs = layers.Reshape((y.shape[1],y.shape[2],y.shape[3]*y.shape[4]))(y)
   o1,o2,o3,o4 = tf.split(outputs, num_or_size_splits=4, axis=-1)
 
-  model = keras.Model(inputs, [o1,o2,o3,o4])
+  model = keras.Model(inputs,[o1,o2,o3,o4])
   return model
 
 def inception_default(img_size, num_classes):
