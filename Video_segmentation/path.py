@@ -34,7 +34,7 @@ def getinfo(args):
   dataset_json = args.basepath +'youtube_vis_train.json'
   meta_plus_path = args.basepath+ 'Segmentation/meta_plus_youtube_vis.pickle'
   dataset,meta_info,seqs =  data.parse_generic_video_dataset(base_dir, dataset_json)
-  
+
   with open(meta_plus_path, 'rb') as handle:
     meta_plus = pickle.load(handle)
   valid=[];
@@ -87,6 +87,7 @@ def getinfo(args):
       train_index=create_frame_index(args.subseq_length,0,train_b)
       val_index=create_frame_index(args.subseq_length,val_a,val_b)
       test_index=create_frame_index(args.subseq_length,test_a,test_b)
+
       p=0;
       for t in train_index:
         p+=1
@@ -132,6 +133,7 @@ class dataloader(keras.utils.Sequence):
         self.img_size = args.imagesize
         self.input_img_paths = input_img_paths
         self.basepath = args.basepath
+        self.subseq_length = args.subseq_length
 
     def __len__(self):
         return len(self.input_img_paths) // self.batch_size
@@ -140,13 +142,20 @@ class dataloader(keras.utils.Sequence):
         """Returns tuple (input, target) correspond to batch #idx."""
         i = idx * self.batch_size
         batch_input_img_paths = self.input_img_paths[i : i + self.batch_size]
-        x = np.zeros((self.batch_size,) + self.img_size + (3,), dtype="float32")
-        y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
+        x = np.zeros((self.batch_size,) + self.img_size + (self.subseq_length*3,1), dtype="float32")
+        #y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
+        y1 = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
+        y2 = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
+        y3 = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
+        y4 = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
 
         for j, path in enumerate(batch_input_img_paths):
-            frameindex= list(path.keys())[0]
-            imagepath = path[frameindex][0]
-            img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
+            clipindex= list(path.keys())[0]
+            frameindex = path[clipindex][0]
+            seq = path[clipindex][1]
+            for f in frameindex:
+              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
+            
             x[j] = np.asarray(img)
             seq = path[frameindex][1]
             flagmulti = path[frameindex][2]
