@@ -19,7 +19,7 @@ def create_frame_index(subseq_length,start,finish):
 
         start_idx = 0 if max_start_idx == 0 else random.randint(0, max_start_idx)
         end_idx = start_idx + subseq_span
-        sample_idxes = start + np.round(np.linspace(start_idx, end_idx, subseq_length)).astype(np.int32).tolist()
+        sample_idxes =  np.round(np.linspace(start+start_idx, start + end_idx, subseq_length)).astype(np.int32).tolist()
 
         assert len(set(sample_idxes)) == len(sample_idxes)  # sanity check: ascertain no duplicate indices
         subsequence_idxes.append(sample_idxes)
@@ -76,9 +76,11 @@ def getinfo(args):
   allframe_train=[];allframe_val=[];allframe_test=[]
   for seq in seqs:
     if seq.id in valid:
+      
+      print(seq.length)
       train_a = 0; train_b=seq.length-(args.subseq_length*2);
       val_a = train_b; val_b=val_a+args.subseq_length
-      test_a = val_b;test_b = args.subseq_length
+      test_a = val_b; test_b = test_a + args.subseq_length
       
       train_index=create_frame_index(args.subseq_length,0,train_b)
       val_index=create_frame_index(args.subseq_length,val_a,val_b)
@@ -90,7 +92,8 @@ def getinfo(args):
         allframe_val.append({clip:[t,seq,flag_multi]})
       for t in test_index:
         allframe_test.append({clip:[t,seq,flag_multi]})
-    
+
+      #print(asd)
       """
       a = int(np.floor(seq.length*0.67))
       b = a + int(np.ceil(seq.length*0.1))
