@@ -4,7 +4,7 @@ from deformable_conv_layer import DeformableConvLayer
 import tensorflow as tf
 
 def network(args):
-  if args.network=='inception_default':
+  if args.network=='inception_3d_default':
     return inception_default(args.imagesize,2)
   if args.network=='inception_mobilenet':
     return inception_mobilenet(args.imagesize,2)
