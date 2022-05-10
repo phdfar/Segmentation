@@ -26,7 +26,7 @@ def create_frame_index(subseq_length,start,finish):
     
     subsequence_idxes.sort()
     subsequence_idxes=list(k for k,_ in itertools.groupby(subsequence_idxes))
-    print('subsequence_idxes',subsequence_idxes)
+    #print('subsequence_idxes',subsequence_idxes)
     return subsequence_idxes
   
 def getinfo(args):
@@ -78,7 +78,7 @@ def getinfo(args):
   for seq in seqs:
     if seq.id in valid:
       
-      print('clip length :',seq.length)
+      #print('clip length :',seq.length)
 
       train_a = 0; train_b=seq.length-(args.subseq_length*2);
       val_a = train_b; val_b=val_a+args.subseq_length
@@ -165,7 +165,8 @@ class dataloader(keras.utils.Sequence):
                 mask = seq.load_multi_masks([f]);
               mask = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST);mask = np.expand_dims(mask, 2)
               temp_mask.append(mask);
-            x[j] = np.concatenate((tuple(temp)),axis=-1);
+            temp = np.concatenate((tuple(temp)),axis=-1);
+            x[j] = np.expand_dims(temp,3)
             y1[j] = temp_mask[0]
             y2[j] = temp_mask[1]
             y3[j] = temp_mask[2]
