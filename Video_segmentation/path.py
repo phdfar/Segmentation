@@ -140,6 +140,7 @@ class dataloader(keras.utils.Sequence):
 
     def __getitem__(self, idx):
         """Returns tuple (input, target) correspond to batch #idx."""
+        dim = (self.img_size[1],self.img_size[0])
         i = idx * self.batch_size
         batch_input_img_paths = self.input_img_paths[i : i + self.batch_size]
         x = np.zeros((self.batch_size,) + self.img_size + (self.subseq_length*3,1), dtype="float32")
@@ -154,21 +155,23 @@ class dataloader(keras.utils.Sequence):
             frameindex = path[clipindex][0]
             seq = path[clipindex][1]
             flagmulti = path[clipindex][2]
-            temp=[]
+            temp=[];temp_mask=[]
             for f in frameindex:
               img  = load_img(self.basepath+'train/'+seq.image_paths[f], target_size=self.img_size)
               temp.append(np.asarray(img))
+              if flagmulti==0:
+                mask = seq.load_one_masks([f])
+              else:
+                mask = seq.load_multi_masks([f]);
+              mask = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST);mask = np.expand_dims(mask, 2)
+              temp_mask.append(mask);
             x[j] = np.concatenate((tuple(temp)),axis=-1);
+            y1[j] = temp_mask[0]
+            y2[j] = temp_mask[1]
+            y3[j] = temp_mask[2]
+            y4[j] = temp_mask[3]
+                
 
-            if flagmulti==0:
-              mask = seq.load_one_masks([frameindex])
-            else:
-              mask = seq.load_multi_masks([frameindex]);
-            # resize image
-            dim = (self.img_size[1],self.img_size[0])
-            temp = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
-            y[j] = np.expand_dims(temp, 2)
-            
         """
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
         for j, path in enumerate(batch_target_img_paths):
@@ -177,4 +180,4 @@ class dataloader(keras.utils.Sequence):
             # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:
             y[j] -= 1
         """
-        return x, y
+        return x, [y1,y2,y3,y4]
