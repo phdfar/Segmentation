@@ -153,12 +153,13 @@ class dataloader(keras.utils.Sequence):
             clipindex= list(path.keys())[0]
             frameindex = path[clipindex][0]
             seq = path[clipindex][1]
+            flagmulti = path[clipindex][2]
+            temp=[]
             for f in frameindex:
-              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
-            
-            x[j] = np.asarray(img)
-            seq = path[frameindex][1]
-            flagmulti = path[frameindex][2]
+              img  = load_img(self.basepath+'train/'+seq.image_paths[f], target_size=self.img_size)
+              temp.append(np.asarray(img))
+            x[j] = np.concatenate((tuple(temp)),axis=-1);
+
             if flagmulti==0:
               mask = seq.load_one_masks([frameindex])
             else:
