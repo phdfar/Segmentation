@@ -13,6 +13,7 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--task', type=str ,default='binary_seg', required=False)
+    parser.add_argument('--subseq_length', type=int ,default=4, required=False)
     parser.add_argument('--mode', type=str ,default='train', required=False)
     parser.add_argument('--restore', type=bool ,default=False, required=False)
     parser.add_argument('--network', type=str , required=True)
