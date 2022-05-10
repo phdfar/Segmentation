@@ -34,6 +34,7 @@ def getinfo(args):
   dataset_json = args.basepath +'youtube_vis_train.json'
   meta_plus_path = args.basepath+ 'Segmentation/meta_plus_youtube_vis.pickle'
   dataset,meta_info,seqs =  data.parse_generic_video_dataset(base_dir, dataset_json)
+  
   with open(meta_plus_path, 'rb') as handle:
     meta_plus = pickle.load(handle)
   valid=[];
@@ -77,7 +78,8 @@ def getinfo(args):
   for seq in seqs:
     if seq.id in valid:
       
-      print(seq.length)
+      print('clip length :',seq.length)
+
       train_a = 0; train_b=seq.length-(args.subseq_length*2);
       val_a = train_b; val_b=val_a+args.subseq_length
       test_a = val_b; test_b = test_a + args.subseq_length
@@ -85,15 +87,19 @@ def getinfo(args):
       train_index=create_frame_index(args.subseq_length,0,train_b)
       val_index=create_frame_index(args.subseq_length,val_a,val_b)
       test_index=create_frame_index(args.subseq_length,test_a,test_b)
-      
+      p=0;
       for t in train_index:
-        allframe_train.append({clip:[t,seq,flag_multi]})
+        p+=1
+        allframe_train.append({p:[t,seq,flag_multi]})
+      p=0;
       for t in allframe_val:
-        allframe_val.append({clip:[t,seq,flag_multi]})
+        p+=1
+        allframe_val.append({p:[t,seq,flag_multi]})
+      p=0;
       for t in test_index:
-        allframe_test.append({clip:[t,seq,flag_multi]})
+        p+=1
+        allframe_test.append({p:[t,seq,flag_multi]})
 
-      #print(asd)
       """
       a = int(np.floor(seq.length*0.67))
       b = a + int(np.ceil(seq.length*0.1))
@@ -111,7 +117,7 @@ def getinfo(args):
         p+=1;
       """
       
-
+  #print(asd)
   print('Number Train frame : ',len(allframe_train))
   print('Number Val frame : ',len(allframe_val))
   print('Number Test frame : ',len(allframe_test))
