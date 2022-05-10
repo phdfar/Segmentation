@@ -93,7 +93,7 @@ def getinfo(args):
         p+=1
         allframe_train.append({p:[t,seq,flag_multi]})
       p=0;
-      for t in allframe_val:
+      for t in val_index:
         p+=1
         allframe_val.append({p:[t,seq,flag_multi]})
       p=0;
