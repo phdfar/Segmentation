@@ -14,6 +14,10 @@ def start(mymodel,allframe_test,name,args):
     for batch_test in allframe_test_chunk:
       test_gen_batch = path.dataloader(args,batch_test)    
       test_preds_batch = mymodel.predict(test_gen_batch)
+      #import pickle
+      #with open('test_preds_batch.pickle', 'wb') as handle:
+        #pickle.dump(test_preds_batch, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
       print('check accuracy')
       tacx,tprx,trex,tfsx,full_result,lendata = run_clip(test_preds_batch,batch_test,name,args,full_result,lendata)
       tac+=tacx; tpr+=tprx; tre+=trex; tfs+=tfsx;
@@ -44,7 +48,7 @@ def run_clip(test_preds,allpath,name,args,full_result,lendata):
   Tprecision=0
   Trecall=0
   TFS=0;q=0;
-  for ii in range(len(test_preds)):
+  for ii in range(len(test_preds[0])):
     path = allpath[ii]
     clipindex= list(path.keys())[0]
     frameindex = path[clipindex][0]
@@ -67,7 +71,8 @@ def run_clip(test_preds,allpath,name,args,full_result,lendata):
         # resize image
         dim = (args.imagesize[1],args.imagesize[0])
         gtn = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
-        frame=test_preds[ii][s];s+=1;q+=1;lendata+=1
+        frame=test_preds[s][ii];s+=1;q+=1;lendata+=1
+        #print(asd)
         mask = np.argmax(frame, axis=-1)
         mask = np.expand_dims(mask, axis=-1)
         mask = mask[:,:,0];
