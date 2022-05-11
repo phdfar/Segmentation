@@ -116,7 +116,7 @@ def run_clip(test_preds,allpath,name,args,full_result,lendata):
         TFS+=FS
 
         res = keras.preprocessing.image.array_to_img(result)
-        filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
+        filename = seq.image_paths[f].split('/'); filename=filename[-2]+'_'+filename[-1]
         full_result.append((filename,accuracy,precision,recall,FS))
         try:
           os.mkdir('result')
