@@ -12,8 +12,14 @@ def getinfo(args):
   dataset_json = args.basepath +'youtube_vis_train.json'
   meta_plus_path = args.basepath+ 'Segmentation/meta_plus_youtube_vis.pickle'
   dataset,meta_info,seqs =  data.parse_generic_video_dataset(base_dir, dataset_json)
+  
   if args.classid=='all':
     args.classid = list(np.linspace(1,40,40).astype('int32'))
+    
+  if args.task='semantic_seg':
+    i=1;dicid={};
+    for x in args.classid:
+      dicid.update({x:i});i+=1
     
   with open(meta_plus_path, 'rb') as handle:
     meta_plus = pickle.load(handle)
