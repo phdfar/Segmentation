@@ -96,6 +96,7 @@ class dataloader(keras.utils.Sequence):
         self.img_size = args.imagesize
         self.input_img_paths = input_img_paths
         self.basepath = args.basepath
+        self.task = args.task
 
     def __len__(self):
         return len(self.input_img_paths) // self.batch_size
@@ -115,10 +116,15 @@ class dataloader(keras.utils.Sequence):
             seq = path[frameindex][1]
             flagmulti = path[frameindex][2]
             if flagmulti==0:
-              if 
-              mask = seq.load_one_masks([frameindex])
+              if self.task == 'semantic_seg':  
+                mask = seq.load_one_masks_semantic([frameindex],dicid)
+              else:
+                mask = seq.load_one_masks([frameindex],dicid)
             else:
-              mask = seq.load_multi_masks([frameindex]);
+              if self.task == 'semantic_seg':  
+                mask = seq.load_multi_masks_semantic([frameindex],dicid)
+              else:
+                mask = seq.load_multi_masks([frameindex]);
             # resize image
             dim = (self.img_size[1],self.img_size[0])
             temp = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
