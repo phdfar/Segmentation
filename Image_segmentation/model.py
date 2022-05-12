@@ -2,13 +2,13 @@ from tensorflow.keras import layers
 from tensorflow import keras
 from deformable_conv_layer import DeformableConvLayer
 
-def network(args):
+def network(args,num_classes):
   if args.network=='inception_default':
-    return inception_default(args.imagesize,2)
+    return inception_default(args.imagesize,num_classes)
   if args.network=='inception_mobilenet':
-    return inception_mobilenet(args.imagesize,2)
+    return inception_mobilenet(args.imagesize,num_classes)
   if args.network=='mobilenet_s1':
-    return mobilenet_s1(args.imagesize,2)
+    return mobilenet_s1(args.imagesize,num_classes)
 def inception_default(img_size, num_classes):
     inputs = keras.Input(shape=img_size + (3,))
 
