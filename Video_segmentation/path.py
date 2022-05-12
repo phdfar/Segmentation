@@ -153,7 +153,8 @@ class dataloader(keras.utils.Sequence):
         y2 = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
         y3 = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
         y4 = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
-
+        y5 = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
+        y6 = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
         for j, path in enumerate(batch_input_img_paths):
             clipindex= list(path.keys())[0]
             frameindex = path[clipindex][0]
@@ -175,7 +176,8 @@ class dataloader(keras.utils.Sequence):
             y2[j] = temp_mask[1]
             y3[j] = temp_mask[2]
             y4[j] = temp_mask[3]
-                
+            y5[j] = temp_mask[4]
+            y6[j] = temp_mask[5]    
 
         """
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
@@ -185,4 +187,4 @@ class dataloader(keras.utils.Sequence):
             # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:
             y[j] -= 1
         """
-        return x, [y1,y2,y3,y4]
+        return x, [y1,y2,y3,y4,y5,y6]
