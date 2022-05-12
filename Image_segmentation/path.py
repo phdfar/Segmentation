@@ -15,19 +15,22 @@ def getinfo(args):
   
   if args.classid=='all':
     args.classid = list(np.linspace(1,40,40).astype('int32'))
-    
+  
+  dicid={};
   if args.task='semantic_seg':
-    i=1;dicid={};
+    i=1;
     for x in args.classid:
       dicid.update({x:i});i+=1
+  
+  flag_multi=0;
+  if  args.num_instance>1:
+    flag_multi=1;
     
   with open(meta_plus_path, 'rb') as handle:
     meta_plus = pickle.load(handle)
   valid=[];
   lenf=0;
-  flag_multi=0;
-  if  args.num_instance>1:
-    flag_multi=1;
+
     
   for i in meta_plus:
     flag=0;
@@ -112,6 +115,7 @@ class dataloader(keras.utils.Sequence):
             seq = path[frameindex][1]
             flagmulti = path[frameindex][2]
             if flagmulti==0:
+              if 
               mask = seq.load_one_masks([frameindex])
             else:
               mask = seq.load_multi_masks([frameindex]);
