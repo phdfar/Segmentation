@@ -6,7 +6,6 @@ from tensorflow import keras
 import numpy as np
 from tensorflow.keras.preprocessing.image import load_img
 
-  
 def getinfo(args):
   base_dir=args.basepath+'train/'
   dataset_json = args.basepath +'youtube_vis_train.json'
@@ -17,7 +16,7 @@ def getinfo(args):
     args.classid = list(np.linspace(1,40,40).astype('int32'))
   
   dicid={};
-  if args.task='semantic_seg':
+  if args.task=='semantic_seg':
     i=1;
     for x in args.classid:
       dicid.update({x:i});i+=1
@@ -91,12 +90,13 @@ def getinfo(args):
 class dataloader(keras.utils.Sequence):
     """Helper to iterate over the data (as Numpy arrays)."""
 
-    def __init__(self, args,input_img_paths):
+    def __init__(self, args,input_img_paths,dicid):
         self.batch_size = args.batchsize
         self.img_size = args.imagesize
         self.input_img_paths = input_img_paths
         self.basepath = args.basepath
         self.task = args.task
+        self.dicid = dicid
 
     def __len__(self):
         return len(self.input_img_paths) // self.batch_size
@@ -107,7 +107,7 @@ class dataloader(keras.utils.Sequence):
         batch_input_img_paths = self.input_img_paths[i : i + self.batch_size]
         x = np.zeros((self.batch_size,) + self.img_size + (3,), dtype="float32")
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
-
+        
         for j, path in enumerate(batch_input_img_paths):
             frameindex= list(path.keys())[0]
             imagepath = path[frameindex][0]
@@ -117,12 +117,12 @@ class dataloader(keras.utils.Sequence):
             flagmulti = path[frameindex][2]
             if flagmulti==0:
               if self.task == 'semantic_seg':  
-                mask = seq.load_one_masks_semantic([frameindex],dicid)
+                mask = seq.load_one_masks_semantic([frameindex],self.dicid)
               else:
-                mask = seq.load_one_masks([frameindex],dicid)
+                mask = seq.load_one_masks([frameindex],self.dicid)
             else:
               if self.task == 'semantic_seg':  
-                mask = seq.load_multi_masks_semantic([frameindex],dicid)
+                mask = seq.load_multi_masks_semantic([frameindex],self.dicid)
               else:
                 mask = seq.load_multi_masks([frameindex]);
             # resize image
