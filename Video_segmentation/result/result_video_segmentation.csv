@@ -1,2 +1,3 @@
 Model,epoch,batchsize,size,class,FS,Loss
 Inception default 3d,30,4,192-320,1,0.62,0.13
+Inception default 3d,30,4,192-320,1.2.3.4.11,0.58,0.1.32
