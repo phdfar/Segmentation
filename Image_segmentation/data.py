@@ -142,7 +142,7 @@ class GenericVideoSequence(object):
         return masks_t
     
     
-    def load_multi_masks_semantic(self, frame_idxes=None,dicid):
+    def load_multi_masks_semantic(self, frame_idxes,dicid):
         if frame_idxes is None:
             frame_idxes = list(range(len(self.image_paths)))
 
@@ -164,7 +164,7 @@ class GenericVideoSequence(object):
                     
         return masks_t
     
-    def load_one_masks_semantic(self, frame_idxes=None,dicid):
+    def load_one_masks_semantic(self, frame_idxes,dicid):
         if frame_idxes is None:
             frame_idxes = list(range(len(self.image_paths)))
 
