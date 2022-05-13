@@ -53,7 +53,7 @@ def start(args):
     test_gen = path.dataloader(args,allframe_test,dicid)    
     mymodel = load_model(args.model_dir)
     mymodel.evaluate(test_gen);
-    accuracy.start(mymodel,allframe_test,args.model_dir,args)
+    accuracy.start(mymodel,allframe_test,args.model_dir,args,dicid)
 
     
     
