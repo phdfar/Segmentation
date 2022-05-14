@@ -9,9 +9,9 @@ import path
 from sklearn import metrics
 
 def start(mymodel,allframe_test,name,args,dicid):
-    if args.task = 'binary_seg':
+    if args.task == 'binary_seg':
         start_binary(mymodel,allframe_test,name,args,dicid)
-    if args.task = 'semantic_seg':
+    if args.task == 'semantic_seg':
         start_semantic(mymodel,allframe_test,name,args,dicid)
         
 def start_semantic(mymodel,allframe_test,name,args,dicid):
@@ -22,7 +22,7 @@ def start_semantic(mymodel,allframe_test,name,args,dicid):
       test_gen_batch = path.dataloader(args,batch_test,dicid)    
       test_preds_batch = mymodel.predict(test_gen_batch)
       print('check accuracy')
-      y_pred,y_true = run_semantic(test_preds,allpath,name,args,y_pred,y_true)
+      y_pred,y_true = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid)
     print('****')
     print(metrics.confusion_matrix(y_true, y_pred))
     print(metrics.classification_report(y_true, y_pred, digits=args.num_class))
@@ -176,9 +176,9 @@ def run_binary(test_preds,allpath,name,args,full_result):
 
   
   
-def run_semantic(test_preds,allpath,name,args,y_pred,y_true):
- flag_multi=0;
-  if  args.num_instance>1:
+def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid):
+  flag_multi=0;
+  if args.num_instance>1:
         flag_multi=1;
     
   Taccuracy=0
@@ -193,13 +193,13 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true):
     seq = path[frameindex][1]
     flagmulti = path[frameindex][2]
     if flagmulti==0:
-        if self.task == 'semantic_seg':  
-            mask = seq.load_one_masks_semantic([frameindex],self.dicid)
+        if args.task == 'semantic_seg':  
+            mask = seq.load_one_masks_semantic([frameindex],dicid)
         else:
-            mask = seq.load_one_masks([frameindex],self.dicid)
+            mask = seq.load_one_masks([frameindex])
     else:
-        if self.task == 'semantic_seg':  
-            mask = seq.load_multi_masks_semantic([frameindex],self.dicid)
+        if args.task == 'semantic_seg':  
+            mask = seq.load_multi_masks_semantic([frameindex],dicid)
         else:
             mask = seq.load_multi_masks([frameindex]);
             
