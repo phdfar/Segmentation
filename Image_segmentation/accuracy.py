@@ -193,9 +193,15 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true):
     seq = path[frameindex][1]
     flagmulti = path[frameindex][2]
     if flagmulti==0:
-      mask = seq.load_one_masks([frameindex])
+        if self.task == 'semantic_seg':  
+            mask = seq.load_one_masks_semantic([frameindex],self.dicid)
+        else:
+            mask = seq.load_one_masks([frameindex],self.dicid)
     else:
-      mask = seq.load_multi_masks([frameindex]);
+        if self.task == 'semantic_seg':  
+            mask = seq.load_multi_masks_semantic([frameindex],self.dicid)
+        else:
+            mask = seq.load_multi_masks([frameindex]);
             
     # resize image
     dim = (args.imagesize[1],args.imagesize[0])
