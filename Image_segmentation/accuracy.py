@@ -11,7 +11,7 @@ from sklearn import metrics
 def start(mymodel,allframe_test,name,args,dicid):
     if args.task = 'binary_seg':
         start_binary(mymodel,allframe_test,name,args,dicid)
-    if args.task = 'start_semantic':
+    if args.task = 'semantic_seg':
         start_semantic(mymodel,allframe_test,name,args,dicid)
         
 def start_semantic(mymodel,allframe_test,name,args,dicid):
