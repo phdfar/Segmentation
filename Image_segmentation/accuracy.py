@@ -188,11 +188,10 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true):
     mask = mask[:,:,0];
 
     
-    y_pred= y_pred  + mask.ravel().tolist()
-    y_true =y_true + gtn.ravel().tolist()
+    y_pred = y_pred  + mask.ravel().tolist()
+    y_true = y_true + gtn.ravel().tolist()
     
-    print(metrics.confusion_matrix(y_true, y_pred))
-    print(metrics.classification_report(y_true, y_pred, digits=args.num_class))
-
+  print(metrics.confusion_matrix(y_true, y_pred))
+  print(metrics.classification_report(y_true, y_pred, digits=args.num_class))
 
   return y_pred,y_true
