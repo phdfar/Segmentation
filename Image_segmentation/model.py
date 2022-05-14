@@ -4,13 +4,13 @@ from deformable_conv_layer import DeformableConvLayer
 
 def network(args):
   if args.network=='inception_default':
-    return inception_default(args.imagesize,args.num_class)
+    return inception_default(args.imagesize,args.num_class,args.channel_input)
   if args.network=='inception_mobilenet':
     return inception_mobilenet(args.imagesize,args.num_class)
   if args.network=='mobilenet_s1':
     return mobilenet_s1(args.imagesize,args.num_class)
-def inception_default(img_size, num_classes):
-    inputs = keras.Input(shape=img_size + (3,))
+def inception_default(img_size, num_classes,channel_input):
+    inputs = keras.Input(shape=img_size + (channel_input,))
 
     ### [First half of the network: downsampling inputs] ###
 
