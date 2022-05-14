@@ -1,12 +1,17 @@
 from argparse import ArgumentParser
 import path
 import run
+import numpy as np
 def tuple_type(strings):
     strings = strings.replace("(", "").replace(")", "")
     mapped_int = map(int, strings.split(","))
     return tuple(mapped_int)
 
 def main(args):
+  if (args.classid)[0]==1000:
+    args.classid = list(np.linspace(1,40,40).astype('int32'))
+    print(args.classid )
+
   run.start(args)
   return args 
 
