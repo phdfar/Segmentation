@@ -7,7 +7,7 @@ You should implement generalized dice loss that accounts for all the classes and
 
 Something like the following:
 """
-import keras.backend as K
+from keras import backend as K
 
 def dice_coef_9cat(y_true, y_pred, smooth=1e-7):
     '''
