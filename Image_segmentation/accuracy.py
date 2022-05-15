@@ -7,6 +7,8 @@ import os
 from tensorflow import keras
 import path
 from sklearn import metrics
+from keras import backend as K
+import tensorflow as tf
 
 def start(mymodel,allframe_test,name,args,dicid):
     if args.task == 'binary_seg':
@@ -15,18 +17,16 @@ def start(mymodel,allframe_test,name,args,dicid):
         start_semantic(mymodel,allframe_test,name,args,dicid)
         
 def start_semantic(mymodel,allframe_test,name,args,dicid):
-    x = 1200;full_result=[];y_pred=[];y_true=[]
+    x = 300;full_result=[];y_pred=[];y_true=[];IOU=[]
     final_list= lambda test_list, x: [test_list[i:i+x] for i in range(0, len(test_list), x)]
     allframe_test_chunk=final_list(allframe_test, x);
     for batch_test in allframe_test_chunk:
       test_gen_batch = path.dataloader(args,batch_test,dicid)    
       test_preds_batch = mymodel.predict(test_gen_batch)
       print('check accuracy')
-      y_pred,y_true = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid)
+      IOU = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid,IOU)
     print('****')
-    print(metrics.confusion_matrix(y_true, y_pred))
-    print(metrics.classification_report(y_true, y_pred, digits=args.num_class))
-    print('****')
+    print(np.mean(IOU))
 
 def start_binary(mymodel,allframe_test,name,args,dicid):
     x = 1200;full_result=[];tac=0;tpr=0;tre=0;tfs=0;
@@ -176,7 +176,7 @@ def run_binary(test_preds,allpath,name,args,full_result):
 
   
   
-def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid):
+def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU):
   flag_multi=0;
   if args.num_instance>1:
         flag_multi=1;
@@ -184,7 +184,7 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid):
   Taccuracy=0
   Tprecision=0
   Trecall=0
-  TFS=0
+  TFS=0;
   for ii in range(len(test_preds)):
     path = allpath[ii]
     frameindex= list(path.keys())[0]
@@ -214,11 +214,23 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid):
     mask = np.expand_dims(mask, axis=-1)
     mask = mask[:,:,0];
 
-    
-    y_pred += mask.ravel().tolist()
-    y_true += gtn.ravel().tolist()
+    y_true = gtn;y_pred=mask;smooth=1e-7
+
+    #import pickle
+    #with open('loader.pickle', 'wb') as handle:
+      #pickle.dump([y_true,y_pred], handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    y_true_f = K.flatten(K.one_hot(K.cast(y_true,tf.int32), num_classes=40)[...,1:])
+    y_pred_f = K.flatten(K.one_hot(K.cast(y_pred,tf.int32), num_classes=40)[...,1:])
+    intersect = K.sum(y_true_f.numpy()* y_pred_f.numpy(), axis=-1)
+    denom = K.sum(y_true_f.numpy() + y_pred_f.numpy(), axis=-1)
+
+    IOU.append(K.mean((2. * intersect / (denom + smooth))).numpy());
+
+    #y_pred += mask.ravel().tolist()
+    #y_true += gtn.ravel().tolist()
     
   #print(metrics.confusion_matrix(y_true, y_pred))
-  print(metrics.classification_report(y_true, y_pred, digits=args.num_class))
+  #print(metrics.classification_report(y_true, y_pred, digits=args.num_class))
 
-  return y_pred,y_true
+  return IOU
