@@ -34,7 +34,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_instance', type=int, default=1 , required=False)
     parser.add_argument('--unq_class', type=int, default=1, required=False)
 
-
+    parser.add_argument('--colorspace', type=str ,default='rgb', required=False)
     parser.add_argument('--classid', type=tuple_type, default=(0) , required=False)
 
 
