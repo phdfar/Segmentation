@@ -215,18 +215,23 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU):
     mask = mask[:,:,0];
 
     y_true = gtn;y_pred=mask;smooth=1e-7
+    y_pred = y_pred.ravel().tolist()
+    y_true = y_true.ravel().tolist()
+    m = tf.keras.metrics.MeanIoU(num_classes=41)
+    m.update_state(y_pred, y_true)
+    IOU.append(m.result().numpy())
 
     #import pickle
     #with open('loader.pickle', 'wb') as handle:
       #pickle.dump([y_true,y_pred], handle, protocol=pickle.HIGHEST_PROTOCOL)
-
+    """
     y_true_f = K.flatten(K.one_hot(K.cast(y_true,tf.int32), num_classes=40)[...,1:])
     y_pred_f = K.flatten(K.one_hot(K.cast(y_pred,tf.int32), num_classes=40)[...,1:])
     intersect = K.sum(y_true_f.numpy()* y_pred_f.numpy(), axis=-1)
     denom = K.sum(y_true_f.numpy() + y_pred_f.numpy(), axis=-1)
 
     IOU.append(K.mean((2. * intersect / (denom + smooth))).numpy());
-
+    """
     #y_pred += mask.ravel().tolist()
     #y_true += gtn.ravel().tolist()
     
