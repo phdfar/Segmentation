@@ -98,6 +98,7 @@ class dataloader(keras.utils.Sequence):
         self.task = args.task
         self.dicid = dicid
         self.channel_input  = args.channel_input
+        self.colorspace = args.colorspace
 
     def __len__(self):
         return len(self.input_img_paths) // self.batch_size
@@ -112,11 +113,19 @@ class dataloader(keras.utils.Sequence):
         for j, path in enumerate(batch_input_img_paths):
             frameindex= list(path.keys())[0]
             imagepath = path[frameindex][0]
+            if args.colorspace=='rgb':
+              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
+            if args.colorspace=='lab':
+              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
+              img = cv2.cvtColor(np.asarray(img),cv2.COLOR_RGB2LAB)
+            if args.colorspace=='hsv':
+              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
+              img = cv2.cvtColor(np.asarray(img),cv2.COLOR_RGB2HSV)
+              
             if self.channel_input==3:
-              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
               x[j] = np.asarray(img)
+              
             elif self.channel_input==4:
-              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
               opt = load_img(self.basepath+'train_rgo/train/'+imagepath, target_size=self.img_size)
               opt = np.asarray(opt);opt = opt[:,:,2];opt = np.expand_dims(opt, 2)
               x[j] = np.concatenate((np.asarray(img),opt),axis=-1)
