@@ -113,6 +113,7 @@ class dataloader(keras.utils.Sequence):
         for j, path in enumerate(batch_input_img_paths):
             frameindex= list(path.keys())[0]
             imagepath = path[frameindex][0]
+            """
             if self.colorspace=='rgb':
               img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
             if self.colorspace=='lab':
@@ -121,8 +122,9 @@ class dataloader(keras.utils.Sequence):
             if self.colorspace=='hsv':
               img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
               img = cv2.cvtColor(np.asarray(img),cv2.COLOR_RGB2HSV)
-              
+            """  
             if self.channel_input==3:
+              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
               x[j] = np.asarray(img)
               
             elif self.channel_input==4:
