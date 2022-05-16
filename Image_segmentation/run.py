@@ -39,7 +39,7 @@ def start(args):
     mymodel.summary()
 
     
-    mymodel.compile(optimizer="adam", loss="sparse_categorical_crossentropy",metrics=[tf.keras.metrics.MeanIoU(args.num_class)])
+    mymodel.compile(optimizer="adam", loss="sparse_categorical_crossentropy")
 
     callbacks = [
         keras.callbacks.ModelCheckpoint(args.model_dir, save_best_only=True),CSVLogger(args.model_dir+'_log.csv', append=True, separator=','),CustomCallback()
