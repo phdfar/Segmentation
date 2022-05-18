@@ -162,6 +162,7 @@ def inception_deform(img_size, num_classes,channel_input,batch_size):
 
       # Define the model
       model = keras.Model(inputs, outputs)
+      return model
 
 def inception_mobilenet(img_size, num_classes):
     inputs = keras.Input(shape=img_size + (3,))
