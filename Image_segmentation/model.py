@@ -128,7 +128,7 @@ def inception_deform_light(img_size, num_classes,channel_input,batch_size):
     x = DCL.DeformableConv2D(batch_size = batch_size,
                             filters = 32,
                             kernel_size = (3,3),
-                            name = 'layer1',
+                            name = 'layer2',
                             kernel_initializer='glorot_uniform',strides=2, padding="same")(x)
       
     outputs = layers.Conv2D(num_classes, 3, activation="softmax", padding="same")(x)
