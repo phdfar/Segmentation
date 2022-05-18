@@ -120,37 +120,37 @@ def inception_deform(img_size, num_classes,channel_input,batch_size):
 
       ### [Second half of the network: upsampling inputs] ###
 
-      for filters in [256, 128, 64, 32]:
-          p+=5
-          x = layers.Activation("relu")(x)
-          x = DCL.DeformableConv2D(batch_size = batch_size,
-                                    filters = filters,
-                                    kernel_size = (3,3),
-                                    name = 'layer'+str(p+1),
-                                    kernel_initializer='glorot_uniform', padding="same")(x)
-          x = layers.BatchNormalization()(x)
+  for filters in [256, 128, 64, 32]:
+    p+=5
+    x = layers.Activation("relu")(x)
+    x = DCL.DeformableConv2D(batch_size = batch_size,
+                              filters = filters,
+                              kernel_size = (3,3),
+                              name = 'layer'+str(p+1),
+                              kernel_initializer='glorot_uniform', padding="same")(x)
+    x = layers.BatchNormalization()(x)
 
-          x = layers.Activation("relu")(x)
-          x = DCL.DeformableConv2D(batch_size = batch_size,
-                                    filters = filters,
-                                    kernel_size = (3,3),
-                                    name = 'layer'+str(p+2),
-                                    kernel_initializer='glorot_uniform', padding="same")(x)
-          x = layers.BatchNormalization()(x)
+    x = layers.Activation("relu")(x)
+    x = DCL.DeformableConv2D(batch_size = batch_size,
+                              filters = filters,
+                              kernel_size = (3,3),
+                              name = 'layer'+str(p+2),
+                              kernel_initializer='glorot_uniform', padding="same")(x)
+    x = layers.BatchNormalization()(x)
 
-          x = layers.UpSampling2D(2)(x)
+    x = layers.UpSampling2D(2)(x)
 
-          # Project residual
-          residual = layers.UpSampling2D(2)(previous_block_activation)
-          #residual = layers.Conv2D(filters, 1, padding="same")(residual)
-          residual = DCL.DeformableConv2D(batch_size = batch_size,
-                                    filters = filters,
-                                    kernel_size = (3,3),
-                                    name = 'layer'+str(p+3),
-                                    kernel_initializer='glorot_uniform', padding="same")(residual)
+    # Project residual
+    residual = layers.UpSampling2D(2)(previous_block_activation)
+    #residual = layers.Conv2D(filters, 1, padding="same")(residual)
+    residual = DCL.DeformableConv2D(batch_size = batch_size,
+                              filters = filters,
+                              kernel_size = (3,3),
+                              name = 'layer'+str(p+3),
+                              kernel_initializer='glorot_uniform', padding="same")(residual)
 
-          x = layers.add([x, residual])  # Add back residual
-          previous_block_activation = x  # Set aside next residual
+    x = layers.add([x, residual])  # Add back residual
+    previous_block_activation = x  # Set aside next residual
 
       # Add a per-pixel classification layer
       outputs = DCL.DeformableConv2D(batch_size = batch_size,
@@ -160,9 +160,9 @@ def inception_deform(img_size, num_classes,channel_input,batch_size):
                                 kernel_initializer='glorot_uniform', padding="same")(x)
 
 
-      # Define the model
-      model = keras.Model(inputs, outputs)
-      return model
+  # Define the model
+  model = keras.Model(inputs, outputs)
+  return model
 
 def inception_mobilenet(img_size, num_classes):
     inputs = keras.Input(shape=img_size + (3,))
