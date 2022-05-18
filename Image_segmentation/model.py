@@ -153,11 +153,11 @@ def inception_deform(img_size, num_classes,channel_input,batch_size):
     previous_block_activation = x  # Set aside next residual
 
       # Add a per-pixel classification layer
-      outputs = DCL.DeformableConv2D(batch_size = batch_size,
-                                filters = num_classes,
-                                kernel_size = (3,3),
-                                name = 'layer'+str(p+4),
-                                kernel_initializer='glorot_uniform', padding="same")(x)
+  outputs = DCL.DeformableConv2D(batch_size = batch_size,
+                            filters = num_classes,
+                            kernel_size = (3,3),
+                            name = 'layer'+str(p+4),
+                            kernel_initializer='glorot_uniform', padding="same")(x)
 
 
   # Define the model
