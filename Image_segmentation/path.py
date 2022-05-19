@@ -112,7 +112,7 @@ class dataloader(keras.utils.Sequence):
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
         
         for j, path in enumerate(batch_input_img_paths):
-            x[j],y[j] = io_config.run(myself,path)
+            x[j],y[j] = io_config.run(self,path)
             
        
         return x, y
