@@ -3,7 +3,7 @@ from tensorflow.keras.preprocessing.image import load_img
 import numpy as np
 import cv2
 
-def run(args,myself,path):
+def run(myself,path):
   frameindex= list(path.keys())[0]
   imagepath = path[frameindex][0]
   seq = path[frameindex][1]
@@ -43,4 +43,14 @@ def run(args,myself,path):
   dim = (myself.img_size[1],myself.img_size[0])
   temp = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
   y= np.expand_dims(temp, 2)
+  
+  """
+    y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
+    for j, path in enumerate(batch_target_img_paths):
+        img = load_img(path, target_size=self.img_size, color_mode="grayscale")
+        y[j] = np.expand_dims(img, 2)
+        # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:
+        y[j] -= 1
+  """
+    
   return x,y
