@@ -24,7 +24,7 @@ def run(myself,path):
     x = np.asarray(img)
 
   elif myself.channel_input==4:
-    opt = load_img(self.basepath+'train_rgo/train/'+imagepath, target_size=myself.img_size)
+    opt = load_img(myself.basepath+'train_rgo/train/'+imagepath, target_size=myself.img_size)
     opt = np.asarray(opt);opt = opt[:,:,2];opt = np.expand_dims(opt, 2)
     x = np.concatenate((np.asarray(img),opt),axis=-1)
 
