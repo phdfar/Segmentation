@@ -2,6 +2,7 @@ import data
 import pickle
 import random
 import cv2
+import io_config
 from tensorflow import keras
 import numpy as np
 from tensorflow.keras.preprocessing.image import load_img
@@ -111,50 +112,7 @@ class dataloader(keras.utils.Sequence):
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
         
         for j, path in enumerate(batch_input_img_paths):
-            frameindex= list(path.keys())[0]
-            imagepath = path[frameindex][0]
-            img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
-            """
-            if self.colorspace=='rgb':
-              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
-            if self.colorspace=='lab':
-              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
-              img = cv2.cvtColor(np.asarray(img),cv2.COLOR_RGB2LAB)
-            if self.colorspace=='hsv':
-              img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
-              img = cv2.cvtColor(np.asarray(img),cv2.COLOR_RGB2HSV)
-            """
-            if self.channel_input==3:
-              x[j] = np.asarray(img)
-              
-            elif self.channel_input==4:
-              opt = load_img(self.basepath+'train_rgo/train/'+imagepath, target_size=self.img_size)
-              opt = np.asarray(opt);opt = opt[:,:,2];opt = np.expand_dims(opt, 2)
-              x[j] = np.concatenate((np.asarray(img),opt),axis=-1)
-
-            seq = path[frameindex][1]
-            flagmulti = path[frameindex][2]
-            if flagmulti==0:
-              if self.task == 'semantic_seg':  
-                mask = seq.load_one_masks_semantic([frameindex],self.dicid)
-              else:
-                mask = seq.load_one_masks([frameindex],self.dicid)
-            else:
-              if self.task == 'semantic_seg':  
-                mask = seq.load_multi_masks_semantic([frameindex],self.dicid)
-              else:
-                mask = seq.load_multi_masks([frameindex]);
-            # resize image
-            dim = (self.img_size[1],self.img_size[0])
-            temp = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
-            y[j] = np.expand_dims(temp, 2)
+            x[j],y[j] = io_config.run(myself,path)
             
-        """
-        y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
-        for j, path in enumerate(batch_target_img_paths):
-            img = load_img(path, target_size=self.img_size, color_mode="grayscale")
-            y[j] = np.expand_dims(img, 2)
-            # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:
-            y[j] -= 1
-        """
+       
         return x, y
