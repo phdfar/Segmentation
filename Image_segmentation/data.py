@@ -185,6 +185,28 @@ class GenericVideoSequence(object):
 
         return masks_t
     
+    def load_multi_masks_instance(self, frame_idxes):
+        if frame_idxes is None:
+            frame_idxes = list(range(len(self.image_paths)))
+
+        masks_t = 0;
+        for t in frame_idxes:
+
+            for instance_id in self.instance_ids:
+                if instance_id in self.segmentations[t]:
+                    #lb = dicid[self.instance_categories[instance_id]]
+                    rle_mask = {
+                        "counts": self.segmentations[t][instance_id].encode('utf-8'),
+                        "size": self.image_dims
+                    }
+                    temp = np.ascontiguousarray(masktools.decode(rle_mask).astype(np.uint8))
+                    temp[temp!=0]=instance_id;
+                    masks_t = masks_t + temp
+                else:
+                    masks_t = masks_t + np.zeros(self.image_dims, np.uint8)
+
+        return masks_t
+    
     
 """
 base_dir='/content/train/'
