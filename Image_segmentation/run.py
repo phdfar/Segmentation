@@ -9,12 +9,37 @@ from keras.callbacks import CSVLogger
 import os
 import tensorflow as tf
 global argss
+import keras.backend as K
 
 
 class CustomCallback(keras.callbacks.Callback):
     def on_epoch_begin(self, epoch, logs=None):
       if argss.upload=='git':
         os.system('. '+argss.basepath+'upload.sh')
+
+def instance_loss(y_true, y_pred):
+  loss1 = K.sparse_categorical_crossentropy(y_true, y_pred)
+  ndf = y_true
+  condition = tf.equal(ndf, 1);
+  case_true=(ndf*0)+5;case_false=ndf
+  ndf1 = tf.where(condition, case_true, case_false)
+
+  condition = tf.equal(ndf1, 2);
+  case_true=(ndf*0)+1;case_false=ndf1
+  ndf2 = tf.where(condition, case_true, case_false)
+
+  condition = tf.equal(ndf2, 5);
+  case_true=(ndf*0)+2;case_false=ndf2
+  ndf3 = tf.where(condition, case_true, case_false)
+
+  loss2 = K.sparse_categorical_crossentropy(ndf3, y_pred)
+  r1 = tf.reduce_mean(loss1)
+  r2 = tf.reduce_mean(loss2)
+
+  if r1>=r2:
+    return loss2
+  else:
+    return loss1
 
 def start(args):
 
@@ -38,8 +63,11 @@ def start(args):
     mymodel=model.network(args)
     mymodel.summary()
 
-    
-    mymodel.compile(optimizer="adam", loss="sparse_categorical_crossentropy")
+    if args.loss=='default':
+        mymodel.compile(optimizer="adam", loss="sparse_categorical_crossentropy")
+    elif args.loss=='instance_loss':
+        mymodel.compile(optimizer="adam", loss=instance_loss)
+
 
     callbacks = [
         keras.callbacks.ModelCheckpoint(args.model_dir, save_best_only=True),CSVLogger(args.model_dir+'_log.csv', append=True, separator=','),CustomCallback()
