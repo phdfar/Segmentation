@@ -37,8 +37,11 @@ def run(myself,path):
   else:
     if myself.task == 'semantic_seg':  
       mask = seq.load_multi_masks_semantic([frameindex],myself.dicid)
-    else:
+    elif myself.task == 'binary_seg':
       mask = seq.load_multi_masks([frameindex]);
+    elif myself.task == 'instance_seg':
+      mask = seq.load_multi_masks_instance([frameindex]);
+      
   # resize image
   dim = (myself.img_size[1],myself.img_size[0])
   temp = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
