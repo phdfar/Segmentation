@@ -44,10 +44,10 @@ def instance_loss(y_true, y_pred):
 def start(args):
 
   dicid={};
-  if args.task=='semantic_seg':
-    i=1;
-    for x in args.classid:
-      dicid.update({x:i});i+=1
+  #if args.task=='semantic_seg':
+  i=1;
+  for x in args.classid:
+    dicid.update({x:i});i+=1
 
   global argss
   argss=args
@@ -80,7 +80,7 @@ def start(args):
   if args.mode=='test':
     test_gen = path.dataloader(args,allframe_test,dicid)    
     mymodel = load_model(args.model_dir)
-    mymodel.evaluate(test_gen);
+    #mymodel.evaluate(test_gen);
     accuracy.start(mymodel,allframe_test,args.model_dir,args,dicid)
 
     

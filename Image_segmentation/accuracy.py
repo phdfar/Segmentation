@@ -1,3 +1,4 @@
+from pandas._libs.lib import dicts_to_array
 from tensorflow.keras.preprocessing.image import load_img
 import pandas as pd
 import data
@@ -9,6 +10,7 @@ import path
 from sklearn import metrics
 from keras import backend as K
 import tensorflow as tf
+import csv
 
 def start(mymodel,allframe_test,name,args,dicid):
     if args.task == 'binary_seg':
@@ -32,13 +34,23 @@ def start_binary(mymodel,allframe_test,name,args,dicid):
     x = 1200;full_result=[];tac=0;tpr=0;tre=0;tfs=0;
     final_list= lambda test_list, x: [test_list[i:i+x] for i in range(0, len(test_list), x)]
     allframe_test_chunk=final_list(allframe_test, x);
+    category_score={};category_score.update({0:[0,0]})
+    for x in args.classid:
+      category_score.update({x:[0,0]})
     for batch_test in allframe_test_chunk:
       test_gen_batch = path.dataloader(args,batch_test,dicid)    
       test_preds_batch = mymodel.predict(test_gen_batch)
       print('check accuracy')
-      tacx,tprx,trex,tfsx,full_result = run_binary(test_preds_batch,batch_test,name,args,full_result)
+      tacx,tprx,trex,tfsx,full_result,category_score = run_binary(test_preds_batch,batch_test,name,args,full_result,category_score,dicid)
       tac+=tacx; tpr+=tprx; tre+=trex; tfs+=tfsx;
-      
+     
+    with open('category_score'+name+'.csv', 'w') as f:
+        for key in category_score.keys():
+            dr = category_score[key][1];
+            if dr==0:
+              dr=1;
+            f.write("%s,%s\n"%(key,category_score[key][0]/dr))
+
     lendata=len(allframe_test)
     tac = tac/lendata
     tpr = tpr/lendata
@@ -56,7 +68,7 @@ def start_binary(mymodel,allframe_test,name,args,dicid):
     df = pd.DataFrame(full_result,columns =['Names','accuracy','precision','recall','FS'])
     df.to_csv('result_'+name+'.csv')
         
-def run_binary(test_preds,allpath,name,args,full_result):
+def run_binary(test_preds,allpath,name,args,full_result,category_score,dicid):
   flag_multi=0;
   if  args.num_instance>1:
         flag_multi=1;
@@ -77,7 +89,7 @@ def run_binary(test_preds,allpath,name,args,full_result):
     else:
       mask = seq.load_multi_masks([frameindex]);
             
-
+    cat = seq.load_class([frameindex],dicid);
     rgb = load_img(args.basepath+'train/'+imagepath, target_size=args.imagesize)
   
     # resize image
@@ -118,8 +130,8 @@ def run_binary(test_preds,allpath,name,args,full_result):
     fn  = np.where(fast_res==-1)
     FN =  len(fn[0])
     result[fn]=((255,255,0)+result[fn])//2
-   
-    
+
+    #result = ((rgb+result)//2)
     """
     for i in range(mask.shape[0]):
       for j in range(mask.shape[1]):
@@ -150,6 +162,12 @@ def run_binary(test_preds,allpath,name,args,full_result):
     except:
       FS=0
 
+    for c in cat:
+      newFS = category_score[c][0] + FS
+      newC = category_score[c][1] + 1
+      category_score.update({c:[newFS,newC]})
+
+
     Taccuracy+=accuracy
     Tprecision+=precision
     Trecall+=recall
@@ -163,6 +181,7 @@ def run_binary(test_preds,allpath,name,args,full_result):
     except:
       pass
     res.save('result/'+filename)
+
   lendata=len(test_preds)
   tac = Taccuracy/lendata
   tpr = Tprecision/lendata
@@ -174,7 +193,7 @@ def run_binary(test_preds,allpath,name,args,full_result):
   print("recall",tre)
   print("FS",tfs)
   print('---------')
-  return Taccuracy,Tprecision,Trecall,TFS,full_result
+  return Taccuracy,Tprecision,Trecall,TFS,full_result,category_score
 
 
   

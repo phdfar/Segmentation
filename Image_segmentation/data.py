@@ -184,7 +184,20 @@ class GenericVideoSequence(object):
                                 
 
         return masks_t
-    
+    def load_class(self, frame_idxes,dicid):
+        if frame_idxes is None:
+            frame_idxes = list(range(len(self.image_paths)))
+        category=[]
+        for t in frame_idxes:
+
+            for instance_id in self.instance_ids:
+                if instance_id in self.segmentations[t]:
+                    lb = dicid[self.instance_categories[instance_id]]
+                else:
+                    lb = 0;
+                category.append(lb)
+
+        return list(set(category))
     def load_multi_masks_instance(self, frame_idxes):
         if frame_idxes is None:
             frame_idxes = list(range(len(self.image_paths)))
