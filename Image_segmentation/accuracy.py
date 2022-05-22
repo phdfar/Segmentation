@@ -77,6 +77,9 @@ def run_binary(test_preds,allpath,name,args,full_result):
     else:
       mask = seq.load_multi_masks([frameindex]);
             
+
+    rgb = load_img(args.basepath+'train/'+imagepath, target_size=args.imagesize)
+  
     # resize image
     dim = (args.imagesize[1],args.imagesize[0])
     gtn = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
@@ -88,7 +91,7 @@ def run_binary(test_preds,allpath,name,args,full_result):
     mask = np.expand_dims(mask, axis=-1)
     mask = mask[:,:,0];
 
-    result = np.zeros((args.imagesize[0],args.imagesize[1],3),'uint8')
+    result = rgb.copy();# np.zeros((args.imagesize[0],args.imagesize[1],3),'uint8')
     temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
     TP=0;FP=0;FN=0;TN=0;
     
@@ -96,7 +99,7 @@ def run_binary(test_preds,allpath,name,args,full_result):
     tpc = np.where(fast_res==0);temp[tpc]=1;
     tp = np.where(temp+mask==2)
     TP = len(tp[0])
-    result[tp]=(0,255,0)
+    result[tp]=((0,255,0)+result[tp])//2
     
     #import matplotlib.pyplot as plt
     #plt.figure()
@@ -110,11 +113,11 @@ def run_binary(test_preds,allpath,name,args,full_result):
 
     fp = np.where(fast_res==1);
     FP = len(fp[0])
-    result[fp]=(255,0,0)
+    result[fp]=((255,0,0)+ result[fp])//2
     
     fn  = np.where(fast_res==-1)
     FN =  len(fn[0])
-    result[fn]=(255,255,0)
+    result[fn]=((255,255,0)+result[fn])//2
    
     
     """
