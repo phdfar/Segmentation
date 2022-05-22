@@ -1,5 +1,7 @@
 from tensorflow.keras import layers
 from tensorflow import keras
+from keras.models import load_model
+
 import DeformableConvLayerKeras as DCL
 
 
@@ -12,6 +14,9 @@ def network(args):
     return inception_mobilenet(args.imagesize,args.num_class)
   if args.network=='mobilenet_s1':
     return mobilenet_s1(args.imagesize,args.num_class)
+  if args.network=='ins_bin_tune':
+    return ins_bin_tune(args.imagesize,args.num_class)
+
 def inception_default(img_size, num_classes,channel_input):
     inputs = keras.Input(shape=img_size + (channel_input,))
 
@@ -298,6 +303,16 @@ def inception_mobilenet(img_size, num_classes):
     # Define the model
     model = keras.Model(inputs, outputs)
     return model
+  
+def ins_bin_tune(args.imagesize,args.num_class):
+  model = load_model('inception_default_2x_binary_c41.h5')
+  layer_name = 'add_6'
+  x = model.get_layer(layer_name).output
+  outputs = layers.Conv2D(num_classes, 3, activation="softmax", padding="same",name='last_conv')(x)
+  model_new= keras.Model(inputs=model.input, outputs=outputs);
+  
+  return model_new
+
 def mobilenet_s1(img_size, num_classes):
   
     inputs = keras.Input(shape=img_size + (3,))
