@@ -90,7 +90,7 @@ def run_binary(test_preds,allpath,name,args,full_result):
     mask = np.argmax(frame, axis=-1)
     mask = np.expand_dims(mask, axis=-1)
     mask = mask[:,:,0];
-
+    rgb = np.asarray(rgb)
     result = rgb.copy();# np.zeros((args.imagesize[0],args.imagesize[1],3),'uint8')
     temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
     TP=0;FP=0;FN=0;TN=0;
