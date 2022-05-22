@@ -304,7 +304,7 @@ def inception_mobilenet(img_size, num_classes):
     model = keras.Model(inputs, outputs)
     return model
   
-def ins_bin_tune(args.imagesize,args.num_class):
+def ins_bin_tune(img_size, num_classes):
   model = load_model('inception_default_2x_binary_c41.h5')
   layer_name = 'add_6'
   x = model.get_layer(layer_name).output
