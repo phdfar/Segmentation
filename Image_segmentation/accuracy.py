@@ -22,13 +22,22 @@ def start_semantic(mymodel,allframe_test,name,args,dicid):
     x = 300;full_result=[];y_pred=[];y_true=[];IOU=[]
     final_list= lambda test_list, x: [test_list[i:i+x] for i in range(0, len(test_list), x)]
     allframe_test_chunk=final_list(allframe_test, x);
+    category_score={};category_score.update({0:[0,0]})
+    for x in args.classid:
+      category_score.update({x:[0,0]})
     for batch_test in allframe_test_chunk:
       test_gen_batch = path.dataloader(args,batch_test,dicid)    
       test_preds_batch = mymodel.predict(test_gen_batch)
       print('check accuracy')
-      IOU = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid,IOU)
+      IOU,category_score = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid,IOU,category_score)
     print('****')
     print(np.mean(IOU))
+    with open('category_score'+name+'.csv', 'w') as f:
+        for key in category_score.keys():
+            dr = category_score[key][1];
+            if dr==0:
+              dr=1;
+            f.write("%s,%s\n"%(key,category_score[key][0]/dr))
 
 def start_binary(mymodel,allframe_test,name,args,dicid):
     x = 1200;full_result=[];tac=0;tpr=0;tre=0;tfs=0;
@@ -198,7 +207,7 @@ def run_binary(test_preds,allpath,name,args,full_result,category_score,dicid):
 
   
   
-def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU):
+def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_score):
   flag_multi=0;
   if args.num_instance>1:
         flag_multi=1;
@@ -228,6 +237,8 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU):
     # resize image
     dim = (args.imagesize[1],args.imagesize[0])
     gtn = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
+    cat = seq.load_class([frameindex],dicid);
+
             
 
     frame=test_preds[ii]
@@ -241,7 +252,13 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU):
     y_true = y_true.ravel().tolist()
     m = tf.keras.metrics.MeanIoU(num_classes=41)
     m.update_state(y_pred, y_true)
-    IOU.append(m.result().numpy())
+    iou=m.result().numpy()
+    IOU.append(iou)
+    for c in cat:
+      newiou = category_score[c][0] + iou
+      newC = category_score[c][1] + 1
+      category_score.update({c:[newFS,newC]})
+    
 
     #import pickle
     #with open('loader.pickle', 'wb') as handle:
@@ -260,4 +277,4 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU):
   #print(metrics.confusion_matrix(y_true, y_pred))
   #print(metrics.classification_report(y_true, y_pred, digits=args.num_class))
 
-  return IOU
+  return IOU,category_score
