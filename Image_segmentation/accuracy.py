@@ -34,8 +34,9 @@ def start_semantic(mymodel,allframe_test,name,args,dicid):
     category_color={};category_color.update({0:(0,0,0)})
     for x in args.classid:
       r = np.random.randint(0,255,1)[0]
+      g = np.random.randint(0,150,1)[0]
       b = np.random.randint(0,255,1)[0]
-      category_color.update({x:(r,0,b)})
+      category_color.update({x:(r,g,b)})
 
     for batch_test in allframe_test_chunk:
       test_gen_batch = path.dataloader(args,batch_test,dicid)    
