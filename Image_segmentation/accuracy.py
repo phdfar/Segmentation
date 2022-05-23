@@ -36,10 +36,10 @@ def start_semantic(mymodel,allframe_test,name,args,dicid):
     print(np.mean(IOU))
     with open('category_score'+name+'.csv', 'w') as f:
         for key in category_score.keys():
-            dr = category_score[key][1];
+            dr = category_score[key][4];
             if dr==0:
               dr=1;
-            f.write("%s,%s\n"%(key,category_score[key][0]/dr))
+            f.write("%s,%s,%s,%s,%s\n"%(key,category_score[key][0]/dr,category_score[key][1]/dr,category_score[key][2]/dr,category_score[key][3]/dr))
             
     lendata=len(allframe_test)
     tac = tac/lendata
