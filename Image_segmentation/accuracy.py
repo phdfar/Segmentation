@@ -20,7 +20,7 @@ def start(mymodel,allframe_test,name,args,dicid):
         start_semantic(mymodel,allframe_test,name,args,dicid)
         
 def start_semantic(mymodel,allframe_test,name,args,dicid):
-    x = 300;full_result=[];y_pred=[];y_true=[];IOU=[];tac=0;tpr=0;tre=0;tfs=0;
+    x = 75;full_result=[];y_pred=[];y_true=[];IOU=[];tac=0;tpr=0;tre=0;tfs=0;
     final_list= lambda test_list, x: [test_list[i:i+x] for i in range(0, len(test_list), x)]
     allframe_test_chunk=final_list(allframe_test, x);
     category_score={};category_score.update({0:[0,0,0,0,0]})
@@ -43,7 +43,7 @@ def start_semantic(mymodel,allframe_test,name,args,dicid):
       print('check accuracy')
       IOU,category_score,tacx,tprx,trex,tfsx = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid,IOU,category_score,category_label,category_color)
       tac+=tacx; tpr+=tprx; tre+=trex; tfs+=tfsx;
-        
+      break
     print('****')
     print(np.mean(IOU))
     with open('category_score'+name+'.csv', 'w') as f:
@@ -320,14 +320,22 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
     
     fps = np.where(fast_res!=0);temp[fps]=1;
-    miss_mask =temp*mask; miss_label = list(set(miss_mask))
+    #import pickle
+    #with open('loader.pickle', 'wb') as handle:
+      #pickle.dump([temp,mask], handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    miss_mask =temp*mask; miss_label = list(set(miss_mask.ravel().tolist()))
     
     font = cv2.FONT_HERSHEY_SIMPLEX;al=2;
+    result[args.imagesize[0]-40:args.imagesize[0],:]=(255,255,255)
     for miss in miss_label:
         if miss!=0:
             color = category_color[miss]
             text = category_label[miss]
-            cv2.putText(result, text, (al,result.shape[0]), font, 1, color, 2, cv2.LINE_AA);al+=30;
+            #print(color)
+            #print(text)
+            color = ( int (color [ 0 ]), int (color [ 1 ]), int (color [ 2 ])) 
+            cv2.putText(result, text, (al,result.shape[0]-20), font, 1, color, 1, cv2.LINE_AA);al+=150;
             fp = np.where(miss_mask==miss);
             result[fp]=(color+ result[fp])//2
             
@@ -346,7 +354,7 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
   tre = Trecall/lendata
   tfs = TFS/lendata
   print('---------')
-  print("IOU",mean(IOU))
+  print("IOU",np.mean(IOU))
   print("accuracy",tac)
   print("precision",tpr)
   print("recall",tre)
