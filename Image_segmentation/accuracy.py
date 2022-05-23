@@ -302,7 +302,8 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     recall = TP / len(Pgtn[0])
     FS = (2*recall*precision)/(precision+recall)
     accuracy = len(tpc[0])/(li)
-    
+    true_mask =temp*mask; true_label = list(set(true_mask.ravel().tolist()))
+
     for c in cat:
         newiou = category_score[c][0] + iou
         newre = category_score[c][1] + recall
@@ -327,12 +328,8 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
       #pickle.dump([temp,mask], handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     miss_mask =temp*mask; miss_label = list(set(miss_mask.ravel().tolist()))
-    
     font = cv2.FONT_HERSHEY_SIMPLEX;al=2;
-    #result[args.imagesize[0]-40:args.imagesize[0],:]=(255,255,255)
-    footer = np.zeros((40,args.imagesize[1],3),'uint8')+255;
-    print(footer.shape)
-    print(result.shape)
+    footer2 = np.zeros((40,args.imagesize[1],3),'uint8')+255;
     for miss in miss_label:
         if miss!=0:
             color = category_color[miss]
@@ -340,8 +337,17 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
             fp = np.where(miss_mask==miss);
             result[fp]=(color+ result[fp])//2
             text = category_label[miss] + ' ' + str((len(fp[0])*100)/li)[:4]+'%'
-            cv2.putText(footer, text, (al,footer.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=120;
-    result = np.concatenate((result,footer),axis=0);    
+            cv2.putText(footer2, text, (al,footer2.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=120;
+    footer1 = np.zeros((40,args.imagesize[1],3),'uint8')+200;al=2;
+    for true in true_label:
+        if true!=0:
+          color = category_color[true]
+          color = ( int (color [ 0 ]), int (color [ 1 ]), int (color [ 2 ])) 
+          tp = np.where(true_mask==true);
+          text = category_label[true] + ' ' + str((len(tp[0])*100)/li)[:4]+'%'
+          cv2.putText(footer1, text, (al,footer2.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=120;
+    
+    result = np.concatenate((result,footer1,footer2),axis=0);    
     res = keras.preprocessing.image.array_to_img(result)
     filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
     try:
