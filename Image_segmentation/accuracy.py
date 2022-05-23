@@ -44,10 +44,10 @@ def start_semantic(mymodel,allframe_test,name,args,dicid):
       print('check accuracy')
       IOU,category_score,tacx,tprx,trex,tfsx = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid,IOU,category_score,category_label,category_color)
       tac+=tacx; tpr+=tprx; tre+=trex; tfs+=tfsx;
-      break
     print('****')
     print(np.mean(IOU))
     with open('category_score'+name+'.csv', 'w') as f:
+        f.write("%s,%s,%s,%s,%s\n"%('Class','IOU','Recall','Precision','FS'))
         for key in category_score.keys():
             dr = category_score[key][4];
             if dr==0:
@@ -319,7 +319,11 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
             else:
                 precision=0;
             Spr+=precision
-            FS = (2*recall*precision)/(precision+recall);Sfs+=FS
+            try:
+              FS = (2*recall*precision)/(precision+recall);Sfs+=FS
+            except:
+              FS = 0
+
             
             newiou = category_score[cls][0] + iou
             newre = category_score[cls][1] + recall
