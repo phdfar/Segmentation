@@ -343,9 +343,9 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
         if true!=0:
           color = category_color[true]
           color = ( int (color [ 0 ]), int (color [ 1 ]), int (color [ 2 ])) 
-          tp = np.where(true_mask==true);
-          text = category_label[true] + ' ' + str((len(tp[0])*100)/li)[:4]+'%'
-          cv2.putText(footer1, text, (al,footer2.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=120;
+          tp = np.where(true_mask==true); gtp = np.where(gtn==true)
+          text = category_label[true] + ' ' + str((len(tp[0])*100)/li)[:4]+'% | ' + str((len(gtp[0])*100)/li)[:4]+'% ' 
+          cv2.putText(footer1, text, (al,footer2.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=160;
     
     result = np.concatenate((result,footer1,footer2),axis=0);    
     res = keras.preprocessing.image.array_to_img(result)
