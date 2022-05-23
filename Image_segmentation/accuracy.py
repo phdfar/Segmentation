@@ -234,7 +234,7 @@ def run_binary(test_preds,allpath,name,args,full_result,category_score,dicid):
 
   
   
-def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_score):
+def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_score,category_label,category_color):
   flag_multi=0;
   if args.num_instance>1:
         flag_multi=1;
@@ -319,13 +319,17 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     TN = len(tn[0])
     temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
     
-    fp = np.where(fast_res==1);
-    FP = len(fp[0])
-    result[fp]=((255,0,0)+ result[fp])//2
+    fps = np.where(fast_res!=0);temp[fps]=1;
+    miss_mask =temp*mask; miss_label = list(set(miss_mask))
     
-    fn  = np.where(fast_res==-1)
-    FN =  len(fn[0])
-    result[fn]=((255,255,0)+result[fn])//2
+    font = cv2.FONT_HERSHEY_SIMPLEX;al=2;
+    for miss in miss_label:
+        if miss!=0:
+            color = category_color[miss]
+            text = category_label[miss]
+            cv2.putText(result, text, (al,result.shape[0]), font, 1, color, 2, cv2.LINE_AA);al+=30;
+            fp = np.where(miss_mask==miss);
+            result[fp]=(color+ result[fp])//2
     
   lendata=len(test_preds)
   tac = Taccuracy/lendata
