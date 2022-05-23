@@ -244,6 +244,7 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
   Tprecision=0
   Trecall=0
   TFS=0;
+  li = args.imagesize[0]*args.imagesize[1]
   for ii in range(len(test_preds)):
     path = allpath[ii]
     frameindex= list(path.keys())[0]
@@ -300,7 +301,7 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     precision = TP / len(Pmask[0])
     recall = TP / len(Pgtn[0])
     FS = (2*recall*precision)/(precision+recall)
-    accuracy = len(tpc[0])/(args.imagesize[0]*args.imagesize[1])
+    accuracy = len(tpc[0])/(li)
     
     for c in cat:
         newiou = category_score[c][0] + iou
@@ -332,13 +333,11 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     for miss in miss_label:
         if miss!=0:
             color = category_color[miss]
-            text = category_label[miss]
-            #print(color)
-            #print(text)
             color = ( int (color [ 0 ]), int (color [ 1 ]), int (color [ 2 ])) 
-            cv2.putText(result, text, (al,result.shape[0]-20), font, 1, color, 1, cv2.LINE_AA);al+=150;
             fp = np.where(miss_mask==miss);
             result[fp]=(color+ result[fp])//2
+            text = category_label[miss] + ' ' + str((len(fp[0])*100)/li)[:4]
+            cv2.putText(result, text, (al,result.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=110;
             
     res = keras.preprocessing.image.array_to_img(result)
     filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
