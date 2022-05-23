@@ -293,41 +293,47 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     fast_res=mask-gtn
     tpc = np.where(fast_res==0);temp[tpc]=1;
     tp = np.where(temp+mask>=2)
-    TP = len(tp[0])
+
     result[tp]=((0,255,0)+result[tp])//2
-    Pmask = np.where(mask>0);
-    Pgtn = np.where(gtn>0);
+ 
     
-    precision = TP / len(Pmask[0])
-    recall = TP / len(Pgtn[0])
-    FS = (2*recall*precision)/(precision+recall)
     accuracy = len(tpc[0])/(li)
     true_mask =temp*mask; true_label = list(set(true_mask.ravel().tolist()))
 
-    for c in cat:
-        newiou = category_score[c][0] + iou
-        newre = category_score[c][1] + recall
-        newpr = category_score[c][2] + precision
-        newfs = category_score[c][3] + FS
-        newC = category_score[c][4] + 1
-        category_score.update({c:[newiou,newre,newpr,newfs,newC]})
+    temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')    
+    fps = np.where(fast_res!=0);temp[fps]=1;
+    miss_mask =temp*mask; miss_label = list(set(miss_mask.ravel().tolist()))
+    
+    #catx = list(set(gtn.ravel().tolist()))
+    Sre=0;Spr=0;Sfs=0;
+    for cls in cat:
+        if cls!=0:
+            #fp = np.where(miss_mask==cls);
+            tp = np.where(true_mask==cls);
+            gtp = np.where(gtn==cls);
+            msp = np.where(mask==cls);
+            
+            recall = len(tp[0]) / len(gtp[0]);Sre+=recall
+            if len(msp[0])!=0:
+                precision = len(tp[0]) / len(msp[0]);
+            else:
+                precision=0;
+            Spr+=precision
+            FS = (2*recall*precision)/(precision+recall);Sfs+=FS
+            
+            newiou = category_score[cls][0] + iou
+            newre = category_score[cls][1] + recall
+            newpr = category_score[cls][2] + precision
+            newfs = category_score[cls][3] + FS
+            newC = category_score[cls][4] + 1
+            category_score.update({cls:[newiou,newre,newpr,newfs,newC]})
     
     Taccuracy+=accuracy
-    Tprecision+=precision
-    Trecall+=recall
-    TFS+=FS
+    Tprecision+=(Spr/len(cat))
+    Trecall+=(Sre/len(cat))
+    TFS+=(Sfs/len(cat))
     
-    
-    tn = np.where(temp+mask==1)
-    TN = len(tn[0])
-    temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
-    
-    fps = np.where(fast_res!=0);temp[fps]=1;
-    #import pickle
-    #with open('loader.pickle', 'wb') as handle:
-      #pickle.dump([temp,mask], handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    miss_mask =temp*mask; miss_label = list(set(miss_mask.ravel().tolist()))
+ 
     font = cv2.FONT_HERSHEY_SIMPLEX;al=2;
     footer2 = np.zeros((40,args.imagesize[1],3),'uint8')+255;
     for miss in miss_label:
