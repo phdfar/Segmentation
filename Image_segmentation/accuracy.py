@@ -11,6 +11,7 @@ from sklearn import metrics
 from keras import backend as K
 import tensorflow as tf
 import csv
+import json
 
 def start(mymodel,allframe_test,name,args,dicid):
     if args.task == 'binary_seg':
@@ -25,11 +26,22 @@ def start_semantic(mymodel,allframe_test,name,args,dicid):
     category_score={};category_score.update({0:[0,0,0,0,0]})
     for x in args.classid:
       category_score.update({x:[0,0,0,0,0]})
+    
+    with open(args.basepath +'youtube_vis_train.json', 'r') as fh:
+        dataset = json.load(fh)
+    meta_info = dataset["meta"]
+    category_label = {int(k): v for k, v in meta_info["category_labels"].items()}
+    category_color={};category_color.update({0:(0,0,0)})
+    for x in args.classid:
+      r = np.random.randint(0,255,1)[0]
+      b = np.random.randint(0,255,1)[0]
+      category_color.update({x:(r,0,b)})
+
     for batch_test in allframe_test_chunk:
       test_gen_batch = path.dataloader(args,batch_test,dicid)    
       test_preds_batch = mymodel.predict(test_gen_batch)
       print('check accuracy')
-      IOU,category_score,tacx,tprx,trex,tfsx = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid,IOU,category_score)
+      IOU,category_score,tacx,tprx,trex,tfsx = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid,IOU,category_score,category_label,category_color)
       tac+=tacx; tpr+=tprx; tre+=trex; tfs+=tfsx;
         
     print('****')
