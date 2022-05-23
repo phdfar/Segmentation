@@ -19,17 +19,19 @@ def start(mymodel,allframe_test,name,args,dicid):
         start_semantic(mymodel,allframe_test,name,args,dicid)
         
 def start_semantic(mymodel,allframe_test,name,args,dicid):
-    x = 300;full_result=[];y_pred=[];y_true=[];IOU=[]
+    x = 300;full_result=[];y_pred=[];y_true=[];IOU=[];tac=0;tpr=0;tre=0;tfs=0;
     final_list= lambda test_list, x: [test_list[i:i+x] for i in range(0, len(test_list), x)]
     allframe_test_chunk=final_list(allframe_test, x);
-    category_score={};category_score.update({0:[0,0]})
+    category_score={};category_score.update({0:[0,0,0,0,0]})
     for x in args.classid:
-      category_score.update({x:[0,0]})
+      category_score.update({x:[0,0,0,0,0]})
     for batch_test in allframe_test_chunk:
       test_gen_batch = path.dataloader(args,batch_test,dicid)    
       test_preds_batch = mymodel.predict(test_gen_batch)
       print('check accuracy')
-      IOU,category_score = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid,IOU,category_score)
+      IOU,category_score,tacx,tprx,trex,tfsx = run_semantic(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid,IOU,category_score)
+      tac+=tacx; tpr+=tprx; tre+=trex; tfs+=tfsx;
+        
     print('****')
     print(np.mean(IOU))
     with open('category_score'+name+'.csv', 'w') as f:
@@ -38,6 +40,19 @@ def start_semantic(mymodel,allframe_test,name,args,dicid):
             if dr==0:
               dr=1;
             f.write("%s,%s\n"%(key,category_score[key][0]/dr))
+            
+    lendata=len(allframe_test)
+    tac = tac/lendata
+    tpr = tpr/lendata
+    tre = tre/lendata
+    tfs = tfs/lendata
+    print('*********')
+    print("accuracy",tac)
+    print("precision",tpr)
+    print("recall",tre)
+    print("FS",tfs)
+    print('*********')
+    
 
 def start_binary(mymodel,allframe_test,name,args,dicid):
     x = 1200;full_result=[];tac=0;tpr=0;tre=0;tfs=0;
@@ -259,7 +274,37 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
       newC = category_score[c][1] + 1
       category_score.update({c:[newFS,newC]})
     
-
+    rgb = load_img(args.basepath+'train/'+imagepath, target_size=args.imagesize)
+    rgb = np.asarray(rgb)
+    result = rgb.copy();# np.zeros((args.imagesize[0],args.imagesize[1],3),'uint8')
+    temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
+    
+    fast_res=mask-gtn
+    tpc = np.where(fast_res==0);temp[tpc]=1;
+    tp = np.where(temp+mask>=2)
+    TP = len(tp[0])
+    result[tp]=((0,255,0)+result[tp])//2
+    Pmask = np.where(mask>0);
+    Pgtn = np.where(gtn>0);
+    
+    precision = TP / len(Pmask[0])
+    recall = TP / len(Pgtn[0])
+    FS = (2*recall*precision)/(precision+recall)
+    
+    
+    tn = np.where(temp+mask==1)
+    TN = len(tn[0])
+    temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
+    
+    fp = np.where(fast_res==1);
+    FP = len(fp[0])
+    result[fp]=((255,0,0)+ result[fp])//2
+    
+    fn  = np.where(fast_res==-1)
+    FN =  len(fn[0])
+    result[fn]=((255,255,0)+result[fn])//2
+    
+    
     #import pickle
     #with open('loader.pickle', 'wb') as handle:
       #pickle.dump([y_true,y_pred], handle, protocol=pickle.HIGHEST_PROTOCOL)
