@@ -269,10 +269,7 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     m.update_state(y_pred, y_true)
     iou=m.result().numpy()
     IOU.append(iou)
-    for c in cat:
-      newiou = category_score[c][0] + iou
-      newC = category_score[c][1] + 1
-      category_score.update({c:[newFS,newC]})
+
     
     rgb = load_img(args.basepath+'train/'+imagepath, target_size=args.imagesize)
     rgb = np.asarray(rgb)
@@ -291,6 +288,15 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     recall = TP / len(Pgtn[0])
     FS = (2*recall*precision)/(precision+recall)
     accuracy = len(tpc[0])/(args.imagesize[0]*args.imagesize[1])
+    
+    for c in cat:
+        newiou = category_score[c][0] + iou
+        newre = category_score[c][1] + recall
+        newpr = category_score[c][2] + precision
+        newfs = category_score[c][3] + FS
+        newC = category_score[c][4] + 1
+        category_score.update({c:[newiou,newre,newpr,newfs,newC]})
+    
     Taccuracy+=accuracy
     Tprecision+=precision
     Trecall+=recall
