@@ -290,6 +290,11 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     precision = TP / len(Pmask[0])
     recall = TP / len(Pgtn[0])
     FS = (2*recall*precision)/(precision+recall)
+    accuracy = len(tpc[0])/(args.imagesize[0]*args.imagesize[1])
+    Taccuracy+=accuracy
+    Tprecision+=precision
+    Trecall+=recall
+    TFS+=FS
     
     
     tn = np.where(temp+mask==1)
@@ -304,22 +309,35 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     FN =  len(fn[0])
     result[fn]=((255,255,0)+result[fn])//2
     
-    
+  lendata=len(test_preds)
+  tac = Taccuracy/lendata
+  tpr = Tprecision/lendata
+  tre = Trecall/lendata
+  tfs = TFS/lendata
+  print('---------')
+  print("IOU",mean(IOU))
+  print("accuracy",tac)
+  print("precision",tpr)
+  print("recall",tre)
+  print("FS",tfs)
+  print('---------')
+  """
     #import pickle
     #with open('loader.pickle', 'wb') as handle:
       #pickle.dump([y_true,y_pred], handle, protocol=pickle.HIGHEST_PROTOCOL)
-    """
+    
     y_true_f = K.flatten(K.one_hot(K.cast(y_true,tf.int32), num_classes=40)[...,1:])
     y_pred_f = K.flatten(K.one_hot(K.cast(y_pred,tf.int32), num_classes=40)[...,1:])
     intersect = K.sum(y_true_f.numpy()* y_pred_f.numpy(), axis=-1)
     denom = K.sum(y_true_f.numpy() + y_pred_f.numpy(), axis=-1)
 
     IOU.append(K.mean((2. * intersect / (denom + smooth))).numpy());
-    """
+    
     #y_pred += mask.ravel().tolist()
     #y_true += gtn.ravel().tolist()
     
   #print(metrics.confusion_matrix(y_true, y_pred))
   #print(metrics.classification_report(y_true, y_pred, digits=args.num_class))
+  """
 
-  return IOU,category_score
+  return IOU,category_score,Taccuracy,Tprecision,Trecall,TFS
