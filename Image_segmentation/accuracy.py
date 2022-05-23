@@ -330,6 +330,15 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
             cv2.putText(result, text, (al,result.shape[0]), font, 1, color, 2, cv2.LINE_AA);al+=30;
             fp = np.where(miss_mask==miss);
             result[fp]=(color+ result[fp])//2
+            
+    res = keras.preprocessing.image.array_to_img(result)
+    filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
+    try:
+      os.mkdir('result')
+    except:
+      pass
+    res.save('result/'+filename)
+    
     
   lendata=len(test_preds)
   tac = Taccuracy/lendata
