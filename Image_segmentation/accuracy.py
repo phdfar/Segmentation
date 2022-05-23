@@ -329,16 +329,19 @@ def run_semantic(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     miss_mask =temp*mask; miss_label = list(set(miss_mask.ravel().tolist()))
     
     font = cv2.FONT_HERSHEY_SIMPLEX;al=2;
-    result[args.imagesize[0]-40:args.imagesize[0],:]=(255,255,255)
+    #result[args.imagesize[0]-40:args.imagesize[0],:]=(255,255,255)
+    footer = np.zeros((40,args.imagesize[1],3),'uint8')+255;
+    print(footer.shape)
+    print(result.shape)
     for miss in miss_label:
         if miss!=0:
             color = category_color[miss]
             color = ( int (color [ 0 ]), int (color [ 1 ]), int (color [ 2 ])) 
             fp = np.where(miss_mask==miss);
             result[fp]=(color+ result[fp])//2
-            text = category_label[miss] + ' ' + str((len(fp[0])*100)/li)[:4]
-            cv2.putText(result, text, (al,result.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=110;
-            
+            text = category_label[miss] + ' ' + str((len(fp[0])*100)/li)[:4]+'%'
+            cv2.putText(footer, text, (al,footer.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=120;
+    result = np.concatenate((result,footer),axis=0);    
     res = keras.preprocessing.image.array_to_img(result)
     filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
     try:
