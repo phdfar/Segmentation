@@ -489,6 +489,10 @@ def run_instance(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     result1 = rgb.copy();# np.zeros((args.imagesize[0],args.imagesize[1],3),'uint8')
     result2 = rgb.copy();
     
+    footer1 = np.zeros((40,args.imagesize[1],3),'uint8')+255;al=2;
+    font = cv2.FONT_HERSHEY_SIMPLEX;
+    cv2.putText(footer1, str(len(cat)-1), (al,footer1.shape[0]-20), font, 0.4, (255,0,0), 1, cv2.LINE_AA);al+=120;
+
     for cls in cat:
         if cls!=0:
             #temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
@@ -496,6 +500,13 @@ def run_instance(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
             color = category_color[cls]
             color = ( int (color [ 0 ]), int (color [ 1 ]), int (color [ 2 ]))             
             result1[gtp]=(color+ result1[gtp])//2
+            text = str((len(gtp[0])*100)/li)[:4]+'%' 
+            cv2.putText(footer1, text, (al,footer1.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=120;
+            
+    footer2 = np.zeros((40,args.imagesize[1],3),'uint8')+255;al=2;
+    font = cv2.FONT_HERSHEY_SIMPLEX;
+    cv2.putText(footer1, str(len(cat_mask)-1), (al,footer2.shape[0]-20), font, 0.4, (255,0,0), 1, cv2.LINE_AA);al+=120;
+    
     for cls in cat_mask:
         if cls!=0:
             #temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
@@ -503,8 +514,14 @@ def run_instance(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
             color = category_color[cls]
             color = ( int (color [ 0 ]), int (color [ 1 ]), int (color [ 2 ]))             
             result2[msp]=(color+ result2[msp])//2        
+            text = str((len(msp[0])*100)/li)[:4]+'%' 
+            cv2.putText(footer2, text, (al,footer2.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=120;
             
-            
+
+
+    result1 = np.concatenate((result1,footer1),axis=0); 
+    result2 = np.concatenate((result2,footer2),axis=0); 
+
     result = np.concatenate((result1,result2),axis=1);    
     res = keras.preprocessing.image.array_to_img(result)
     filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
@@ -610,6 +627,6 @@ def run_instance(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
   print("precision",tpr)
   print("recall",tre)
   print("FS",tfs)
-  print('---------') 
+  print('---------')
   """
   return IOU,category_score,Taccuracy,Tprecision,Trecall,TFS
