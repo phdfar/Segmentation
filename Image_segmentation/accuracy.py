@@ -92,6 +92,7 @@ def start_instance(mymodel,allframe_test,name,args,dicid):
       print('check accuracy')
       IOU,category_score,tacx,tprx,trex,tfsx = run_instance(test_preds_batch,batch_test,name,args,y_pred,y_true,dicid,IOU,category_score,category_label,category_color)
       tac+=tacx; tpr+=tprx; tre+=trex; tfs+=tfsx;
+      
     print('****')
     print(np.mean(IOU))
     with open('category_score'+name+'.csv', 'w') as f:
@@ -489,9 +490,9 @@ def run_instance(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
     result1 = rgb.copy();# np.zeros((args.imagesize[0],args.imagesize[1],3),'uint8')
     result2 = rgb.copy();
     
-    footer1 = np.zeros((40,args.imagesize[1],3),'uint8')+255;al=2;
+    footer1 = np.zeros((40,args.imagesize[1],3),'uint8');al=2;
     font = cv2.FONT_HERSHEY_SIMPLEX;
-    cv2.putText(footer1, str(len(cat)-1), (al,footer1.shape[0]-20), font, 0.4, (255,0,0), 1, cv2.LINE_AA);al+=120;
+    cv2.putText(footer1, str(len(cat)-1), (al,footer1.shape[0]-20), font, 0.7, (255,0,0), 2, cv2.LINE_AA);al+=60;
 
     for cls in cat:
         if cls!=0:
@@ -501,11 +502,11 @@ def run_instance(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
             color = ( int (color [ 0 ]), int (color [ 1 ]), int (color [ 2 ]))             
             result1[gtp]=(color+ result1[gtp])//2
             text = str((len(gtp[0])*100)/li)[:4]+'%' 
-            cv2.putText(footer1, text, (al,footer1.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=120;
+            cv2.putText(footer1, text, (al,footer1.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=60;
             
-    footer2 = np.zeros((40,args.imagesize[1],3),'uint8')+255;al=2;
+    footer2 = np.zeros((40,args.imagesize[1],3),'uint8');al=2;
     font = cv2.FONT_HERSHEY_SIMPLEX;
-    cv2.putText(footer1, str(len(cat_mask)-1), (al,footer2.shape[0]-20), font, 0.4, (255,0,0), 1, cv2.LINE_AA);al+=120;
+    cv2.putText(footer2, str(len(cat_mask)-1), (al,footer2.shape[0]-20), font, 0.7, (255,0,0), 2, cv2.LINE_AA);al+=60;
     
     for cls in cat_mask:
         if cls!=0:
@@ -515,7 +516,7 @@ def run_instance(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
             color = ( int (color [ 0 ]), int (color [ 1 ]), int (color [ 2 ]))             
             result2[msp]=(color+ result2[msp])//2        
             text = str((len(msp[0])*100)/li)[:4]+'%' 
-            cv2.putText(footer2, text, (al,footer2.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=120;
+            cv2.putText(footer2, text, (al,footer2.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=60;
             
 
 
