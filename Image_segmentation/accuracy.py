@@ -610,6 +610,6 @@ def run_instance(test_preds,allpath,name,args,y_pred,y_true,dicid,IOU,category_s
   print("precision",tpr)
   print("recall",tre)
   print("FS",tfs)
-  print('---------')
+  print('---------') 
   """
   return IOU,category_score,Taccuracy,Tprecision,Trecall,TFS
