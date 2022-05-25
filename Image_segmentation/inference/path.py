@@ -2,7 +2,6 @@ import data
 import pickle
 import random
 import cv2
-import io_config
 from tensorflow import keras
 import numpy as np
 from tensorflow.keras.preprocessing.image import load_img

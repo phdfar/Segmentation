@@ -29,9 +29,10 @@ def start(mymodel,seqs,name,args):
     run_semantic(args,mymodel,seqs,category_label,category_color)
 
 
-def draw(mask,rgb,cat_mask,size,category_color,category_label,args,imagepath):
+def draw(mask,img,cat_mask,size,category_color,category_label,args,imagepath):
     font = cv2.FONT_HERSHEY_SIMPLEX;
     footer1 = np.zeros((40,args.imagesize[1],3),'uint8')+200;al=2;
+    rgb = img.copy()
     for lb in cat_mask:
         if lb!=0:
             color = category_color[lb]
@@ -54,7 +55,7 @@ def run_semantic(args,mymodel,seqs,category_label,category_color):
         pass
     size = args.imagesize[1]*args.imagesize[0]
     for seq in seqs:
-        seq_path = seq['image_paths']
+        seq_path = seq.image_paths
         inputs=[];imagepath=[]
         for frame in seq_path:
             rgb = load_img(args.basepath+'valid/'+frame, target_size=args.imagesize)

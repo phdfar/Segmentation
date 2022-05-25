@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('--basepath', type=str , default='/content/', required=False)
     parser.add_argument('--imagesize', type=tuple_type, required=True)
     parser.add_argument('--colorspace', type=str ,default='rgb', required=False)
-    parser.add_argument('--classid', type=tuple_type, default=(1000) , required=False)
+    parser.add_argument('--classid', type=list, default=[1000] , required=False)
 
 
     args = parser.parse_args()
