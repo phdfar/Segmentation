@@ -94,12 +94,14 @@ class dataloader(keras.utils.Sequence):
     def __init__(self, args,input_img_paths,dicid):
         self.batch_size = args.batchsize
         self.img_size = args.imagesize
+        self.input_imagesize = args.input_imagesize
         self.input_img_paths = input_img_paths
         self.basepath = args.basepath
         self.task = args.task
         self.dicid = dicid
         self.channel_input  = args.channel_input
         self.colorspace = args.colorspace
+        self.model = args.model
 
     def __len__(self):
         return len(self.input_img_paths) // self.batch_size
@@ -108,7 +110,7 @@ class dataloader(keras.utils.Sequence):
         """Returns tuple (input, target) correspond to batch #idx."""
         i = idx * self.batch_size
         batch_input_img_paths = self.input_img_paths[i : i + self.batch_size]
-        x = np.zeros((self.batch_size,) + self.img_size + (self.channel_input,), dtype="float32")
+        x = np.zeros((self.batch_size,) + self.input_imagesize + (self.channel_input,), dtype="float32")
         y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
         
         for j, path in enumerate(batch_input_img_paths):

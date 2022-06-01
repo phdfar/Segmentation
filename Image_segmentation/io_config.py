@@ -1,15 +1,19 @@
-import data
 from tensorflow.keras.preprocessing.image import load_img
 import numpy as np
 import cv2
-
+import models
 def run(myself,path):
   frameindex= list(path.keys())[0]
   imagepath = path[frameindex][0]
   seq = path[frameindex][1]
-  flagmulti = path[frameindex][2]  
-  
-  img = load_img(myself.basepath+'train/'+imagepath, target_size=myself.img_size)
+  flagmulti = path[frameindex][2]
+
+  if myself.model=='spectral':
+      img = models.Spectral.extract.extract_features(myself.basepath+'train/'+imagepath)
+      
+  else:
+      img = load_img(myself.basepath+'train/'+imagepath, target_size=myself.img_size)
+
   """
   if self.colorspace=='rgb':
     img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
@@ -30,23 +34,23 @@ def run(myself,path):
 
 
   if flagmulti==0:
-    if myself.task == 'semantic_seg':  
+    if myself.task == 'semantic_seg':
       mask = seq.load_one_masks_semantic([frameindex],myself.dicid)
     else:
       mask = seq.load_one_masks([frameindex],myself.dicid)
   else:
-    if myself.task == 'semantic_seg':  
+    if myself.task == 'semantic_seg':
       mask = seq.load_multi_masks_semantic([frameindex],myself.dicid)
     elif myself.task == 'binary_seg':
       mask = seq.load_multi_masks([frameindex]);
     elif myself.task == 'instance_seg':
       mask = seq.load_multi_masks_instance([frameindex]);
-      
+
   # resize image
   dim = (myself.img_size[1],myself.img_size[0])
   temp = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
   y= np.expand_dims(temp, 2)
-  
+
   """
     y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
     for j, path in enumerate(batch_target_img_paths):
@@ -55,5 +59,5 @@ def run(myself,path):
         # Ground truth labels are 1, 2, 3. Subtract one to make them 0, 1, 2:
         y[j] -= 1
   """
-    
+
   return x,y
