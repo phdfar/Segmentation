@@ -134,8 +134,9 @@ def extract_features(
           accelerator.wait_for_everyone()
           #import pickle
       print('################### extract feature ###################')
+      print('ITER ' + str(qq))
       print('################### extract eig ###################')
-      os.system('python extract.py extract_eigs --images_root "data/VOC2012/images" --features_dir "data/VOC2012/features/dino_vits16" --which_matrix "laplacian" --output_dir "data/VOC2012/eigs/laplacian" --K 5')
+      os.system('python extract3.py extract_eigs --images_root "data/VOC2012/images" --features_dir "data/VOC2012/features/dino_vits16" --which_matrix "laplacian" --output_dir "data/VOC2012/eigs/laplacian" --K 5')
       os.system('rm -rf data/VOC2012/features/dino_vits16/*')
       print('################### extract eig ###################')
       print('ITER ' + str(qq))
