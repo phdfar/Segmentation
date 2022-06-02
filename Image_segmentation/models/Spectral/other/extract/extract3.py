@@ -70,7 +70,7 @@ def extract_features(
         raise ValueError(model_name)
 
     # Dataset
-    filenamesx = Path(images_list).read_text().splitlines();x=100
+    filenamesx = Path(images_list).read_text().splitlines();x=1000
     final_list = lambda filenamesx, x: [filenamesx[i:i+x] for i in range(0, len(filenamesx), x)]
     allframe_test_chunk=final_list(filenamesx, x);
     qq=0;
@@ -139,8 +139,7 @@ def extract_features(
       os.system('python extract3.py extract_eigs --images_root "data/VOC2012/images" --features_dir "data/VOC2012/features/dino_vits16" --which_matrix "laplacian" --output_dir "data/VOC2012/eigs/laplacian" --K 5')
       os.system('rm -rf data/VOC2012/features/dino_vits16/*')
       print('################### extract eig ###################')
-      print('ITER ' + str(qq))
-      break;        
+      print('ITER ' + str(qq))    
 
     os.system('rm -rf data/VOC2012/images')
     os.system('tar czf eig.tar.gz data/VOC2012/eigs')
