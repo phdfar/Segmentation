@@ -70,7 +70,7 @@ def extract_features(
         raise ValueError(model_name)
 
     # Dataset
-    filenamesx = Path(images_list).read_text().splitlines();x=1000
+    filenamesx = Path(images_list).read_text().splitlines();x=100
     final_list = lambda filenamesx, x: [filenamesx[i:i+x] for i in range(0, len(filenamesx), x)]
     allframe_test_chunk=final_list(filenamesx, x);
     qq=0;
@@ -140,21 +140,11 @@ def extract_features(
       os.system('rm -rf data/VOC2012/features/dino_vits16/*')
       print('################### extract eig ###################')
       print('ITER ' + str(qq))
-        #np.savez(str(output_file),output_dict['k'].detach().cpu())
+      break;        
 
-        #print(output_dict['k'].shape)
-        #print(asd)
-        #with open(str(output_file)+'.pickle', 'wb') as handle:
-          #pickle.dump(output_dict['k'].detach().cpu() , handle, protocol=pickle.HIGHEST_PROTOCOL)
-        #eigenvectors,eigenvalues = extract_eigx(files[0],output_dict,K,which_matrix,which_features,normalize,lapnorm,which_color_matrix,threshold_at_zero,image_downsample_factor,image_color_lambda)
-        #eigenvectors = eigenvectors.T.reshape((H_patch,W_patch,K))
-        
-        #np.save(str(output_file), eigenvectors)
-
-        #Save
-        #accelerator.save(output_dict, str(output_file))
-        #accelerator.wait_for_everyone()
-    os.system('tar czf eig.tar.gz data/VOC2012/eigs')    
+    os.system('rm -rf data/VOC2012/images')
+    os.system('tar czf eig.tar.gz data/VOC2012/eigs')
+    os.system('mv czf eig.tar.gz /kaggle/working/')
     print(f'Saved features to {output_dir}')
 
 
