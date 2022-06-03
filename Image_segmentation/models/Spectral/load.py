@@ -7,7 +7,7 @@ import cv2
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
 
-def loadeig(imagepath,myself):
+def loadeig(myself,imagepath):
     
     sp = imagepath.split('/'); name=sp[-1].replace('.jpg','.pth.npy');eigpath = sp[-2]+'_'+name;
     eig = np.load(myself.baseinput+'data/VOC2012/eigs/laplacian/'+eigpath)
