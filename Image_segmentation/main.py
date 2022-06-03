@@ -11,7 +11,7 @@ def main(args):
   if (args.classid)[0]==1000:
     args.classid = list(np.linspace(1,40,40).astype('int32'))
     print(args.classid )
-  if len(args.input_imagesize)==0:
+  if args.input_imagesize==0:
       args.input_imagesize=args.imagesize
   run.start(args)
   return args 
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--upload', type=str ,default='local', required=False)
     parser.add_argument('--imagesize', type=tuple_type, required=True)
-    parser.add_argument('--input_imagesize', type=tuple_type, required=False)
+    parser.add_argument('--input_imagesize',default=(0), type=tuple_type, required=False)
     parser.add_argument('--epoch', type=int, default=15 , required=False)
     parser.add_argument('--batchsize', type=int, default=32, required=False)
     parser.add_argument('--config', type=int, default=0, required=False)
