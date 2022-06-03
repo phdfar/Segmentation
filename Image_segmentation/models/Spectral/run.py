@@ -2,6 +2,10 @@ from tensorflow.keras import layers
 from tensorflow import keras
 from keras.models import load_model
 
+def start(args):
+    if args.config==0:
+        inception_default(args.img_size, args.num_class,args.channel_input)
+        
 def inception_default(img_size, num_classes,channel_input):
     inputs = keras.Input(shape=img_size + (channel_input,))
     ### [First half of the network: downsampling inputs] ###
