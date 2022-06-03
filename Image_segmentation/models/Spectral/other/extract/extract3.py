@@ -143,7 +143,7 @@ def extract_features(
 
     os.system('rm -rf data/VOC2012/images')
     os.system('tar czf eig.tar.gz data/VOC2012/eigs')
-    os.system('mv czf eig.tar.gz /kaggle/working/')
+    os.system('mv eig.tar.gz /kaggle/working/')
     print(f'Saved features to {output_dir}')
 
 
