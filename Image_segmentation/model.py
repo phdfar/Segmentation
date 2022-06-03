@@ -3,6 +3,7 @@ from tensorflow import keras
 from keras.models import load_model
 import models
 import DeformableConvLayerKeras as DCL
+from models.Spectral import run
 
 
 def network(args):
@@ -17,7 +18,7 @@ def network(args):
   if args.network=='ins_bin_tune':
     return ins_bin_tune(args.imagesize,args.num_class)
   if args.network=='spectral':
-    return models.Spectral.run(args.imagesize,args.num_class)
+    return run.start(args)
 def inception_default(img_size, num_classes,channel_input):
     inputs = keras.Input(shape=img_size + (channel_input,))
 
