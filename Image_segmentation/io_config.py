@@ -1,15 +1,15 @@
 from tensorflow.keras.preprocessing.image import load_img
 import numpy as np
 import cv2
-import models
+from models.Spectral import load
 def run(myself,path):
   frameindex= list(path.keys())[0]
   imagepath = path[frameindex][0]
   seq = path[frameindex][1]
   flagmulti = path[frameindex][2]
 
-  if myself.model=='spectral':
-      img = models.Spectral.load.loadeig(myself,imagepath)
+  if myself.network=='spectral':
+      img = load.loadeig(myself,imagepath)
       
   else:
       img = load_img(myself.basepath+'train/'+imagepath, target_size=myself.img_size)
