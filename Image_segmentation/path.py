@@ -102,6 +102,8 @@ class dataloader(keras.utils.Sequence):
         self.channel_input  = args.channel_input
         self.colorspace = args.colorspace
         self.model = args.model
+        self.baseinput=args.baseinput
+        self.config=args.config
 
     def __len__(self):
         return len(self.input_img_paths) // self.batch_size

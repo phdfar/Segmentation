@@ -10,7 +10,14 @@ import os
 import tensorflow as tf
 global argss
 import keras.backend as K
+import matplotlib.pyplot as plt
 
+def vis(x,y):
+    f, axarr = plt.subplots(2,2)
+    axarr[0,0].imshow(x[0][:,:,0])
+    axarr[0,1].imshow(y[0][:,:,0])
+    axarr[1,0].imshow(x[1][:,:,0])
+    axarr[1,1].imshow(y[1][:,:,0])
 
 class CustomCallback(keras.callbacks.Callback):
     def on_epoch_begin(self, epoch, logs=None):
@@ -57,6 +64,9 @@ def start(args):
   # Instantiate data Sequences for each split
   train_gen = path.dataloader(args,allframe_train,dicid)
   val_gen = path.dataloader(args,allframe_val,dicid)
+  
+  x, y = next(iter(train_gen))
+  vis(x,y)
 
   keras.backend.clear_session()
   if args.mode=='train':

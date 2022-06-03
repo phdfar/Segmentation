@@ -9,7 +9,7 @@ def run(myself,path):
   flagmulti = path[frameindex][2]
 
   if myself.model=='spectral':
-      img = models.Spectral.extract.extract_features(myself.basepath+'train/'+imagepath)
+      img = models.Spectral.load.loadeig(myself,imagepath)
       
   else:
       img = load_img(myself.basepath+'train/'+imagepath, target_size=myself.img_size)
