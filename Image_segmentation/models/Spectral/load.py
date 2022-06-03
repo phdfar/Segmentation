@@ -10,7 +10,7 @@ def NormalizeData(data):
 def loadeig(imagepath,myself):
     
     sp = imagepath.split('/'); name=sp[-1].replace('.jpg','.pth.npy');eigpath = sp[-2]+'_'+name;
-    eig = np.load(myself.baseinput+'data/VOC2012/eig/Laplacian/'+eigpath)
+    eig = np.load(myself.baseinput+'data/VOC2012/eigs/laplacian/'+eigpath)
     if myself.config==0:
         dim = (myself.img_size[1],myself.img_size[0])
         e1 = eig[:,:,1];e1 = np.expand_dims(e1,2);
