@@ -101,7 +101,7 @@ class dataloader(keras.utils.Sequence):
         self.dicid = dicid
         self.channel_input  = args.channel_input
         self.colorspace = args.colorspace
-        self.model = args.model
+        self.network = args.network
         self.baseinput=args.baseinput
         self.config=args.config
 
