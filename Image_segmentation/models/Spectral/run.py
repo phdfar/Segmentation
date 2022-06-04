@@ -3,9 +3,10 @@ from tensorflow import keras
 from keras.models import load_model
 
 def start(args):
-    if args.config!=8:
+    if args.config!=7:
         return inception_default(args.imagesize, args.num_class,args.channel_input)
-        
+    elif args.config==7:
+        return inception_2i(args.imagesize, args.num_class,args.channel_input)
 def inception_default(img_size, num_classes,channel_input):
     inputs = keras.Input(shape=img_size + (channel_input,))
     ### [First half of the network: downsampling inputs] ###
