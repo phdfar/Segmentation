@@ -30,7 +30,7 @@ def loadeig(myself,imagepath):
         return np.concatenate((img,eig),axis=-1)
     elif myself.config==2:
         img = np.asarray(load_img(myself.basepath+'train/'+imagepath, target_size=myself.img_size,grayscale=False))
-        #img = NormalizeData(np.asarray(img));
+        img = NormalizeData(np.asarray(img));
         #img = np.expand_dims(img,2);
         dim = (myself.img_size[1],myself.img_size[0])
         e1 = eig[:,:,1];
