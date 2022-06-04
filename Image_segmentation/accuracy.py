@@ -116,6 +116,8 @@ def start_instance(mymodel,allframe_test,name,args,dicid):
     print('*********')
     
 def start_binary(mymodel,allframe_test,name,args,dicid):
+    dispatcher_loader={args.branch_input:path.dataloader,args.branch_input:path.dataloader_2i}
+
     x = 1200;full_result=[];tac=0;tpr=0;tre=0;tfs=0;
     final_list= lambda test_list, x: [test_list[i:i+x] for i in range(0, len(test_list), x)]
     allframe_test_chunk=final_list(allframe_test, x);
@@ -123,7 +125,8 @@ def start_binary(mymodel,allframe_test,name,args,dicid):
     for x in args.classid:
       category_score.update({x:[0,0]})
     for batch_test in allframe_test_chunk:
-      test_gen_batch = path.dataloader(args,batch_test,dicid)    
+      #test_gen_batch = path.dataloader(args,batch_test,dicid) 
+      test_gen_batch = dispatcher_loader[args.branch_input](args,batch_test,dicid)   
       test_preds_batch = mymodel.predict(test_gen_batch)
       print('check accuracy')
       tacx,tprx,trex,tfsx,full_result,category_score = run_binary(test_preds_batch,batch_test,name,args,full_result,category_score,dicid)
