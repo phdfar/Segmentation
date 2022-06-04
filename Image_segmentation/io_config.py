@@ -38,7 +38,7 @@ def run(myself,path):
     if myself.task == 'semantic_seg':
       mask = seq.load_one_masks_semantic([frameindex],myself.dicid)
     else:
-      mask = seq.load_one_masks([frameindex],myself.dicid)
+      mask = seq.load_one_masks([frameindex])
   else:
     if myself.task == 'semantic_seg':
       mask = seq.load_multi_masks_semantic([frameindex],myself.dicid)
