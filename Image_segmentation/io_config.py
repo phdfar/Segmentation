@@ -35,7 +35,7 @@ def run(myself,path):
   else:
   """
   #x = np.asarray(img)
-  x = img.copy()
+  #x = img.copy()
   if flagmulti==0:
     if myself.task == 'semantic_seg':
       mask = seq.load_one_masks_semantic([frameindex],myself.dicid)
