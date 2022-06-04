@@ -24,14 +24,15 @@ def run(myself,path):
     img = load_img(self.basepath+'train/'+imagepath, target_size=self.img_size)
     img = cv2.cvtColor(np.asarray(img),cv2.COLOR_RGB2HSV)
   """
-  if myself.channel_input==3:
-    x = np.asarray(img)
 
-  elif myself.channel_input==4:
+
+  if myself.channel_input==4:
     opt = load_img(myself.basepath+'train_rgo/train/'+imagepath, target_size=myself.img_size)
     opt = np.asarray(opt);opt = opt[:,:,2];opt = np.expand_dims(opt, 2)
     x = np.concatenate((np.asarray(img),opt),axis=-1)
 
+  else:
+    x = np.asarray(img)
 
   if flagmulti==0:
     if myself.task == 'semantic_seg':

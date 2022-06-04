@@ -13,7 +13,9 @@ def loadeig(myself,imagepath):
     eig = np.load(myself.baseinput+'data/VOC2012/eigs/laplacian/'+eigpath)
     if myself.config==0:
         dim = (myself.img_size[1],myself.img_size[0])
-        e1 = eig[:,:,1];e1 = np.expand_dims(e1,2);
+        e1 = eig[:,:,1];
         eig = cv2.resize(e1, dim, interpolation = cv2.INTER_NEAREST)
-        return NormalizeData(eig)
+        eig = NormalizeData(eig)
+        eig = np.expand_dims(eig,2);
+        return eig
 
