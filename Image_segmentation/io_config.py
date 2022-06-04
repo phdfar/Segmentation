@@ -9,10 +9,11 @@ def run(myself,path):
   flagmulti = path[frameindex][2]
 
   if myself.network=='spectral':
-      img = load.loadeig(myself,imagepath)
+      x = load.loadeig(myself,imagepath)
       
   else:
       img = load_img(myself.basepath+'train/'+imagepath, target_size=myself.img_size)
+      x = np.asarray(img)
 
   """
   if self.colorspace=='rgb':
@@ -33,8 +34,8 @@ def run(myself,path):
 
   else:
   """
-  x = np.asarray(img)
-
+  #x = np.asarray(img)
+  x = img.copy()
   if flagmulti==0:
     if myself.task == 'semantic_seg':
       mask = seq.load_one_masks_semantic([frameindex],myself.dicid)
