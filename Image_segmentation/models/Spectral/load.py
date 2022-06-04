@@ -3,7 +3,7 @@ from tensorflow import keras
 from keras.models import load_model
 import numpy as np
 import cv2
-
+from tensorflow.keras.preprocessing.image import load_img
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
 
