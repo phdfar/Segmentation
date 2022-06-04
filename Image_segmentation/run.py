@@ -60,13 +60,17 @@ def start(args):
   argss=args
   allframe_train,allframe_val,allframe_test = path.getinfo(args)
   random.Random(1337).shuffle(allframe_train)
+    
+  dispatcher_loader={args.branch_input:path.dataloader,args.branch_input:path.dataloader_2i}
 
   # Instantiate data Sequences for each split
-  train_gen = path.dataloader(args,allframe_train,dicid)
-  val_gen = path.dataloader(args,allframe_val,dicid)
+  train_gen = dispatcher_loader[args.branch_input](args,allframe_train,dicid)
+  val_gen = = dispatcher_loader[args.branch_input](args,allframe_val,dicid)
+  #train_gen = path.dataloader(args,allframe_train,dicid)
+  #val_gen = path.dataloader(args,allframe_val,dicid)
   
-  x, y = next(iter(train_gen))
-  vis(x,y)
+  #x, y = next(iter(train_gen))
+  #vis(x,y)
 
   keras.backend.clear_session()
   if args.mode=='train':
