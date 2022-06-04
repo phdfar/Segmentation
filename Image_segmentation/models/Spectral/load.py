@@ -46,5 +46,16 @@ def loadeig(myself,imagepath):
         eig2 = NormalizeData(eig2)
         eig1 = np.expand_dims(eig1,2);eig2 = np.expand_dims(eig2,2);
         return np.concatenate((eig1,eig2),axis=-1)
-
+    elif myself.config==4:
+        img = load_img(myself.basepath+'train/'+imagepath, target_size=myself.img_size,grayscale=True)
+        img = NormalizeData(np.asarray(img));
+        img = np.expand_dims(img,2);
+        
+        dim = (myself.img_size[1],myself.img_size[0])
+        eig1 = cv2.resize(eig[:,:,1], dim, interpolation = cv2.INTER_NEAREST)
+        eig1 = NormalizeData(eig1)
+        eig2 = cv2.resize(eig[:,:,2], dim, interpolation = cv2.INTER_NEAREST)
+        eig2 = NormalizeData(eig2)
+        eig1 = np.expand_dims(eig1,2);eig2 = np.expand_dims(eig2,2);
+        return np.concatenate((img,eig1,eig2),axis=-1)
 
