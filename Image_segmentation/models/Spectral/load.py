@@ -45,6 +45,6 @@ def loadeig(myself,imagepath):
         eig2 = cv2.resize(eig[:,:,2], dim, interpolation = cv2.INTER_NEAREST)
         eig2 = NormalizeData(eig2)
         eig1 = np.expand_dims(eig1,2);eig2 = np.expand_dims(eig2,2);
-        return np.concatenate((egi1,eig2),axis=-1)
+        return np.concatenate((eig1,eig2),axis=-1)
 
 
