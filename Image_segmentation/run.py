@@ -65,7 +65,7 @@ def start(args):
 
   # Instantiate data Sequences for each split
   train_gen = dispatcher_loader[args.branch_input](args,allframe_train,dicid)
-  val_gen = = dispatcher_loader[args.branch_input](args,allframe_val,dicid)
+  val_gen = dispatcher_loader[args.branch_input](args,allframe_val,dicid)
   #train_gen = path.dataloader(args,allframe_train,dicid)
   #val_gen = path.dataloader(args,allframe_val,dicid)
   
@@ -92,7 +92,7 @@ def start(args):
     mymodel.fit(train_gen, epochs=args.epoch, validation_data=val_gen, callbacks=callbacks)
   
   if args.mode=='test':
-    test_gen = path.dataloader(args,allframe_test,dicid)    
+    test_gen = dispatcher_loader[args.branch_input](args,allframe_test,dicid)    
     mymodel = load_model(args.model_dir)
     mymodel.evaluate(test_gen);
     accuracy.start(mymodel,allframe_test,args.model_dir,args,dicid)
