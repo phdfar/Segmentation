@@ -65,6 +65,16 @@ def draw_binary(mask,img,cat_mask,size,category_color,category_label,args,imagep
     filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
     res.save('result/'+filename)
 
+def offline(path,args):
+    for i in path:
+        sp = imagepath.split('/'); name=sp[-1].replace('.jpg','.pth.npy');eigpath = sp[-2]+'_'+name;
+        eig = np.load('/content/data/VOC2012/eigs/laplacian/'+eigpath)
+        dim = (320,192)
+        f = NormalizeData(eig[:,:,1])
+        f = cv2.resize(f, dim, interpolation = cv2.INTER_NEAREST)
+        tr=0.3
+        f[f<=tr]=0;f[f>tr]=1;
+
 def run(args,mymodel,seqs,category_label,category_color):
     dispatcher_draw={'semantic':draw_semantic,'binary':draw_binary}
     try:
@@ -80,7 +90,11 @@ def run(args,mymodel,seqs,category_label,category_color):
             rgb = np.asarray(rgb)
             inputs.append(rgb)
             imagepath.append(args.basepath+'valid/'+frame)
-        outputs = mymodel.predict(np.asarray(inputs))
+        if 'h5' in args.model_dir:
+            outputs = mymodel.predict(np.asarray(inputs))
+        else:
+            outputs = offline(imagepath,args)
+            
         for p in range(len(outputs)):
             mask = outputs[p]
             mask = np.argmax(mask, axis=-1)
