@@ -65,15 +65,21 @@ def draw_binary(mask,img,cat_mask,size,category_color,category_label,args,imagep
     filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
     res.save('result/'+filename)
 
+def NormalizeData(data):
+    return (data - np.min(data)) / (np.max(data) - np.min(data))
+
 def offline(path,args):
+    mask=[]
     for i in path:
-        sp = imagepath.split('/'); name=sp[-1].replace('.jpg','.pth.npy');eigpath = sp[-2]+'_'+name;
-        eig = np.load('/content/data/VOC2012/eigs/laplacian/'+eigpath)
-        dim = (320,192)
+        sp = i.split('/'); name=sp[-1].replace('.jpg','.pth.npy');eigpath = sp[-2]+'_'+name;
+        eig = np.load(args.model_dir+eigpath)
+        dim = (args.imagesize[1],args.imagesize[0])
         f = NormalizeData(eig[:,:,1])
         f = cv2.resize(f, dim, interpolation = cv2.INTER_NEAREST)
-        tr=0.3
+        tr=0.15
         f[f<=tr]=0;f[f>tr]=1;
+        mask.append(f)
+    return np.asarray(mask)
 
 def run(args,mymodel,seqs,category_label,category_color):
     dispatcher_draw={'semantic':draw_semantic,'binary':draw_binary}
@@ -97,9 +103,10 @@ def run(args,mymodel,seqs,category_label,category_color):
             
         for p in range(len(outputs)):
             mask = outputs[p]
-            mask = np.argmax(mask, axis=-1)
-            mask = np.expand_dims(mask, axis=-1)
-            mask = mask[:,:,0];
+            if 'h5' in args.model_dir:
+                mask = np.argmax(mask, axis=-1)
+                mask = np.expand_dims(mask, axis=-1)
+                mask = mask[:,:,0];
             cat_mask = list(set(mask.ravel().tolist()))
             dispatcher_draw[args.task](mask,inputs[p],cat_mask,size,category_color,category_label,args,imagepath[p])
     
