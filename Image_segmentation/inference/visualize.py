@@ -26,10 +26,10 @@ def start(mymodel,seqs,name,args):
       g = np.random.randint(0,150,1)[0]
       b = np.random.randint(0,255,1)[0]
       category_color.update({x:(r,g,b)})
-    run_semantic(args,mymodel,seqs,category_label,category_color)
+    run(args,mymodel,seqs,category_label,category_color)
 
 
-def draw(mask,img,cat_mask,size,category_color,category_label,args,imagepath):
+def draw_semantic(mask,img,cat_mask,size,category_color,category_label,args,imagepath):
     font = cv2.FONT_HERSHEY_SIMPLEX;
     footer1 = np.zeros((40,args.imagesize[1],3),'uint8')+200;al=2;
     rgb = img.copy()
@@ -47,8 +47,26 @@ def draw(mask,img,cat_mask,size,category_color,category_label,args,imagepath):
     filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
     res.save('result/'+filename)
         
+def draw_binary(mask,img,cat_mask,size,category_color,category_label,args,imagepath):
+    #font = cv2.FONT_HERSHEY_SIMPLEX;
+    #footer1 = np.zeros((40,args.imagesize[1],3),'uint8')+200;al=2;
+    rgb = img.copy()
+    for lb in cat_mask:
+        if lb!=0:
+            #color = category_color[lb]
+            color = (0,255,0)
+            tp = np.where(mask==lb);
+            #text = category_label[lb] + ' ' + str((len(tp[0])*100)/size)[:4]+'%'
+            #cv2.putText(footer1, text, (al,footer1.shape[0]-20), font, 0.4, color, 1, cv2.LINE_AA);al+=160;
+            rgb[tp]=(color+ rgb[tp])//2
+            
+    #result = np.concatenate((rgb,footer1),axis=0);
+    res = keras.preprocessing.image.array_to_img(rgb)
+    filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
+    res.save('result/'+filename)
 
-def run_semantic(args,mymodel,seqs,category_label,category_color):
+def run(args,mymodel,seqs,category_label,category_color):
+    dispatcher_draw={'semantic':draw_semantic,'binary':draw_binary}
     try:
         os.mkdir('result')
     except:
@@ -69,6 +87,6 @@ def run_semantic(args,mymodel,seqs,category_label,category_color):
             mask = np.expand_dims(mask, axis=-1)
             mask = mask[:,:,0];
             cat_mask = list(set(mask.ravel().tolist()))
-            draw(mask,inputs[p],cat_mask,size,category_color,category_label,args,imagepath[p])
+            dispatcher_draw[args.task](mask,inputs[p],cat_mask,size,category_color,category_label,args,imagepath[p])
     
       
