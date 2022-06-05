@@ -12,5 +12,8 @@ def start(args):
   keras.backend.clear_session()
 
   if args.mode=='only_vis':
-    mymodel = load_model(args.model_dir)
-    visualize.start(mymodel,seqs,args.model_dir,args)
+    if 'h5' in args.model_dir:
+      mymodel = load_model(args.model_dir)
+    else:
+      mymodel=''
+      visualize.start(mymodel,seqs,args.model_dir,args)
