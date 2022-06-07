@@ -108,7 +108,7 @@ def group(args):
         groupdict.update({groupe : tempnames})
         last_groupe = groupe;p+=1;
     #print(p)
-    return groupdict,list(set(list_gropue))
+    return groupdict,list(groupdict.keys())#list(set(list_gropue))
 
 def demo(args):
     model = torch.nn.DataParallel(RAFT(args))
