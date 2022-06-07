@@ -121,7 +121,7 @@ def demo(args):
         groupdict,list_gropue = group(args);
         for g in range(len(groupdict)):
             
-            if args.start < g < args.finish:
+            if int(args.start) < g < int(args.finish):
                 
                 images=groupdict[list_gropue[g]]
                 images.sort(key=natural_keys)
