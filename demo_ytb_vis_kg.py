@@ -136,13 +136,16 @@ def demo(args):
                         image1 = load_image(args.path+'/'+list_gropue[g]+'/'+imfile1)
                         image2 = load_image(args.path+'/'+list_gropue[g]+'/'+imfile2)                
                         flow_low, flow_up = model(image1, image2, iters=20, test_mode=True)
-                        viz(image1, flow_up,number,imfile1,list_gropue[g],args)
+                        #viz(image1, flow_up,number,imfile1,list_gropue[g],args)
                     except:
                         #print('ffxxxxxx')
                         image1 = load_image2(args.path+'/'+list_gropue[g]+'/'+imfile1)
                         image2 = load_image2(args.path+'/'+list_gropue[g]+'/'+imfile2)
-                        flow_low, flow_up = model(image1, image2, iters=20, test_mode=True)
-                        viz(image1, flow_up,number,imfile1,list_gropue[g],args)
+                        try:
+                            flow_low, flow_up = model(image1, image2, iters=20, test_mode=True)
+                        except:
+                            flow_low, flow_up = model(image1, image2, iters=10, test_mode=True)
+                    viz(image1, flow_up,number,imfile1,list_gropue[g],args)
 
 
                     number+=1
@@ -153,7 +156,10 @@ def demo(args):
                             #print('exxxxxx')
                             image1 = load_image2(args.path+'/'+list_gropue[g]+'/'+imfile1)
                             image2 = load_image2(args.path+'/'++list_gropue[g]+'/'+imfile2)
-                            flow_low, flow_up = model(image2, image1, iters=20, test_mode=True)
+                            try:
+                                flow_low, flow_up = model(image1, image2, iters=20, test_mode=True)
+                            except:
+                                flow_low, flow_up = model(image1, image2, iters=10, test_mode=True)
                         viz(image2, flow_up,number,imfile2,list_gropue[g],args)
                             
                 if g%50==0:
