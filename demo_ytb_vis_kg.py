@@ -138,7 +138,7 @@ def demo(args):
                         flow_low, flow_up = model(image1, image2, iters=20, test_mode=True)
                         viz(image1, flow_up,number,imfile1,list_gropue[g],args)
                     except:
-                        print('ffxxxxxx')
+                        #print('ffxxxxxx')
                         image1 = load_image2(args.path+'/'+list_gropue[g]+'/'+imfile1)
                         image2 = load_image2(args.path+'/'+list_gropue[g]+'/'+imfile2)
                         flow_low, flow_up = model(image1, image2, iters=20, test_mode=True)
@@ -150,7 +150,7 @@ def demo(args):
                         try:
                             flow_low, flow_up = model(image2, image1, iters=20, test_mode=True)
                         except:
-                            print('exxxxxx')
+                            #print('exxxxxx')
                             image1 = load_image2(args.path+'/'+list_gropue[g]+'/'+imfile1)
                             image2 = load_image2(args.path+'/'++list_gropue[g]+'/'+imfile2)
                             flow_low, flow_up = model(image2, image1, iters=20, test_mode=True)
