@@ -143,10 +143,10 @@ def demo(args):
                       viz(image2, flow_up,number,imfile2,list_gropue[g],args)
                       #print(imfile2);print(imfile1);print(number);print('---------')
                             
-            if g%50==0:
-                print(g,'/',len(groupdict))
+                if g%50==0:
+                    print(g,'/',len(groupdict))
 
-        name = str(g)+'.tar.gz'
+        name = str(args.finish)+'.tar.gz'
         os.system('tar czf '+name+ ' '+args.out_dir )            
 
 
