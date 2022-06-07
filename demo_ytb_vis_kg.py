@@ -132,16 +132,29 @@ def demo(args):
                     #print(imfile1);print(imfile2);print(number);print('---------')
                     #print(args.path+'/'+list_gropue[g]+'/'+imfile1)
                     
-                    image1 = load_image(args.path+'/'+list_gropue[g]+'/'+imfile1)
-                    image2 = load_image(args.path+'/'+list_gropue[g]+'/'+imfile2)                
-                    flow_low, flow_up = model(image1, image2, iters=20, test_mode=True)
-                    viz(image1, flow_up,number,imfile1,list_gropue[g],args)
-                    
+                    try:
+                        image1 = load_image(args.path+'/'+list_gropue[g]+'/'+imfile1)
+                        image2 = load_image(args.path+'/'+list_gropue[g]+'/'+imfile2)                
+                        flow_low, flow_up = model(image1, image2, iters=20, test_mode=True)
+                        viz(image1, flow_up,number,imfile1,list_gropue[g])
+                    except:
+                        print('ffxxxxxx')
+                        image1 = load_image2(args.path+'/'+list_gropue[g]+'/'+imfile1)
+                        image2 = load_image2(args.path+'/'+list_gropue[g]+'/'+imfile2)
+                        flow_low, flow_up = model(image1, image2, iters=20, test_mode=True)
+                        viz(image1, flow_up,number,imfile1,list_gropue[g])
+
+
                     number+=1
                     if number == len(images)-1:
-                      flow_low, flow_up = model(image2, image1, iters=20, test_mode=True)
-                      viz(image2, flow_up,number,imfile2,list_gropue[g],args)
-                      #print(imfile2);print(imfile1);print(number);print('---------')
+                        try:
+                            flow_low, flow_up = model(image2, image1, iters=20, test_mode=True)
+                        except:
+                            print('exxxxxx')
+                            image1 = load_image2(args.path+'/'+list_gropue[g]+'/'+imfile1)
+                            image2 = load_image2(args.path+'/'++list_gropue[g]+'/'+imfile2)
+                            flow_low, flow_up = model(image2, image1, iters=20, test_mode=True)
+                        viz(image2, flow_up,number,imfile2,list_gropue[g])
                             
                 if g%50==0:
                     print(g,'/',len(groupdict))
