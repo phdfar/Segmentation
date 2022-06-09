@@ -69,10 +69,10 @@ def cluster(opt):
   return allversion
 
 def optical_flow(args,seqs):
-  full_result=[];score_clip={};
+  full_result=[];score_FS_clip={};score_IOU_clip={};
   for i,seq in enumerate(seqs):
     seq_path = seq.image_paths
-    inputs=[];imagepath=[];score_temp=[]
+    inputs=[];imagepath=[];score_temp_i=[];score_temp_f=[]
     for frameindex,frame in enumerate(seq_path):
         frame = frame.replace('.jpg','.png')
         frame = frame.replace('JPEGImages','')
@@ -80,29 +80,38 @@ def optical_flow(args,seqs):
         opt = cv2.imread(args.basepath+args.score_path+frame,0)
         gtn = seq.load_multi_masks([frameindex]);
         allversion = cluster(opt)
-        score_i=[]
+        score_f=[];score_i=[]
         for mask in allversion:
-          score_i.append(metric(gtn,mask))
+          fs,iou = metric(gtn,mask)
+          score_f.append(fs);score_i.append(iou);
+
         sp = frame.split('/'); filename=sp[-2]+'_'+sp[-1]
-        full_result.append((filename,max(score_i)))
-        score_temp.append(max(score_i))
+        full_result.append((filename,max(score_f),max(score_i)))
+        score_temp_i.append(max(score_i))
+        score_temp_f.append(max(score_f))
         #print(score_i)
         #print(max(score_i))
         #import pickle 
         #with open('/content/aa.pickle','wb') as h:
         #  pickle.dump([allversion,gtn],h)
-        break;
         
     
-    score_clip.update({sp[-2]:max(score_temp)})
-    if i==10:
-      break
-    print(score_clip)
-  df = pd.DataFrame(full_result,columns =['Names','FS'])
+    score_FS_clip.update({sp[-2]:max(score_temp_f)})
+    score_IOU_clip.update({sp[-2]:max(score_temp_i)})
+
+    if i%10==0:
+      print(i)
+
+
+  df = pd.DataFrame(full_result,columns =['Names','FS','IOU'])
   df.to_csv(args.basepath+'result_'+args.score_path+'.csv')
-  with open(args.basepath+'result_clip'+args.score_path+'.csv', 'w') as f:
+  with open(args.basepath+'result_FS_clip'+args.score_path+'.csv', 'w') as f:
       f.write("%s,%s\n"%('Clip','FS'))
-      for key in score_clip.keys():
-        f.write("%s,%s\n"%(key,score_clip[key]))
+      for key in score_FS_clip.keys():
+        f.write("%s,%s\n"%(key,score_FS_clip[key]))
+  with open(args.basepath+'result_IOU_clip'+args.score_path+'.csv', 'w') as f:
+      f.write("%s,%s\n"%('Clip','IOU'))
+      for key in score_IOU_clip.keys():
+        f.write("%s,%s\n"%(key,score_IOU_clip[key]))
           
 
