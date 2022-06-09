@@ -20,6 +20,7 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type=str ,default='only_vis', required=False)
     parser.add_argument('--task', type=str ,default='semantic', required=False)
     parser.add_argument('--data', type=str ,default='train', required=False)
+    parser.add_argument('--score', type=str ,default='optical', required=False)
 
     parser.add_argument('--model_dir', type=str , required=False)
     parser.add_argument('--basepath', type=str , default='/content/', required=False)

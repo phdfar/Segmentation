@@ -6,6 +6,7 @@ from keras.callbacks import CSVLogger
 import tensorflow as tf
 global argss
 import keras.backend as K
+import score
 
 def start(args):
   seqs = path.getinfo(args)
@@ -17,3 +18,5 @@ def start(args):
     else:
       mymodel=''
       visualize.start(mymodel,seqs,args.model_dir,args)
+  if args.mode=='check_score':
+    score.run(args,seqs)
