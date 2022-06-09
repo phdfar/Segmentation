@@ -3,8 +3,8 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 import cv2
 import numpy as np
 
-def start(args,seqs):
-    if args.task == 'optical_flow':
+def run(args,seqs):
+    if args.score == 'optical_flow':
         optical_flow(args,seqs)
 
 
@@ -65,7 +65,9 @@ def optical_flow(args,seqs):
     inputs=[];imagepath=[]
     for frameindex,frame in enumerate(seq_path):
         frame = frame.replace('.jpg','.png')
-        opt = cv2.imread(args.basepath+args.data+'/'+frame)
+        frame = frame.replace('JPEGImages','')
+        print(frame)
+        opt = cv2.imread(args.basepath+args.score_path+frame)
         gtn = seq.load_multi_masks([frameindex]);
         allversion = cluster(opt)
         score_i=[]
