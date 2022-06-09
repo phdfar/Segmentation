@@ -3,6 +3,7 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 import cv2
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 
 def run(args,seqs):
     if args.score == 'optical_flow':
@@ -31,6 +32,13 @@ def metric(gtn,mask):
     FN =  len(fn[0])
     #result[fn]=((255,255,0)+result[fn])//2
 
+    y_true = gtn;y_pred=mask;smooth=1e-7
+    y_pred = y_pred.ravel().tolist()
+    y_true = y_true.ravel().tolist()
+    m = tf.keras.metrics.MeanIoU(num_classes=2)
+    m.update_state(y_pred, y_true)
+    IOU=m.result().numpy()
+
     accuracy = (TP + TN) / (TP + TN + FN + FP)
     try:
       precision = TP / (TP + FP)
@@ -44,7 +52,7 @@ def metric(gtn,mask):
       FS = (2*recall*precision)/(precision+recall)
     except:
       FS=0
-    return FS
+    return FS,IOU
 
 def cluster(opt):
   kmeans = KMeans(n_clusters=4)
