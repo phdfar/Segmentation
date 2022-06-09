@@ -2,6 +2,7 @@
 from sklearn.cluster import KMeans, MiniBatchKMeans
 import cv2
 import numpy as np
+import pandas as pd
 
 def run(args,seqs):
     if args.score == 'optical_flow':
@@ -55,23 +56,43 @@ def cluster(opt):
   allversion=[]
   for c in cl:
     temp = output.copy()
-    temp[temp==c]==5; temp[temp!=c]==0; temp=temp//5;
+    temp[temp!=c]=5; temp[temp==c]=0; temp=temp//5;
     allversion.append(temp)
   return allversion
 
 def optical_flow(args,seqs):
+  full_result=[]
   for seq in seqs:
     seq_path = seq.image_paths
-    inputs=[];imagepath=[]
+    inputs=[];imagepath=[];score_clip={};score_temp=[]
     for frameindex,frame in enumerate(seq_path):
         frame = frame.replace('.jpg','.png')
         frame = frame.replace('JPEGImages','')
-        print(frame)
-        opt = cv2.imread(args.basepath+args.score_path+frame)
+        #print(frame)
+        opt = cv2.imread(args.basepath+args.score_path+frame,0)
         gtn = seq.load_multi_masks([frameindex]);
         allversion = cluster(opt)
         score_i=[]
         for mask in allversion:
           score_i.append(metric(gtn,mask))
-        max(score_i)
+        sp = frame.split('/'); filename=sp[-2]+'_'+sp[-1]
+        full_result.append((filename,max(score_i)))
+        score_temp.append(max(score_i))
+        #print(score_i)
+        #print(max(score_i))
+        #import pickle 
+        #with open('/content/aa.pickle','wb') as h:
+        #  pickle.dump([allversion,gtn],h)
+        
+    
+    score_clip.update({sp[-2]:max(score_temp)})
+    break
+  print(score_clip)
+  df = pd.DataFrame(full_result,columns =['Names','FS'])
+  df.to_csv(args.basepath+'result_'+args.score_path+'.csv')
+  with open(args.basepath+'result_clip'+args.score_path+'.csv', 'w') as f:
+      f.write("%s,%s\n"%('Clip','FS'))
+      for key in score_clip.keys():
+        f.write("%s,%s\n"%(key,score_clip[key]))
+          
 
