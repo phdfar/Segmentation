@@ -61,10 +61,10 @@ def cluster(opt):
   return allversion
 
 def optical_flow(args,seqs):
-  full_result=[]
+  full_result=[];score_clip={};
   for i,seq in enumerate(seqs):
     seq_path = seq.image_paths
-    inputs=[];imagepath=[];score_clip={};score_temp=[]
+    inputs=[];imagepath=[];score_temp=[]
     for frameindex,frame in enumerate(seq_path):
         frame = frame.replace('.jpg','.png')
         frame = frame.replace('JPEGImages','')
@@ -83,6 +83,7 @@ def optical_flow(args,seqs):
         #import pickle 
         #with open('/content/aa.pickle','wb') as h:
         #  pickle.dump([allversion,gtn],h)
+        break;
         
     
     score_clip.update({sp[-2]:max(score_temp)})
