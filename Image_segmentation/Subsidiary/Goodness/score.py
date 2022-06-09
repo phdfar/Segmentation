@@ -31,14 +31,18 @@ def metric(gtn,mask):
     fn  = np.where(fast_res==-1)
     FN =  len(fn[0])
     #result[fn]=((255,255,0)+result[fn])//2
-
+    """
+    from time import time
+    t1 = time()
     y_true = gtn;y_pred=mask;smooth=1e-7
     y_pred = y_pred.ravel().tolist()
     y_true = y_true.ravel().tolist()
     m = tf.keras.metrics.MeanIoU(num_classes=2)
     m.update_state(y_pred, y_true)
     IOU=m.result().numpy()
-
+    t2 = time()
+    print('ds',t2-t1)
+    """
     accuracy = (TP + TN) / (TP + TN + FN + FP)
     try:
       precision = TP / (TP + FP)
@@ -52,17 +56,20 @@ def metric(gtn,mask):
       FS = (2*recall*precision)/(precision+recall)
     except:
       FS=0
-    return FS,IOU
+    return FS,0
 
 def cluster(opt):
   kmeans = KMeans(n_clusters=4)
   a = opt.shape[0]; b=opt.shape[1]
   feats = opt.reshape(a*b,1)
+
+
+  kmeans = MiniBatchKMeans(n_clusters=4, batch_size=4096, max_iter=5000, random_state=0)
   clusters = kmeans.fit_predict(feats)
+  
   output = clusters.reshape(a,b)
-  cl = list(set(output.ravel().tolist()))
   allversion=[]
-  for c in cl:
+  for c in range(0,4):
     temp = output.copy()
     temp[temp!=c]=5; temp[temp==c]=0; temp=temp//5;
     allversion.append(temp)
@@ -73,7 +80,11 @@ def optical_flow(args,seqs):
   for i,seq in enumerate(seqs):
     seq_path = seq.image_paths
     inputs=[];imagepath=[];score_temp_i=[];score_temp_f=[]
+
+   
+
     for frameindex,frame in enumerate(seq_path):
+
         frame = frame.replace('.jpg','.png')
         frame = frame.replace('JPEGImages','')
         #print(frame)
@@ -81,6 +92,7 @@ def optical_flow(args,seqs):
         gtn = seq.load_multi_masks([frameindex]);
         allversion = cluster(opt)
         score_f=[];score_i=[]
+
         for mask in allversion:
           fs,iou = metric(gtn,mask)
           score_f.append(fs);score_i.append(iou);
@@ -89,17 +101,18 @@ def optical_flow(args,seqs):
         full_result.append((filename,max(score_f),max(score_i)))
         score_temp_i.append(max(score_i))
         score_temp_f.append(max(score_f))
+
+
         #print(score_i)
         #print(max(score_i))
         #import pickle 
         #with open('/content/aa.pickle','wb') as h:
         #  pickle.dump([allversion,gtn],h)
-        
-    
+
     score_FS_clip.update({sp[-2]:max(score_temp_f)})
     score_IOU_clip.update({sp[-2]:max(score_temp_i)})
-
-    if i%10==0:
+    #print(score_FS_clip)
+    if i%100==0:
       print(i)
 
 
