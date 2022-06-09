@@ -62,7 +62,7 @@ def cluster(opt):
 
 def optical_flow(args,seqs):
   full_result=[]
-  for seq in seqs:
+  for i,seq in enumerate(seqs):
     seq_path = seq.image_paths
     inputs=[];imagepath=[];score_clip={};score_temp=[]
     for frameindex,frame in enumerate(seq_path):
@@ -86,8 +86,9 @@ def optical_flow(args,seqs):
         
     
     score_clip.update({sp[-2]:max(score_temp)})
-    break
-  print(score_clip)
+    if i==10:
+      break
+    print(score_clip)
   df = pd.DataFrame(full_result,columns =['Names','FS'])
   df.to_csv(args.basepath+'result_'+args.score_path+'.csv')
   with open(args.basepath+'result_clip'+args.score_path+'.csv', 'w') as f:
