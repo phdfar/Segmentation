@@ -104,12 +104,12 @@ def optical_flow(args,seqs):
 
 
   df = pd.DataFrame(full_result,columns =['Names','FS','IOU'])
-  df.to_csv(args.basepath+'result_'+args.score_path+'.csv')
-  with open(args.basepath+'result_FS_clip'+args.score_path+'.csv', 'w') as f:
+  df.to_csv('result_'+args.score_path+'.csv')
+  with open('result_FS_clip'+args.score_path+'.csv', 'w') as f:
       f.write("%s,%s\n"%('Clip','FS'))
       for key in score_FS_clip.keys():
         f.write("%s,%s\n"%(key,score_FS_clip[key]))
-  with open(args.basepath+'result_IOU_clip'+args.score_path+'.csv', 'w') as f:
+  with open('result_IOU_clip'+args.score_path+'.csv', 'w') as f:
       f.write("%s,%s\n"%('Clip','IOU'))
       for key in score_IOU_clip.keys():
         f.write("%s,%s\n"%(key,score_IOU_clip[key]))
