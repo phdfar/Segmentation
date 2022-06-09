@@ -16,7 +16,13 @@ def metric(gtn,mask):
     #result = rgb.copy();# np.zeros((args.imagesize[0],args.imagesize[1],3),'uint8')
     temp =  np.zeros((gtn.shape[0],gtn.shape[1]),'uint8')
     TP=0;FP=0;FN=0;TN=0;
-    fast_res=mask-gtn
+    try:
+        fast_res=mask-gtn
+    except:
+        dim = (gtn.shape[1],gtn.shape[0])
+        mask = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
+        fast_res=mask-gtn
+
     tpc = np.where(fast_res==0);temp[tpc]=1;
     tp = np.where(temp+mask==2)
     TP = len(tp[0])
