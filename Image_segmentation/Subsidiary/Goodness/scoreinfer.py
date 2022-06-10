@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from PIL import Image,ImageOps
 import PIL
 from tensorflow import keras
-
+import os
 def run(args,seqs):
     if args.score == 'optical_flow':
         optical_flow(args,seqs)
@@ -51,7 +51,7 @@ def vis(rgb,opt,mask,gtn,clipname,FS):
   footer1 = np.zeros((40,result.shape[1],3),'uint8');al=2;
   text = clipname + ' ' + str(FS)[:4]+'%'
   cv2.putText(footer1, text, (al,footer1.shape[0]-20), font, 0.4, (255,255,0), 1, cv2.LINE_AA);al+=160;  
-  result = np.concatenate((result,footer1,axis=0);
+  result = np.concatenate((result,footer1),axis=0);
   return result
 def metric(gtn,mask):
 
@@ -128,9 +128,9 @@ def cluster(opt):
     fs,iou = metric(gtn,mask)
     score_f.append(fs);
   
-  return allversion[np.argmax(score_f))]
+  return allversion[np.argmax(score_f)]
 
-def find_good_frame(name,all_name):
+def find_good_frame(name,all_name,all_FS):
     fs=[];ns=[]
     for i in range(len(all_name)):
         if name in all_name[i]:
@@ -157,28 +157,25 @@ def optical_flow(args,seqs):
   for cl in range(len(clip)):
     if args.tr1<=clip['FS'][cl]<=args.tr2:
       valid.append(clip['Clip'][cl])
-      
   for i,seq in enumerate(seqs):
     seq_path = seq.image_paths
     inputs=[];imagepath=[];score_temp_i=[];score_temp_f=[]
     sp = seq_path[0].split('/');
-    
     if sp[1] in valid:
-        name = find_good_frame(sp[1],all_name)
+        name = find_good_frame(sp[1],all_name,all_FS)
         name=name.replace('_','/');goodframe=name.replace('.png','.jpg')
-        
-      for frameindex,frame in enumerate(seq_path):
-          if frame ==goodframe:
-            rgb = cv2.imread(args.basepath+'train/'+frame)
-            frame = frame.replace('.jpg','.png')
-            frame = frame.replace('JPEGImages','')
-            #print(frame)
-            opt = cv2.imread(args.basepath+args.score_path+frame,0)
-            gtn = seq.load_multi_masks([frameindex]);
-            bestcluster = cluster(opt)
-            opt = cv2.imread(args.basepath+args.score_path+frame)
-            res = vis(rgb,opt,bestcluster,gtn,frame,)
-            sp = frame.split('/'); filename=sp[-2]+'_'+sp[-1]
-            res = keras.preprocessing.image.array_to_img(res)
-            res.save('result/'+filename)
+        for frameindex,frame in enumerate(seq_path):
+            if frame=='JPEGImages/'+goodframe:
+              rgb = cv2.imread(args.basepath+'train/'+frame)
+              frame = frame.replace('.jpg','.png')
+              frame = frame.replace('JPEGImages','')
+              #print(frame)
+              opt = cv2.imread(args.basepath+args.score_path+frame,0)
+              gtn = seq.load_multi_masks([frameindex]);
+              bestcluster = cluster(opt)
+              opt = cv2.imread(args.basepath+args.score_path+frame)
+              res = vis(rgb,opt,bestcluster,gtn,frame,)
+              sp = frame.split('/'); filename=sp[-2]+'_'+sp[-1]
+              res = keras.preprocessing.image.array_to_img(res)
+              res.save('result/'+filename)
 

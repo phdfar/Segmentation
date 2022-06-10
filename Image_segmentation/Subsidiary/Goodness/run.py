@@ -7,7 +7,7 @@ import tensorflow as tf
 global argss
 import keras.backend as K
 import score
-
+import scoreinfer
 def start(args):
   seqs = path.getinfo(args)
   keras.backend.clear_session()
