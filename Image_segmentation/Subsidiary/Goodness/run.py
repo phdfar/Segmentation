@@ -21,4 +21,4 @@ def start(args):
   if args.mode=='check_score':
     score.run(args,seqs)
   if args.mode=='infer_score':
-    inferscore.run(args,seqs)
+    scoreinfer.run(args,seqs)
