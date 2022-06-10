@@ -18,5 +18,7 @@ def start(args):
     else:
       mymodel=''
       visualize.start(mymodel,seqs,args.model_dir,args)
-  if args.mode=='check_score' or args.mode=='infer_score' :
+  if args.mode=='check_score':
     score.run(args,seqs)
+  if args.mode=='infer_score':
+    inferscore.run(args,seqs)
