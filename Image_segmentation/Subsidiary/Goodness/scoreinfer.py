@@ -28,6 +28,7 @@ def vis(rgb,opt,mask,gtn,clipname,FS):
   except:
       dim = (gtn.shape[1],gtn.shape[0])
       mask = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
+      opt = cv2.resize(opt, dim, interpolation = cv2.INTER_NEAREST)
       fast_res=mask-gtn
 
   tpc = np.where(fast_res==0);temp[tpc]=1;
@@ -107,7 +108,7 @@ def metric(gtn,mask):
       FS=0
     return FS,0
 
-def cluster(opt):
+def cluster(opt,gtn):
   kmeans = KMeans(n_clusters=4)
   a = opt.shape[0]; b=opt.shape[1]
   feats = opt.reshape(a*b,1)
@@ -128,7 +129,7 @@ def cluster(opt):
     fs,iou = metric(gtn,mask)
     score_f.append(fs);
   
-  return allversion[np.argmax(score_f)]
+  return allversion[np.argmax(score_f)],max(score_f)
 
 def find_good_frame(name,all_name,all_FS):
     fs=[];ns=[]
@@ -172,10 +173,10 @@ def optical_flow(args,seqs):
               #print(frame)
               opt = cv2.imread(args.basepath+args.score_path+frame,0)
               gtn = seq.load_multi_masks([frameindex]);
-              bestcluster = cluster(opt)
+              bestcluster,FS = cluster(opt,gtn)
               opt = cv2.imread(args.basepath+args.score_path+frame)
-              res = vis(rgb,opt,bestcluster,gtn,frame,)
+              res = vis(rgb,opt,bestcluster,gtn,frame,FS)
               sp = frame.split('/'); filename=sp[-2]+'_'+sp[-1]
               res = keras.preprocessing.image.array_to_img(res)
-              res.save('result/'+filename)
+              res.save(out_folder+'/'+filename)
 
