@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image,ImageOps
 import PIL
+from tensorflow import keras
 
 def run(args,seqs):
     if args.score == 'optical_flow':
@@ -17,7 +18,7 @@ def run(args,seqs):
 
         
         
-def vis(rgb,opt,mask,gtn):
+def vis(rgb,opt,mask,gtn,clipname,FS):
   rgb = np.asarray(rgb)
   result = rgb.copy();
   temp =  np.zeros((gtn.shape[0],gtn.shape[1]),'uint8')
@@ -43,8 +44,15 @@ def vis(rgb,opt,mask,gtn):
   fn  = np.where(fast_res==-1)
   FN =  len(fn[0])
   result[fn]=((255,255,0)+result[fn])//2
-  
-  
+
+  result = np.concatenate((rgb,opt,result),axis=1);
+    
+  font = cv2.FONT_HERSHEY_SIMPLEX;
+  footer1 = np.zeros((40,result.shape[1],3),'uint8');al=2;
+  text = clipname + ' ' + str(FS)[:4]+'%'
+  cv2.putText(footer1, text, (al,footer1.shape[0]-20), font, 0.4, (255,255,0), 1, cv2.LINE_AA);al+=160;  
+  result = np.concatenate((result,footer1,axis=0);
+  return result
 def metric(gtn,mask):
 
     #rgb = np.asarray(rgb)
@@ -133,7 +141,12 @@ def find_good_frame(name,all_name):
   
 def optical_flow(args,seqs):
   full_result=[];score_FS_clip={};score_IOU_clip={};
-  
+  out_folder=str(args.tr1)+'_'+str(args.tr2)
+  try:
+    os.mkdir(out_folder)
+  except:
+    pass
+                          
   clip = pd.read_csv(args.clipscore)
   all  = pd.read_csv(args.allscore)
   idx = np.argmax(clip['FS'])
@@ -164,8 +177,8 @@ def optical_flow(args,seqs):
             gtn = seq.load_multi_masks([frameindex]);
             bestcluster = cluster(opt)
             opt = cv2.imread(args.basepath+args.score_path+frame)
-            res = vis(rgb,opt,bestcluster,gtn)
+            res = vis(rgb,opt,bestcluster,gtn,frame,)
             sp = frame.split('/'); filename=sp[-2]+'_'+sp[-1]
-
-          
+            res = keras.preprocessing.image.array_to_img(res)
+            res.save('result/'+filename)
 
