@@ -28,7 +28,10 @@ if __name__ == '__main__':
     parser.add_argument('--imagesize', type=tuple_type, required=True)
     parser.add_argument('--colorspace', type=str ,default='rgb', required=False)
     parser.add_argument('--classid', type=list, default=[1000] , required=False)
-
+    parser.add_argument('--tr1', type=float32 ,default=0.90, required=False)
+    parser.add_argument('--tr2', type=float32 ,default=1, required=False)
+    parser.add_argument('--clipscore', type=str ,default='result_FS_cliptrain_optical.csv', required=False)
+    parser.add_argument('--allscore', type=str ,default='result_train_optical.csv', required=False)
 
     args = parser.parse_args()
 
