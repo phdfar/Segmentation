@@ -129,6 +129,6 @@ def run(args,mymodel,seqs,category_label,category_color):
                 mask = np.expand_dims(mask, axis=-1)
                 mask = mask[:,:,0];
             cat_mask = list(set(mask.ravel().tolist()))
-            dispatcher_draw[args.task](args,outputs[p],mask,inputs[p],cat_mask,size,category_color,category_label,args,imagepath[p])
+            dispatcher_draw[args.task](outputs[p],mask,inputs[p],cat_mask,size,category_color,category_label,args,imagepath[p])
     
       
