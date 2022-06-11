@@ -33,7 +33,7 @@ def start(mymodel,seqs,name,args):
     run(args,mymodel,seqs,category_label,category_color)
 
 
-def draw_semantic(args,outputs,mask,img,cat_mask,size,category_color,category_label,args,imagepath):
+def draw_semantic(outputs,mask,img,cat_mask,size,category_color,category_label,args,imagepath):
     font = cv2.FONT_HERSHEY_SIMPLEX;
     footer1 = np.zeros((40,args.imagesize[1],3),'uint8')+200;al=2;
     rgb = img.copy()
@@ -51,7 +51,7 @@ def draw_semantic(args,outputs,mask,img,cat_mask,size,category_color,category_la
     filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
     res.save('result/'+filename)
         
-def draw_binary(args,outputs,mask,img,cat_mask,size,category_color,category_label,args,imagepath):
+def draw_binary(outputs,mask,img,cat_mask,size,category_color,category_label,args,imagepath):
     #font = cv2.FONT_HERSHEY_SIMPLEX;
     #footer1 = np.zeros((40,args.imagesize[1],3),'uint8')+200;al=2;
     w1    = 10.0  # weight of bilateral term
