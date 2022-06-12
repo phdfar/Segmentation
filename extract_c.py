@@ -705,15 +705,16 @@ def _extract_crf_segmentations(
     # Convert binary
     if set(np.unique(segmap_orig_res).tolist()) == {0, 255}:
         segmap_orig_res[segmap_orig_res == 255] = 1
+    try:
+        # CRF
+        import denseCRF  # make sure you've installed SimpleCRF
+        unary_potentials = F.one_hot(torch.from_numpy(segmap_orig_res).long(), num_classes=num_classes)
+        segmap_crf = denseCRF.densecrf(image, unary_potentials, crf_params)  # (H_pad, W_pad)
 
-    # CRF
-    import denseCRF  # make sure you've installed SimpleCRF
-    unary_potentials = F.one_hot(torch.from_numpy(segmap_orig_res).long(), num_classes=num_classes)
-    segmap_crf = denseCRF.densecrf(image, unary_potentials, crf_params)  # (H_pad, W_pad)
-
-    # Save
-    Image.fromarray(segmap_crf).convert('L').save(output_file)
-
+        # Save
+        Image.fromarray(segmap_crf).convert('L').save(output_file)
+    excpet:
+        pass
 
 def extract_crf_segmentations(
     images_list: str,
