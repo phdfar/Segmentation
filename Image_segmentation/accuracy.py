@@ -188,6 +188,7 @@ def run_binary(test_preds,allpath,name,args,full_result,category_score,dicid):
 
     frame=test_preds[ii]
     if args.corrector=='crf':
+        import denseCRF
         w1    = 10.0  # weight of bilateral term
         alpha = 80    # spatial std
         beta  = 13    # rgb  std
