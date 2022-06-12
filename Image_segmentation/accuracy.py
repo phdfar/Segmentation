@@ -185,7 +185,7 @@ def run_binary(test_preds,allpath,name,args,full_result,category_score,dicid):
     dim = (args.imagesize[1],args.imagesize[0])
     gtn = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
             
-
+    rgb = np.asarray(rgb)
     frame=test_preds[ii]
     if args.corrector=='crf':
         import denseCRF
@@ -197,7 +197,6 @@ def run_binary(test_preds,allpath,name,args,full_result,category_score,dicid):
         it    = 5.0   # iteration
         param = (w1, alpha, beta, w2, gamma, it)
     
-        rgb_c = img.copy()
         #unary_potentials = F.one_hot(torch.from_numpy(bestcluster).long(), num_classes=2)
         mask = denseCRF.densecrf(rgb, frame, param)  # (H_pad, W_pad)
     elif args.corrector=='':
