@@ -713,7 +713,7 @@ def _extract_crf_segmentations(
 
         # Save
         Image.fromarray(segmap_crf).convert('L').save(output_file)
-    excpet:
+    excepet:
         pass
 
 def extract_crf_segmentations(
