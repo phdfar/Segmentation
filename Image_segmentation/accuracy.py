@@ -12,7 +12,8 @@ from keras import backend as K
 import tensorflow as tf
 import csv
 import json
-
+import torch.nn.functional as F
+import denseCRF
 
 def start(mymodel,allframe_test,name,args,dicid):
     if args.task == 'binary_seg':
@@ -186,10 +187,22 @@ def run_binary(test_preds,allpath,name,args,full_result,category_score,dicid):
             
 
     frame=test_preds[ii]
-
-    mask = np.argmax(frame, axis=-1)
-    mask = np.expand_dims(mask, axis=-1)
-    mask = mask[:,:,0];
+    if args.corrector=='crf':
+        w1    = 10.0  # weight of bilateral term
+        alpha = 80    # spatial std
+        beta  = 13    # rgb  std
+        w2    = 3.0   # weight of spatial term
+        gamma = 3     # spatial std
+        it    = 5.0   # iteration
+        param = (w1, alpha, beta, w2, gamma, it)
+    
+        rgb_c = img.copy()
+        #unary_potentials = F.one_hot(torch.from_numpy(bestcluster).long(), num_classes=2)
+        mask = denseCRF.densecrf(rgb, frame, param)  # (H_pad, W_pad)
+    elif args.corrector=='':
+        mask = np.argmax(frame, axis=-1)
+        mask = np.expand_dims(mask, axis=-1)
+        mask = mask[:,:,0];
     rgb = np.asarray(rgb)
     result = rgb.copy();# np.zeros((args.imagesize[0],args.imagesize[1],3),'uint8')
     temp =  np.zeros((args.imagesize[0],args.imagesize[1]),'uint8')
