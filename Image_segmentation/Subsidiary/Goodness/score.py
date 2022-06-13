@@ -123,9 +123,9 @@ def have_mask(args,seqs):
       if i%100==0:
           print(i)
           
-    df = pd.DataFrame(full_result,columns =['Names','FS','IOU'])
-    df.to_csv('result_'+args.score_path+'.csv')
-    with open('result_FS_clip'+args.score_path+'.csv', 'w') as f:
+    df = pd.DataFrame(full_result,columns =['Names','FS'])
+    df.to_csv('result.csv')
+    with open('result_FS_clip.csv', 'w') as f:
         f.write("%s,%s\n"%('Clip','FS'))
         for key in score_FS_clip.keys():
           f.write("%s,%s\n"%(key,score_FS_clip[key]))
