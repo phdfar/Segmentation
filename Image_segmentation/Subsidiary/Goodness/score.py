@@ -8,6 +8,8 @@ import tensorflow as tf
 def run(args,seqs):
     if args.score == 'optical_flow':
         optical_flow(args,seqs)
+    if args.score == 'have_mask':
+        have_mask(args,seqs)
 
 
 def metric(gtn,mask):
@@ -81,6 +83,51 @@ def cluster(opt):
     allversion.append(temp)
   return allversion
 
+def NormalizeData(data):
+    return (data - np.min(data)) / (np.max(data) - np.min(data))
+def have_mask(args,seqs):
+    full_result=[];score_FS_clip={};score_IOU_clip={};
+    for i,seq in enumerate(seqs):
+      seq_path = seq.image_paths
+      inputs=[];imagepath=[];score_temp_i=[];score_temp_f=[]
+
+      for frameindex,frame in enumerate(seq_path):
+
+          frame = frame.replace('.jpg','.png')
+          frame = frame.replace('JPEGImages','')
+
+          #print(frame)
+          try:
+              framex = frame.replace('/','_')
+              mask = cv2.imread(args.basepath+args.score_path+framex)
+          except:
+              framex = frame.replace('/','_')
+              i = args.basepath+args.score_path+framex
+              sp = i.split('/'); eigpath=sp[-1].replace('.png','.pth.npy');#eigpath = sp[-2]+'_'+name;
+              eig = np.load(eigpath)
+              dim = (args.imagesize[1],args.imagesize[0])
+              f = NormalizeData(eig[:,:,1])
+              f = cv2.resize(f, dim, interpolation = cv2.INTER_NEAREST)
+              tr=0.15
+              f[f<=tr]=0;f[f>tr]=1;mask = f.copy()
+              gtn = seq.load_multi_masks([frameindex]);
+              fs,iou = metric(gtn,mask)
+              sp = frame.split('/'); filename=sp[-2]+'_'+sp[-1]
+              full_result.append((filename,fs))
+              score_temp_f.append(fs)
+
+      score_FS_clip.update({sp[-2]:max(score_temp_f)})
+        #print(score_FS_clip)
+      if i%100==0:
+          print(i)
+          
+    df = pd.DataFrame(full_result,columns =['Names','FS','IOU'])
+    df.to_csv('result_'+args.score_path+'.csv')
+    with open('result_FS_clip'+args.score_path+'.csv', 'w') as f:
+        f.write("%s,%s\n"%('Clip','FS'))
+        for key in score_FS_clip.keys():
+          f.write("%s,%s\n"%(key,score_FS_clip[key]))
+    
 def optical_flow(args,seqs):
   full_result=[];score_FS_clip={};score_IOU_clip={};
   for i,seq in enumerate(seqs):
