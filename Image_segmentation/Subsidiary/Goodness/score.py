@@ -102,8 +102,8 @@ def have_mask(args,seqs):
               mask = cv2.imread(args.basepath+args.score_path+framex)
           except:
               framex = frame.replace('/','_')
-              i = args.basepath+args.score_path+framex
-              sp = i.split('/'); eigpath=sp[-1].replace('.png','.pth.npy');#eigpath = sp[-2]+'_'+name;
+              eigpath = args.basepath+args.score_path+framex[1:]
+              eigpath=eigpath.replace('.png','.pth.npy');#eigpath = sp[-2]+'_'+name;
               eig = np.load(eigpath)
               dim = (args.imagesize[1],args.imagesize[0])
               f = NormalizeData(eig[:,:,1])
