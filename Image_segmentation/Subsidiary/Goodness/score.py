@@ -111,6 +111,8 @@ def have_mask(args,seqs):
               tr=0.15
               f[f<=tr]=0;f[f>tr]=1;mask = f.copy()
               gtn = seq.load_multi_masks([frameindex]);
+              dim = (gtn.shape[1],gtn.shape[0])
+              mask = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
               fs,iou = metric(gtn,mask)
               sp = frame.split('/'); filename=sp[-2]+'_'+sp[-1]
               full_result.append((filename,fs))
