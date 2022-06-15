@@ -10,7 +10,7 @@ def network(args):
  
 def inception_default(img_size,channel_input):
     inputs1 = keras.Input(shape=img_size + (channel_input,))
-    inputs2 = keras.Input(shape=img_size + (channel_input,))
+    inputs2 = keras.Input(shape=img_size + (1,))
 
     ### [First half of the network: downsampling inputs] ###
 
@@ -36,7 +36,6 @@ def inception_default(img_size,channel_input):
     
     previous_block_activation = z  # Set aside residual
     x = z
-    print(z.shape)
 
     # Blocks 1, 2, 3 are identical apart from the feature depth.
     for filters in [64, 128, 256]:
@@ -54,9 +53,6 @@ def inception_default(img_size,channel_input):
         residual = layers.Conv2D(filters, 1, strides=2, padding="same")(
             previous_block_activation
         )
-        print(x.shape)
-        print(residual.shape)
-        print('----')
         x = layers.add([x, residual])  # Add back residual
         previous_block_activation = x  # Set aside next residual
 

@@ -8,6 +8,7 @@ global argss
 import keras.backend as K
 import score
 import scoreinfer
+import run_train
 def start(args):
   seqs = path.getinfo(args)
   keras.backend.clear_session()
@@ -18,7 +19,9 @@ def start(args):
     else:
       mymodel=''
       visualize.start(mymodel,seqs,args.model_dir,args)
-  if args.mode=='check_score':
+  elif args.mode=='check_score':
     score.run(args,seqs)
-  if args.mode=='infer_score':
+  elif args.mode=='infer_score':
     scoreinfer.run(args,seqs)
+  elif args.mode=='train':
+      run_train.start(args)
