@@ -103,6 +103,7 @@ class dataloader(keras.utils.Sequence):
         self.colorspace = args.colorspace
         self.network = args.network
         self.baseinput=args.baseinput
+        self.baseinput2=args.baseinput2
         self.config=args.config
 
     def __len__(self):
