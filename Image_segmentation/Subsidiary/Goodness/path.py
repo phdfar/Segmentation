@@ -104,9 +104,9 @@ class dataloader_2i(keras.utils.Sequence):
         """Returns tuple (input, target) correspond to batch #idx."""
         i = idx * self.batch_size
         batch_input_img_paths = self.input_img_paths[i : i + self.batch_size]
-        x = np.zeros((self.batch_size,) + self.input_imagesize + (self.channel_input,), dtype="float32")
+        x = np.zeros((self.batch_size,) + self.input_imagesize + (self.channel_input,), dtype="uint8")
         z = np.zeros((self.batch_size,) + self.input_imagesize + (1,), dtype="float32")
-        y = np.zeros((self.batch_size,) + (1,), dtype="uint8")
+        y = np.zeros((self.batch_size,) + (1,), dtype="float32")
         
         for j, path in enumerate(batch_input_img_paths):
             a,y[j] = io_config.run(self,path)
