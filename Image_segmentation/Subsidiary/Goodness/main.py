@@ -9,7 +9,9 @@ def tuple_type(strings):
 def main(args):
   if (args.classid)[0]==1000:
     args.classid = list(np.linspace(1,40,40).astype('int32'))
-    print(args.classid )
+    #print(args.classid )
+    if args.input_imagesize==0:
+        args.input_imagesize=args.imagesize
   
   run.start(args)
   return args 
@@ -36,7 +38,8 @@ if __name__ == '__main__':
     parser.add_argument('--batchsize', type=int ,default=32, required=False)
     parser.add_argument('--epoch', type=int ,default=30, required=False)
     parser.add_argument('--branch_input', type=int ,default=2, required=False)
-
+    parser.add_argument('--input_imagesize',default=(0), type=tuple_type, required=False)
+    parser.add_argument('--baseinput', type=str , default='/content/', required=False)
     
 
     args = parser.parse_args()
