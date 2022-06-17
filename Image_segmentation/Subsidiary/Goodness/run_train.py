@@ -29,8 +29,8 @@ def start(args):
     mymodel=model.network(args)
     mymodel.summary()
 
-    if args.loss=='default':
-        mymodel.compile(optimizer="adam", loss="mse")
+   
+    mymodel.compile(optimizer="adam", loss="mse")
   
     callbacks = [
         keras.callbacks.ModelCheckpoint(args.model_dir, save_best_only=True),CSVLogger(args.model_dir+'_log.csv', append=True, separator=',')
