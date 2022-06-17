@@ -92,6 +92,8 @@ class dataloader_2i(keras.utils.Sequence):
         self.baseinput=args.baseinput
         self.config=args.config
         self.branch_input = args.branch_input
+        self.baseinput2=args.baseinput2
+
         goodness_score = args.basepath+ 'Segmentation/Image_segmentation/Subsidiary/Goodness/goodness_score.pickle'
         with open(goodness_score, 'rb') as handle:
           goodness_score = pickle.load(handle)
