@@ -33,6 +33,9 @@ if __name__ == '__main__':
     parser.add_argument('--tr2', type=float ,default=1, required=False)
     parser.add_argument('--clipscore', type=str ,default='result_FS_cliptrain_optical.csv', required=False)
     parser.add_argument('--allscore', type=str ,default='result_train_optical.csv', required=False)
+    parser.add_argument('--branch_input', type=str ,default=2, required=False)
+
+    
 
     args = parser.parse_args()
 

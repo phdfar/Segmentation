@@ -1,7 +1,7 @@
 from tensorflow.keras.preprocessing.image import load_img
 import numpy as np
 import cv2
-from models.Spectral import load
+#from models.Spectral import load
 
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))

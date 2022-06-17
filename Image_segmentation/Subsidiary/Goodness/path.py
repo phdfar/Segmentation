@@ -31,7 +31,7 @@ def getinfo_train(args):
     goodness_file = pickle.load(handle)
   good_train = goodness_file[0];good_val = goodness_file[1];good_test = goodness_file[2];
         
-  print(good_train)
+  #print(good_train)
   valid=[];
 
     
