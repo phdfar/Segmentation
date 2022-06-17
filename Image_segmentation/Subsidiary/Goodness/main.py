@@ -35,6 +35,9 @@ if __name__ == '__main__':
     parser.add_argument('--allscore', type=str ,default='result_train_optical.csv', required=False)
     parser.add_argument('--batchsize', type=int ,default=32, required=False)
     parser.add_argument('--epoch', type=int ,default=30, required=False)
+    parser.add_argument('--branch_input', type=int ,default=2, required=False)
+
+    
 
     args = parser.parse_args()
 
