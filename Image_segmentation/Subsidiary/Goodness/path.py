@@ -79,14 +79,13 @@ class dataloader_2i(keras.utils.Sequence):
         
     """Helper to iterate over the data (as Numpy arrays)."""
 
-    def __init__(self, args,input_img_paths,dicid):
+    def __init__(self, args,input_img_paths):
         self.batch_size = args.batchsize
         self.img_size = args.imagesize
         self.input_imagesize = args.input_imagesize
         self.input_img_paths = input_img_paths
         self.basepath = args.basepath
         self.task = args.task
-        self.dicid = dicid
         self.channel_input  = args.channel_input
         self.colorspace = args.colorspace
         self.network = args.network

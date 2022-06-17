@@ -18,7 +18,7 @@ def start(args):
   allframe_train,allframe_val,allframe_test = path.getinfo_train(args)
   random.Random(1337).shuffle(allframe_train)
     
-  dispatcher_loader={1:path.dataloader,2:path.dataloader_2i}
+  dispatcher_loader={1:path.dataloader_2i,2:path.dataloader_2i}
 
   # Instantiate data Sequences for each split
   train_gen = dispatcher_loader[args.branch_input](args,allframe_train)
