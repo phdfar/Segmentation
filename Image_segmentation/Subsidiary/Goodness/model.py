@@ -6,7 +6,7 @@ from keras.models import load_model
 from keras.utils.vis_utils import plot_model
 def network(args):
   if args.network=='inception_default':
-    return inception_default(args.imagesize,args.num_class,args.channel_input)
+    return inception_default(args.imagesize,args.channel_input)
  
 def inception_default(img_size,channel_input):
     inputs1 = keras.Input(shape=img_size + (channel_input,))
