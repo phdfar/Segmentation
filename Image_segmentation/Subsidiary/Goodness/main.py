@@ -41,6 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('--input_imagesize',default=(0), type=tuple_type, required=False)
     parser.add_argument('--baseinput', type=str , default='/content/', required=False)
     parser.add_argument('--config', type=int , default=0, required=False)
+    parser.add_argument('--restore', type=bool , default=False, required=False)
 
 
     args = parser.parse_args()
