@@ -5,6 +5,7 @@ import cv2
 from tensorflow import keras
 import numpy as np
 from tensorflow.keras.preprocessing.image import load_img
+import io_config
 
 jsonf = {'train':'youtube_vis_train.json','valid':'youtube_vis_val.json'}
 def getinfo(args):
@@ -19,74 +20,52 @@ def getinfo_train(args):
   base_dir=args.basepath+'train/'
   dataset_json = args.basepath +'youtube_vis_train.json'
   meta_plus_path = args.basepath+ 'Segmentation/meta_plus_youtube_vis.pickle'
+  goodness_path = args.basepath+ 'Segmentation/Image_segmentation/Subsidiary/Goodness/allpath_goodness.pickle'
   dataset,meta_info,seqs =  data.parse_generic_video_dataset(base_dir, dataset_json)
   
-  if args.classid=='all':
-    args.classid = list(np.linspace(1,40,40).astype('int32'))
-  
-  dicid={};
-  if args.task=='semantic_seg':
-    i=1;
-    for x in args.classid:
-      dicid.update({x:i});i+=1
-  
-  flag_multi=0;
-  if  args.num_instance>1:
-    flag_multi=1;
+ 
     
   with open(meta_plus_path, 'rb') as handle:
     meta_plus = pickle.load(handle)
+  with open(goodness_path, 'rb') as handle:
+    goodness_file = pickle.load(handle)
+  good_train = goodness_file[0];good_val = goodness_file[1];good_test = goodness_file[2];
+        
+  print(good_train)
   valid=[];
-  lenf=0;
 
     
   for i in meta_plus:
-    flag=0;
-    if  args.num_instance==1000 and args.unq_class==1000:
-      for c in i['unique_class']:
-        if c not in list(args.classid):
-          flag=1;
-      if flag==0:
-        valid.append(i['id'])
-        #print(i)
-          
-    elif args.num_instance==1000 and args.unq_class!=1000:
-      if i['number_unique_class']==args.unq_class:
-        for c in i['unique_class']:
-          if c not in list(args.classid):
-            flag=1;  
-        if flag==0:
-          valid.append(i['id'])
-          #print(i)
-          
-    elif i['number_instances']==args.num_instance and i['number_unique_class']==args.unq_class:
-      for c in i['unique_class']:
-        if c not in list(args.classid):
-          flag=1;  
-        if flag==0:
-          valid.append(i['id'])
-          #print(i)
-
-          #lenf+=i['clip_length']
-          #print(i)
+      valid.append(i['id'])
+  
           
   allframe_train=[];allframe_val=[];allframe_test=[]
   for seq in seqs:
     if seq.id in valid:
-      a = int(np.floor(seq.length*0.67))
-      b = a + int(np.ceil(seq.length*0.1))
-      p=0; 
-      allindex = list(range(len(seq.image_paths)))
+      #a = int(np.floor(seq.length*0.67))
+      #b = a + int(np.ceil(seq.length*0.1))
+      #p=0; 
+      #allindex = list(range(len(seq.image_paths)))
       allpath = seq.image_paths;
-      random.Random(1337).shuffle(allindex)
-      for frame in allindex:
-        if p<=a:
-          allframe_train.append({frame:[allpath[frame],seq,flag_multi]})
-        elif p>a and p<=b:
-          allframe_val.append({frame:[allpath[frame],seq,flag_multi]})
-        else:
-          allframe_test.append({frame:[allpath[frame],seq,flag_multi]})
-        p+=1;
+      for frame,p in enumerate(allpath):
+          q = p.replace('jpg','png')
+          sp = q.split('/'); name = sp[-2]+'_'+sp[-1]
+          if name in good_train:
+              allframe_train.append({frame:[p,seq,1]})
+          elif name in good_val:
+              allframe_val.append({frame:[p,seq,1]})
+          elif name in good_test:
+              allframe_test.append({frame:[p,seq,1]})
+
+      #random.Random(1337).shuffle(allindex)
+      # for frame in allindex:
+      #   if p<=a:
+      #     allframe_train.append({frame:[allpath[frame],seq,flag_multi]})
+      #   elif p>a and p<=b:
+      #     allframe_val.append({frame:[allpath[frame],seq,flag_multi]})
+      #   else:
+      #     allframe_test.append({frame:[allpath[frame],seq,flag_multi]})
+      #   p+=1;
 
       
 
@@ -114,6 +93,10 @@ class dataloader_2i(keras.utils.Sequence):
         self.baseinput=args.baseinput
         self.config=args.config
         self.branch_input = args.branch_input
+        goodness_score = args.basepath+ 'Segmentation/Image_segmentation/Subsidiary/Goodness/goodness_score.pickle'
+        with open(goodness_score, 'rb') as handle:
+          goodness_score = pickle.load(handle)
+        self.goodness_score = goodness_score
 
     def __len__(self):
         return len(self.input_img_paths) // self.batch_size
@@ -130,8 +113,7 @@ class dataloader_2i(keras.utils.Sequence):
             a,y[j] = io_config.run(self,path)
             x[j]=a[0];
             z[j]=a[1];
-            
-       
+                   
         return [x,z],y
 
 

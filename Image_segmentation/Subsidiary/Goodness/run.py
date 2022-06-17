@@ -10,18 +10,21 @@ import score
 import scoreinfer
 import run_train
 def start(args):
-  seqs = path.getinfo(args)
+    
   keras.backend.clear_session()
 
   if args.mode=='only_vis':
+    seqs = path.getinfo(args)
     if 'h5' in args.model_dir:
       mymodel = load_model(args.model_dir)
     else:
       mymodel=''
       visualize.start(mymodel,seqs,args.model_dir,args)
   elif args.mode=='check_score':
+    seqs = path.getinfo(args)
     score.run(args,seqs)
   elif args.mode=='infer_score':
+    seqs = path.getinfo(args)
     scoreinfer.run(args,seqs)
   elif args.mode=='train':
       run_train.start(args)
