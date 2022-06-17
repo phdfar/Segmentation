@@ -22,12 +22,13 @@ def run(myself,path):
   eig1 = NormalizeData(eig1)
   
   eig1[eig1<=0.15]=0;eig1[eig1>0.15]=1;
-    
+  eig1 = np.expand_dims(eig1,2)
+
   x = [img,eig1]
   
   namey = eigpath.replace('.pth.npy','.png')
 
   y = myself.goodness_score[namey]
-  y = np.expand_dims(y,1)
+  y = np.expand_dims(y,0)
 
   return x,y
