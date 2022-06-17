@@ -13,9 +13,9 @@ def run(myself,path):
   flagmulti = path[frameindex][2]
   
   
-  img = np.asarray(load_img(myself.basepath+'train/'+imagepath, target_size=myself.img_size,grayscale=False))
+  img = np.asarray(load_img(myself.baseinput+'train/'+imagepath, target_size=myself.img_size,grayscale=False))
   sp = imagepath.split('/'); name=sp[-1].replace('.jpg','.pth.npy');eigpath = sp[-2]+'_'+name;
-  eig = np.load(myself.baseinput+'data/VOC2012/eigs/laplacian/'+eigpath)
+  eig = np.load(myself.baseinput2+eigpath) #data/VOC2012/eigs/laplacian/
     
   dim = (myself.img_size[1],myself.img_size[0])
   eig1 = cv2.resize(eig[:,:,1], dim, interpolation = cv2.INTER_NEAREST)
