@@ -40,9 +40,7 @@ def run(mymodel,allframe_test,name,args):
       test_preds_batch = mymodel.predict(test_gen_batch)
       print('check accuracy')
       full_result,MAE = run_binary(test_preds_batch,batch_test,name,args,full_result,MAE,goodness_score)
-      
-     
-   
+        
 
     lendata=len(allframe_test)
     MAE = MAE/lendata
@@ -51,7 +49,7 @@ def run(mymodel,allframe_test,name,args):
     print("MAE",MAE)
     print('*********')
   
-    df = pd.DataFrame(full_result,columns =['Names','MAE'])
+    df = pd.DataFrame(full_result,columns =['Names','y-true','y-pred','MAE'])
     df.to_csv('result_'+name+'.csv')
 
 def NormalizeData(data):
@@ -102,7 +100,7 @@ def run_binary(test_preds,allpath,name,args,full_result,MAE,goodness_score):
 
     res = keras.preprocessing.image.array_to_img(result)
     filename = imagepath.split('/'); filename=filename[-2]+'_'+filename[-1]
-    full_result.append((filename,y_true,y_pred,abs(y_true-y_pred)))
+    full_result.append((filename,y_true,y_pred,round(abs(y_true-y_pred), 2)))
     p+=1;
     try:
       os.mkdir('result')
