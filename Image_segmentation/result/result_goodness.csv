@@ -1,0 +1,3 @@
+Model,epoch,batchsize,size,class,IOU,FS,Loss
+Inception goodness EIG,30,32,384-640,41,0.70,-,0.0151
+
