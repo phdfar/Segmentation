@@ -37,8 +37,25 @@ def init(args):
       os.system('rm sda1.backup.tar.gz.ae')
       os.system('tar xfz train.tar.gz')
       os.system('rm train.tar.gz')
-    
     os.system('wget https://omnomnom.vision.rwth-aachen.de/data/STEm-Seg/dataset_jsons/youtube_vis_train.json')
+
+  if 'eig'==args.type:
+    os.system('gdown 1JGJdomjXiTmgGc5dJiv1wZHSYA80xPZ-')
+    os.system('gdown 1N_7PV-xzEZYOAD-IxHYCaJk4Q5So2-cA')
+    os.system('gdown 1sUYg2bdJ-XcZkjuUOhekqfpYDMGd6YWM')
+    os.system('gdown 1-0c0Q7aOZdiG1byYXycAz8iSWK07kvnz')
+    os.system('gdown 1yF3z14EAgCFzZRSVUj4ddHJ53tF78MCo')
+    os.system('tar xzf eig1.tar.gz')
+    os.system('tar xzf eig2.tar.gz')
+    os.system('tar xzf eig3.tar.gz')
+    os.system('tar xzf eig4.tar.gz')
+    os.system('tar xzf eig5.tar.gz')
+    os.system('rm eig1.tar.gz')
+    os.system('rm eig2.tar.gz')
+    os.system('rm eig3.tar.gz')
+    os.system('rm eig4.tar.gz')
+    os.system('rm eig5.tar.gz')
+    
 
 
 if __name__ == '__main__':

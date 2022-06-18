@@ -33,7 +33,7 @@ def run(mymodel,allframe_test,name,args):
     for x in args.classid:
       category_score.update({x:[0,0]})
       
-    MAE=[];
+    MAE=0;
     for batch_test in allframe_test_chunk:
       #test_gen_batch = path.dataloader(args,batch_test,dicid) 
       test_gen_batch = dispatcher_loader[args.branch_input](args,batch_test)   
