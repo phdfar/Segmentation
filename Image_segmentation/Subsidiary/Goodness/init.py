@@ -16,7 +16,7 @@ def init(args):
       os.system('rm valid.zip')
     os.system('wget https://omnomnom.vision.rwth-aachen.de/data/STEm-Seg/dataset_jsons/youtube_vis_val.json')
 
-  if 'train' in args.type:
+  if 'train'==args.type:
     if args.mode=='google':
       os.system('pip install -U --no-cache-dir gdown --pre')
       os.system('gdown --no-cookies 1j7ua5QKVNc3QSBSG6XSXiRAyBlRWz-2b')
@@ -39,7 +39,7 @@ def init(args):
       os.system('rm train.tar.gz')
     os.system('wget https://omnomnom.vision.rwth-aachen.de/data/STEm-Seg/dataset_jsons/youtube_vis_train.json')
 
-  if 'eig'==args.type:
+  if 'eig_train'==args.type:
     os.system('gdown 1JGJdomjXiTmgGc5dJiv1wZHSYA80xPZ-')
     os.system('gdown 1N_7PV-xzEZYOAD-IxHYCaJk4Q5So2-cA')
     os.system('gdown 1sUYg2bdJ-XcZkjuUOhekqfpYDMGd6YWM')
@@ -55,8 +55,9 @@ def init(args):
     os.system('rm eig3.tar.gz')
     os.system('rm eig4.tar.gz')
     os.system('rm eig5.tar.gz')
-    
-
+  if 'eig_valid'==args.type:
+      os.system('gdown 11RY6g2dQd1xl3UNnL3f-u008Hc7DlPjP')
+      os.system('tar xzf eig_valid.tar.gz')
 
 if __name__ == '__main__':
     parser = ArgumentParser()
