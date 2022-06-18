@@ -93,7 +93,7 @@ def run(args,mymodel,seqs,category_label,category_color):
         outputs = mymodel.predict([np.asarray(inputs1),np.asarray(inputs2)])
         for p in range(len(outputs)):
             draw(outputs[p],inputs1[p],imagepath[p],args)
-            y_pred = float(outputs[0]);y_pred = round(y_pred, 2)
+            y_pred = float(outputs[p][0]);y_pred = round(y_pred, 2)
             filename = imagepath[p].split('/'); filename=filename[-2]+'_'+filename[-1]
             full_result.append((filename,y_pred))
     df = pd.DataFrame(full_result,columns =['Names','y-pred'])
