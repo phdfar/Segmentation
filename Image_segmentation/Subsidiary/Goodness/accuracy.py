@@ -58,7 +58,7 @@ def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
         
 def run_binary(test_preds,allpath,name,args,full_result,MAE,goodness_score):
-  p=0;
+  p=0;tempMAE=0;
   for ii in range(len(test_preds)):
     path = allpath[ii]
     frameindex= list(path.keys())[0]
@@ -71,29 +71,32 @@ def run_binary(test_preds,allpath,name,args,full_result,MAE,goodness_score):
     dim = (args.imagesize[1],args.imagesize[0])
     gtn = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
             
-    img = np.asarray(load_img(args.baseinput+'train/'+imagepath, target_size=args.img_size,grayscale=False))
+    img = np.asarray(load_img(args.baseinput+'train/'+imagepath, target_size=args.imagesize,grayscale=False))
     sp = imagepath.split('/'); name=sp[-1].replace('.jpg','.pth.npy');eigpath = sp[-2]+'_'+name;
     eig = np.load(args.baseinput2+eigpath) #data/VOC2012/eigs/laplacian/
       
-    dim = (args.img_size[1],args.img_size[0])
+    dim = (args.imagesize[1],args.imagesize[0])
     eig1 = cv2.resize(eig[:,:,1], dim, interpolation = cv2.INTER_NEAREST)
     eig1 = NormalizeData(eig1)
     
     eig1[eig1<=0.15]=0;eig1[eig1>0.15]=1;
-    eig1 = np.expand_dims(eig1,2);eig1 = np.expand_dims(eig1,2);eig1 = np.expand_dims(eig1,2);
-   
-    result = ([img,eig1,gtn]).asarray()
-    
+    eig1 = np.expand_dims(eig1,2);eig1 = np.concatenate((eig1,eig1,eig1),axis=-1);
+    gtn = np.expand_dims(gtn,2);gtn = np.concatenate((gtn,gtn,gtn),axis=-1);
+    #result = np.asarray([img,eig1*255,gtn])
+    result = np.concatenate((img,eig1*255,gtn),axis=1);
+
     namey = eigpath.replace('.pth.npy','.png')
 
-    y_true = goodness_score[namey]
-    y_pred = test_preds[ii]
+    y_true = float(goodness_score[namey])
+    y_pred = float(test_preds[ii][0])
+    y_pred = round(y_pred, 2)
     MAE = MAE + abs(y_true-y_pred)
+    tempMAE = tempMAE + abs(y_true-y_pred)
  
     font = cv2.FONT_HERSHEY_SIMPLEX;
     footer1 = np.zeros((40,result.shape[1],3),'uint8');al=2;
-    text = 'y-true ' + str(y_true) + ' y-pred ' + str(y_pred)
-    cv2.putText(footer1, text, (al,footer1.shape[0]-20), font, 5, (255,255,255), 1, cv2.LINE_AA);al+=160;
+    text = 'y-true ' + str(y_true) + ' y-pred ' + str(y_pred) + ' diff ' + str(y_true-y_pred)
+    cv2.putText(footer1, text, (al,footer1.shape[0]-20), font, 0.6, (255,255,255), 1, cv2.LINE_AA);al+=160;
     result = np.concatenate((result,footer1),axis=0);
 
 
@@ -107,7 +110,7 @@ def run_binary(test_preds,allpath,name,args,full_result,MAE,goodness_score):
       pass
   
     res.save('result/'+filename)
-    print('MAE',MAE/p)
+  print('MAE',tempMAE/p)
   return full_result,MAE
 
 
