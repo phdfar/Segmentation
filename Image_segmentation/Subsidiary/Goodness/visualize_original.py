@@ -37,9 +37,7 @@ def start(mymodel,seqs,name,args):
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
 
-def draw(outputs,inputs,imagepath,args):
-    
-    img = np.asarray(load_img(args.baseinput+'valid/'+imagepath, target_size=args.imagesize,grayscale=False))
+def get_eig(args,imagepath):
     sp = imagepath.split('/'); name=sp[-1].replace('.jpg','.pth.npy');eigpath = sp[-2]+'_'+name;
     eig = np.load(args.baseinput2+eigpath) #data/VOC2012/eigs/laplacian/
       
@@ -48,7 +46,14 @@ def draw(outputs,inputs,imagepath,args):
     eig1 = NormalizeData(eig1)
     
     eig1[eig1<=0.15]=0;eig1[eig1>0.15]=1;
-    eig1 = np.expand_dims(eig1,2);eig1 = np.concatenate((eig1,eig1,eig1),axis=-1);
+    eig1 = np.expand_dims(eig1,2);
+    return eig1
+    
+def draw(outputs,inputs,imagepath,args):
+    
+    img = np.asarray(load_img(args.baseinput+'valid/'+imagepath, target_size=args.imagesize,grayscale=False))
+    eig1 = get_eig(args,imagepath)
+    eig1 = np.concatenate((eig1,eig1,eig1),axis=-1);
     
     
     result = np.concatenate((img,eig1*255),axis=1);
@@ -77,14 +82,15 @@ def run(args,mymodel,seqs,category_label,category_color):
         pass
     for seq in seqs:
         seq_path = seq.image_paths
-        inputs=[];imagepath=[]
+        inputs1=[];inputs2=[];imagepath=[]
         for frame in seq_path:
             rgb = load_img(args.basepath+'valid/'+frame, target_size=args.imagesize)
             rgb = np.asarray(rgb)
-            inputs.append(rgb)
+            inputs1.append(rgb)
+            inputs2.append(get_eig(args,args.basepath+'valid/'+frame))
             imagepath.append(args.basepath+'valid/'+frame)
-        outputs = mymodel.predict(np.asarray(inputs))
+        outputs = mymodel.predict([np.asarray(inputs1),inputs2])
         for p in range(len(outputs)):
-            draw(outputs[p],inputs[p],imagepath[p],args)
+            draw(outputs[p],inputs1[p],imagepath[p],args)
     
       

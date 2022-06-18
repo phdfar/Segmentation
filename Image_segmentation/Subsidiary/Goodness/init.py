@@ -3,7 +3,7 @@ from IPython.display import clear_output
 from argparse import ArgumentParser
 
 def init(args):
-  if 'valid' in args.type:
+  if 'valid'==args.type:
     if args.mode=='google':
       os.system('pip install -U --no-cache-dir gdown --pre')
       os.system('gdown --no-cookies 1o586Wjya-f2ohxYf9C1RlRH-gkrzGS8t')
