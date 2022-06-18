@@ -89,7 +89,7 @@ def run(args,mymodel,seqs,category_label,category_color):
             inputs1.append(rgb)
             inputs2.append(get_eig(args,args.basepath+'valid/'+frame))
             imagepath.append(args.basepath+'valid/'+frame)
-        outputs = mymodel.predict([np.asarray(inputs1),inputs2])
+        outputs = mymodel.predict([np.asarray(inputs1),np.asarray(inputs2)])
         for p in range(len(outputs)):
             draw(outputs[p],inputs1[p],imagepath[p],args)
     
