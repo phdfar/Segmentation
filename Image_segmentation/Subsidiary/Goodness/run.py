@@ -26,5 +26,5 @@ def start(args):
   elif args.mode=='infer_score':
     seqs = path.getinfo(args)
     scoreinfer.run(args,seqs)
-  elif args.mode=='train':
+  elif args.mode=='train' or args.mode=='test':
       run_train.start(args)
