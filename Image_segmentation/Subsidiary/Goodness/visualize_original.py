@@ -51,7 +51,7 @@ def get_eig(args,imagepath):
     
 def draw(outputs,inputs,imagepath,args):
     
-    img = np.asarray(load_img(args.baseinput+'valid/'+imagepath, target_size=args.imagesize,grayscale=False))
+    img = np.asarray(load_img(imagepath, target_size=args.imagesize,grayscale=False))
     eig1 = get_eig(args,imagepath)
     eig1 = np.concatenate((eig1,eig1,eig1),axis=-1);
     
