@@ -83,7 +83,7 @@ def run_binary(test_preds,allpath,name,args,full_result,MAE,goodness_score):
     eig1 = np.expand_dims(eig1,2);eig1 = np.concatenate((eig1,eig1,eig1),axis=-1);
     gtn = np.expand_dims(gtn,2);gtn = np.concatenate((gtn,gtn,gtn),axis=-1);
     #result = np.asarray([img,eig1*255,gtn])
-    result = np.concatenate((img,eig1*255,gtn),axis=1);
+    result = np.concatenate((img,eig1*255,gtn*255),axis=1);
 
     namey = eigpath.replace('.pth.npy','.png')
 
@@ -95,7 +95,7 @@ def run_binary(test_preds,allpath,name,args,full_result,MAE,goodness_score):
  
     font = cv2.FONT_HERSHEY_SIMPLEX;
     footer1 = np.zeros((40,result.shape[1],3),'uint8');al=2;
-    text = 'y-true ' + str(y_true) + ' y-pred ' + str(y_pred) + ' diff ' + str(y_true-y_pred)
+    text = 'y-true ' + str(y_true) + ' y-pred ' + str(y_pred) + ' diff ' + str(round(abs(y_true-y_pred), 2))
     cv2.putText(footer1, text, (al,footer1.shape[0]-20), font, 0.6, (255,255,255), 1, cv2.LINE_AA);al+=160;
     result = np.concatenate((result,footer1),axis=0);
 
