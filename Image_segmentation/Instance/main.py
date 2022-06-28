@@ -26,7 +26,7 @@ if __name__ == '__main__':
     parser.add_argument('--restore', type=bool ,default=False, required=False)
     parser.add_argument('--network', type=str , required=True)
     parser.add_argument('--model_dir', type=str , required=True)
-    parser.add_argument('--corrector', type=str,default='', required=True)
+    parser.add_argument('--corrector', type=str,default='', required=False)
     parser.add_argument('--basepath', type=str , default='/content/', required=False)
     parser.add_argument('--baseinput', type=str , default='/content/', required=False)
     

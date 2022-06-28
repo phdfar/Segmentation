@@ -4,11 +4,11 @@ from keras.models import load_model
 
 
 def network(args):
-  if args.network=='inception_1':
+  if args.network=='instance_1':
     return inception_default(args.imagesize,args.num_class,args.channel_input,args.network)
-  if args.network=='inception_2':
+  if args.network=='instance_2':
     return inception_default(args.imagesize,args.num_class,args.channel_input,args.network)
-  if args.network=='inception_3':
+  if args.network=='instance_3':
     return inception_default(args.imagesize,args.num_class,args.channel_input,args.network)
 
 def inception_default(img_size, num_classes,channel_input,network):
