@@ -118,19 +118,18 @@ class GenericVideoSequence(object):
                         "size": self.image_dims
                     }
                     data = np.ascontiguousarray(masktools.decode(rle_mask).astype(np.uint8))
-                    masks_t.append(data)
+                    #masks_t.append(data)
                     masks_total = masks_total + data
                     tp = np.where(data==1);
                     num_pixel.append(len(tp[0]))
                 else:
                     data = np.zeros(self.image_dims, np.uint8)
-                    masks_t.append(data)
+                    #masks_t.append(data)
                     masks_total = masks_total + data
                     num_pixel.append(0)
-
-            masks.update({p:masks_t})
-            p+=1;
-        masks_total[masks_total!=0]=1;   
+                masks.update({p:data})
+                p+=1;
+        masks_total[masks_total!=0]=1;
         num_pixel = list(np.argsort(num_pixel));num_pixel.reverse() 
         allmask = []
         for index in num_pixel:
