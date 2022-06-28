@@ -10,7 +10,7 @@ def run(myself,path):
   flagmulti = path[frameindex][2]
 
 
-  img = load_img(myself.basepath+'train/'+imagepath, target_size=myself.img_size)
+  img = load_img(myself.baseinput+'train/'+imagepath, target_size=myself.img_size)
   x = np.asarray(img)
     
   masks,mask_total = seq.load_masks_for_instance([frameindex]);
