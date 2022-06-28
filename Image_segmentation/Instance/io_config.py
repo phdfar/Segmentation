@@ -21,7 +21,7 @@ def run(myself,path):
       
   if myself.num_instance!=len(masks):
       y.append(np.expand_dims(np.zeros(myself.img_size, np.uint8), 2))
-  mask_total = cv2.resize(mask, dim, interpolation = cv2.INTER_NEAREST)
+  mask_total = cv2.resize(mask_total, dim, interpolation = cv2.INTER_NEAREST)
   y.append(np.expand_dims(mask_total, 2))
       
   return x,y
