@@ -128,7 +128,7 @@ class GenericVideoSequence(object):
                     masks_total = masks_total + data
                     num_pixel.append(0)
 
-            masks.updata({p:masks_t})
+            masks.update({p:masks_t})
             p+=1;
         masks_total[masks_total!=0]=1;   
         num_pixel = np.argsort(num_pixel);num_pixel.reverse() 
