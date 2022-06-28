@@ -13,7 +13,7 @@ import tensorflow as tf
 import csv
 import json
 import torch.nn.functional as F
-import denseCRF
+#import denseCRF
 
 def start(mymodel,allframe_test,name,args,dicid):
     if args.task == 'binary_seg':
