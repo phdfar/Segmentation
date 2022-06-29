@@ -32,7 +32,7 @@ def getinfo(args):
 
     
   for i in meta_plus:
-    if  i['number_instances']<=args.num_instance:
+    if  i['number_instances']==args.num_instance:
         valid.append(i['id'])
            
     # flag=0;
