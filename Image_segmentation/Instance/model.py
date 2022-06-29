@@ -61,9 +61,9 @@ def inception_default(img_size, num_classes,channel_input,network):
         x = layers.add([x, residual])  # Add back residual
         previous_block_activation = x  # Set aside next residual
 
-    x = layers.Conv2D(16, 3, activation="softmax", padding="same")(x)
-    x = layers.Conv2D(8, 3, activation="softmax", padding="same")(x)
-    x = layers.Conv2D(4, 3, activation="softmax", padding="same")(x)
+    #x = layers.Conv2D(16, 3, activation="softmax", padding="same")(x)
+    #x = layers.Conv2D(8, 3, activation="softmax", padding="same")(x)
+    #x = layers.Conv2D(4, 3, activation="softmax", padding="same")(x)
 
     # Add a per-pixel classification layer
     if network=='instance_1':
