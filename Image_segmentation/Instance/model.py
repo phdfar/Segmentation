@@ -67,10 +67,12 @@ def inception_default(img_size, num_classes,channel_input,network):
 
     # Add a per-pixel classification layer
     if network=='instance_1':
+        print(network)
         output1 = layers.Conv2D(num_classes, 3, activation="softmax", padding="same",name='output1')(x)
         output2 = layers.Conv2D(num_classes, 3, activation="softmax", padding="same",name='output2')(x)
         output3 = layers.Conv2D(num_classes, 3, activation="softmax", padding="same",name='output3')(x)
     if network=='instance_2':
+        print(network)
         output1 = layers.Conv2D(num_classes, 3, activation="softmax", padding="same",name='output1')(x)
         output2 = layers.Conv2D(num_classes, 3, activation="softmax", padding="same",name='output2')(x)
         output3 = layers.add([output1, output2])
@@ -78,6 +80,7 @@ def inception_default(img_size, num_classes,channel_input,network):
         output3 = layers.Conv2D(2, 3, activation="softmax", padding="same")(output3)
         
     if network=='instance_3':
+        print(network)
         output1 = layers.Conv2D(num_classes, 3, activation="softmax", padding="same",name='output1')(x)
         
         xz = layers.Concatenate(axis=-1)([output1,x])
