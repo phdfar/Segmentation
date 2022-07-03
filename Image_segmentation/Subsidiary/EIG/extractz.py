@@ -123,14 +123,14 @@ def extract_features(
         feats = output_dict['k'].squeeze().cpu()
         featsnorm = F.normalize(feats, p=2, dim=-1)
         
-        W_feat = (featsnorm @ featsnorm.T)
-        W_feat = (W_feat * (W_feat > 0))
-        W_feat = W_feat / W_feat.max()  # NOTE: If features are normalized, this naturally does nothing
-        W_feat = W_feat.cpu().numpy()
+        #W_feat = (featsnorm @ featsnorm.T)
+        #W_feat = (W_feat * (W_feat > 0))
+        #W_feat = W_feat / W_feat.max()  # NOTE: If features are normalized, this naturally does nothing
+        featsnorm = featsnorm.cpu().numpy()
         
         
         # Save
-        accelerator.save(W_feat, str(output_file))
+        accelerator.save(featsnorm, str(output_file))
         accelerator.wait_for_everyone()
     
     print('Saved features to',output_dir)
