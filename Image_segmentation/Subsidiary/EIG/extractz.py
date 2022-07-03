@@ -82,6 +82,7 @@ def extract_features(
         # Reshape image
         P = patch_size
         B, C, H, W = images.shape
+        """
         if H!=720 or W!=1280:
             temp = images.detach().cpu().numpy()
             temp = np.transpose(temp, (2, 3, 1,0))
@@ -90,7 +91,7 @@ def extract_features(
             images = np.expand_dims(images,0)
             B, C, H, W = images.shape
             images = torch.from_numpy(images)
-            
+        """    
         H_patch, W_patch = H // P, W // P
         H_pad, W_pad = H_patch * P, W_patch * P
         T = H_patch * W_patch + 1  # number of tokens, add 1 for [CLS]
