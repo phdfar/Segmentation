@@ -83,12 +83,13 @@ def extract_features(
         P = patch_size
         B, C, H, W = images.shape
         if H!=720 or W!=1280:
-            temp = np.transpose(images, (2, 3, 1,0))
-            print(temp.shape)
+            temp = images.detach().cpu().numpy()
+            temp = np.transpose(temp, (2, 3, 1,0))
             images = cv2.resize(temp[:,:,:,0], (1280,720), interpolation = cv2.INTER_LINEAR)
             images = np.transpose(images, (0,1,2))
             images = np.expand_dims(images,0)
             B, C, H, W = images.shape
+            images = torch.from_numpy(images)
             
         H_patch, W_patch = H // P, W // P
         H_pad, W_pad = H_patch * P, W_patch * P
