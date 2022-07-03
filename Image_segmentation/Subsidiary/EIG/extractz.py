@@ -84,6 +84,7 @@ def extract_features(
         B, C, H, W = images.shape
         if H!=720 or W!=1280:
             temp = np.transpose(images, (2, 3, 1,0))
+            print(temp.shape)
             images = cv2.resize(temp[:,:,:,0], (1280,720), interpolation = cv2.INTER_LINEAR)
             images = np.transpose(images, (0,1,2))
             images = np.expand_dims(images,0)
