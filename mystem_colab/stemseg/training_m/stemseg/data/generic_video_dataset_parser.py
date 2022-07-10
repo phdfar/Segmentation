@@ -54,9 +54,30 @@ def parse_generic_video_dataset_limit(base_dir, dataset_json):
     # convert instance and category IDs from str to int
     meta_info["category_labels"] = {int(k): v for k, v in meta_info["category_labels"].items()}
 
+    """
+    dic={};new_id=1;new_class={}
+    for k, v in meta_info["category_labels"].items():
+      if int(k) in [1,2,3,4,20]:
+        dic.update({new_id:v})
+        new_class.update({int(k):new_id})
+        new_id+=1;
+    new_class({6:1000})
+    meta_info["category_labels"] = dic
+    """
+    
     if "segmentations" in dataset["sequences"][0]:
         for seq in dataset["sequences"]:
             seq["categories"] = {int(iid): cat_id for iid, cat_id in seq["categories"].items()}
+            
+            #print('seq["categories"]',seq["categories"])
+            #asd
+            """
+            dic={}
+            for iid, cat_id in seq["categories"].items():
+              print(iid,cat_id)
+              dic.update({iid:new_class[cat_id]})
+            seq["categories"]=dic
+            """
             seq["segmentations"] = [
                 {
                     int(iid): seg
