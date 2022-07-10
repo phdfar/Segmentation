@@ -11,12 +11,17 @@ import random
 import torch
 import torch.nn.functional as F
 
+from os import path
+
 
 class VideoDataset(Dataset):
     def __init__(self, base_dir, vds_json, clip_length, apply_augmentations, **kwargs):
         super().__init__()
 
-        if 'limit' in vds_json:
+        temp = vds_json.replace('youtube_vis_train.json','');
+        temp = temp.replace('youtube_vis_val.json','');
+    
+        if path.isdir(temp+'limit'):
             self.sequences, self.meta_info = parse_generic_video_dataset_limit(base_dir, vds_json)
         else:
             self.sequences, self.meta_info = parse_generic_video_dataset(base_dir, vds_json)
