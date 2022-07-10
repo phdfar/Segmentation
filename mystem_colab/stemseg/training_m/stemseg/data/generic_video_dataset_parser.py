@@ -97,7 +97,7 @@ def parse_generic_video_dataset_limit(base_dir, dataset_json):
     if limit == False:
         seqs = [GenericVideoSequence(seq, base_dir) for seq in dataset["sequences"]]
     else:
-        seqs = select_def(dataset_json,dataset["sequences"])
+        seqs = select_def(base_dir,dataset["sequences"])
 
     return seqs, meta_info
 
