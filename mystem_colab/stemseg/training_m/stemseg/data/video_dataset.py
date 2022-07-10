@@ -1,6 +1,9 @@
 from stemseg.config import cfg
 from stemseg.utils import transforms
-from stemseg.data.generic_video_dataset_parser import parse_generic_video_dataset,parse_generic_video_dataset_limit
+from stemseg.data.generic_video_dataset_parser import parse_generic_video_dataset
+from stemseg.data.parse_generic_video_dataset_limit import parse_generic_video_dataset_limit
+
+
 from stemseg.data.common import compute_resize_params, scale_and_normalize_images
 from stemseg.data.image_to_seq_augmenter import ImageToSeqAugmenter
 

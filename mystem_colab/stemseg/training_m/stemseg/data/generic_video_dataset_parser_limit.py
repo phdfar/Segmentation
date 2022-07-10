@@ -44,7 +44,7 @@ def select_def(base_dir,dataset):
             seqs.append(GenericVideoSequence(seq, base_dir))
     return seqs
 
-def parse_generic_video_dataset(base_dir, dataset_json):
+def parse_generic_video_dataset_limit(base_dir, dataset_json):
     
     limit = True;
     with open(dataset_json, 'r') as fh:
