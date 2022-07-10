@@ -6,9 +6,9 @@ import numpy as np
 import os
 import pickle
 
-def select_def(base_dir,dataset):
+def select_def(dataset_json,base_dir,dataset):
 
-    temp = base_dir.replace('youtube_vis_train.json','');
+    temp = dataset_json.replace('youtube_vis_train.json','');
     temp = temp.replace('youtube_vis_val.json','');
     print(temp)
 
@@ -97,7 +97,7 @@ def parse_generic_video_dataset_limit(base_dir, dataset_json):
     if limit == False:
         seqs = [GenericVideoSequence(seq, base_dir) for seq in dataset["sequences"]]
     else:
-        seqs = select_def(base_dir,dataset["sequences"])
+        seqs = select_def(dataset_json,base_dir,dataset["sequences"])
 
     return seqs, meta_info
 
