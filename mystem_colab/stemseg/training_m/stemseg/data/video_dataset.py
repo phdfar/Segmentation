@@ -1,6 +1,6 @@
 from stemseg.config import cfg
 from stemseg.utils import transforms
-from stemseg.data.generic_video_dataset_parser import parse_generic_video_dataset
+from stemseg.data.generic_video_dataset_parser import parse_generic_video_dataset,parse_generic_video_dataset_limit
 from stemseg.data.common import compute_resize_params, scale_and_normalize_images
 from stemseg.data.image_to_seq_augmenter import ImageToSeqAugmenter
 
@@ -16,7 +16,11 @@ class VideoDataset(Dataset):
     def __init__(self, base_dir, vds_json, clip_length, apply_augmentations, **kwargs):
         super().__init__()
 
-        self.sequences, self.meta_info = parse_generic_video_dataset(base_dir, vds_json)
+        if 'limit' in vds_json:
+            self.sequences, self.meta_info = parse_generic_video_dataset_limit(base_dir, vds_json)
+        else:
+            self.sequences, self.meta_info = parse_generic_video_dataset(base_dir, vds_json)
+
 
         self.clip_length = clip_length
         self.apply_augmentations = apply_augmentations

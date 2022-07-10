@@ -4,10 +4,49 @@ import cv2
 import json
 import numpy as np
 import os
+import pickle
 
+
+def select_def(base_dir,dataset):
+
+    base_dir = base_dir.replace('youtube_vis_train.json','');
+    base_dir = base_dir.replace('youtube_vis_val.json','');
+    print(base_dir)
+
+    with open(base_dir+'meta_plus_youtube_vis.pickle', 'rb') as fp:
+      target=pickle.load(fp)
+      
+    idx=0;dic={1:[],2:[],3:[],4:[],20:[]};clip_length=0;train_id=[];valid_id=[]
+    for t in target:
+        if t['number_instances']<=2:
+            flag=1;
+            for c in t['unique_class']:
+                if c not in [1,2,3,4,20]:
+                    flag=0;
+            if flag==1:
+                for c in t['unique_class']:
+                    dic.update({c:dic[c]+[t['id']]})
+                    
+            if flag==1:
+                clip_length=clip_length+t['clip_length']            
+                idx+=1;
+
+                             
+    for classn in dic.keys():
+        a = int(len(dic[classn])*0.85)
+        
+        train_id = train_id + dic[classn][:a]
+        valid_id = valid_id + dic[classn][a:]
+        
+    seqs=[]
+    for seq in dataset:
+        if seq['id'] in train_id:
+            seqs.append(GenericVideoSequence(seq, base_dir))
+    return seqs
 
 def parse_generic_video_dataset(base_dir, dataset_json):
     
+    limit = True;
     with open(dataset_json, 'r') as fh:
         dataset = json.load(fh)
 
@@ -34,8 +73,10 @@ def parse_generic_video_dataset(base_dir, dataset_json):
             )
     
    
-
-    seqs = [GenericVideoSequence(seq, base_dir) for seq in dataset["sequences"]]  
+    if limit == False:
+        seqs = [GenericVideoSequence(seq, base_dir) for seq in dataset["sequences"]]
+    else:
+        seqs = select_def(dataset_json,dataset["sequences"])
 
     return seqs, meta_info
 
