@@ -8,11 +8,11 @@ import pickle
 
 def select_def(base_dir,dataset):
 
-    base_dir = base_dir.replace('youtube_vis_train.json','');
-    base_dir = base_dir.replace('youtube_vis_val.json','');
-    print(base_dir)
+    temp = base_dir.replace('youtube_vis_train.json','');
+    temp = temp.replace('youtube_vis_val.json','');
+    print(temp)
 
-    with open(base_dir+'meta_plus_youtube_vis.pickle', 'rb') as fp:
+    with open(temp+'meta_plus_youtube_vis.pickle', 'rb') as fp:
       target=pickle.load(fp)
       
     idx=0;dic={1:[],2:[],3:[],4:[],20:[]};clip_length=0;train_id=[];valid_id=[]
@@ -41,6 +41,7 @@ def select_def(base_dir,dataset):
     for seq in dataset:
         if seq['id'] in train_id:
             seqs.append(GenericVideoSequence(seq, base_dir))
+    print('limit size data ',len(seqs))
     return seqs
 
 def parse_generic_video_dataset_limit(base_dir, dataset_json):
