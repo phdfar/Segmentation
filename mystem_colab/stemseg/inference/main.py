@@ -8,7 +8,8 @@ from stemseg.inference.output_utils import YoutubeVISOutputGenerator, DavisOutpu
 from stemseg.inference.online_chainer import OnlineChainer
 from stemseg.inference.clusterers import SequentialClustering
 
-from stemseg.data.generic_video_dataset_parser import parse_generic_video_dataset
+from stemseg.data.generic_video_dataset_parser import parse_generic_video_dataset,parse_generic_video_dataset_limit
+
 from stemseg.data import DavisUnsupervisedPaths as DavisPaths, YoutubeVISPaths, KITTIMOTSPaths
 
 from stemseg.modeling.inference_model import InferenceModel
@@ -18,6 +19,8 @@ from stemseg.utils import Timer, RepoPaths
 
 import os
 import torch
+
+from os import path
 
 os.environ['/content/'] = '/content/'
 
@@ -251,8 +254,17 @@ def main(args):
         max_tracks = cfg.DATA.DAVIS.MAX_INFERENCE_TRACKS
 
     elif args.dataset in "ytvis":
-        sequences, meta_info = parse_generic_video_dataset(YoutubeVISPaths.val_base_dir(),
-                                                           YoutubeVISPaths.val_vds_file())
+        
+        temp = YoutubeVISPaths.val_vds_file().replace('youtube_vis_train.json','');
+        temp = temp.replace('youtube_vis_val.json','');
+        
+        if path.isdir(temp+'limit'):            
+            sequences, meta_info = parse_generic_video_dataset_limit(YoutubeVISPaths.val_base_dir(),
+                                                               YoutubeVISPaths.val_vds_file())
+        else:
+            sequences, meta_info = parse_generic_video_dataset(YoutubeVISPaths.val_base_dir(),
+                                                               YoutubeVISPaths.val_vds_file())
+            
         output_generator = YoutubeVISOutputGenerator(output_dir, OnlineChainer.OUTLIER_LABEL, args.save_vis,
                                                      None, meta_info["category_labels"],
                                                      upscaled_inputs=cluster_full_scale)
