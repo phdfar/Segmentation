@@ -43,15 +43,18 @@ def select_def(dataset_json,base_dir,dataset):
             
     
     seqs=[]
-    if 'train' in dataset_json:
-        for seq in dataset:
-            if seq['id'] in train_id:
-                seqs.append(GenericVideoSequence(seq, base_dir))
-    else:
-        for seq in dataset:
-            if seq['id'] in valid_ids:
-                seqs.append(GenericVideoSequence(seq, base_dir))
-        print('validation data')   
+    
+    #if path.isdir(temp+'vallimit')==False:
+
+    # if 'train' in dataset_json:
+    #     for seq in dataset:
+    #         if seq['id'] in train_id:
+    #             seqs.append(GenericVideoSequence(seq, base_dir))
+    # else:
+    for seq in dataset:
+        if seq['id'] in valid_ids:
+            seqs.append(GenericVideoSequence(seq, base_dir))
+    print('validation data')   
         
     print('limit size data ',len(seqs))
     return seqs
