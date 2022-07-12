@@ -7,6 +7,50 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+def compute_within_var(instance_embeddings):
+    #instance_embeddings = torch.tensor(instance_embeddings)
+    mean_embeddings = instance_embeddings.mean(dim=0, keepdim=True)
+    withinvar = torch.sum(torch.pow(mean_embeddings - instance_embeddings, 2),0)
+    return withinvar,mean_embeddings
+
+def compute_between_var(global_mean,mean_c,instance_embeddings):
+    #instance_embeddings = torch.tensor(instance_embeddings)
+    between_var = len(instance_embeddings)*(torch.pow(global_mean - mean_c, 2))
+    return between_var
+
+def get_varem_loss(instance_embeddings,nonzero_mask_pts):
+    allvar_within={};between_var=0;allembed=0;all_mean={};all_var=0;
+    myloss=0;
+    num_instance = len(nonzero_mask_pts) 
+    for n in range(0,num_instance):
+        var,mean = compute_within_var(instance_embeddings[n])
+        all_var+=var
+        allvar_within.update({n:var})
+        all_mean.update({n:mean})
+        if n==0:
+            allembed = instance_embeddings[n]
+        else:
+            allembed = torch.cat((instance_embeddings[n], allembed), 0)
+
+    if num_instance==1:
+        myloss = all_var/len(allembed)
+    else: 
+        global_mean = allembed.mean(dim=0, keepdim=True)
+
+        for n in range(0,num_instance):
+            between_var+=compute_between_var(global_mean,all_mean[n],instance_embeddings[n])
+    
+        df_within = len(allembed)-num_instance
+        df_between = num_instance-1
+        MS1 = all_var/df_within
+        MS2 = between_var/df_between
+        myloss = 100*(MS1/MS2)
+        
+    varem = F.mse_loss(myloss, torch.zeros_like(myloss), reduction='none')
+    return varem
+    
+    
+
 class EmbeddingLoss(nn.Module):
     def __init__(self, embedding_map_scale, **kwargs):
         super().__init__()
@@ -55,6 +99,7 @@ class EmbeddingLoss(nn.Module):
         lovasz_loss = 0.
         seediness_loss = 0.
         bandwidth_smoothness_loss = 0.
+        varem_loss=0.;
 
         torch_zero = torch.tensor(0).to(embedding_map).requires_grad_(False)
 
@@ -101,6 +146,11 @@ class EmbeddingLoss(nn.Module):
 
             total_instances += len(nonzero_mask_pts)
 
+            # varem_loss
+            varem_loss+=get_varem_loss(instance_embeddings,nonzero_mask_pts)
+            print('number_instance : ' , len(nonzero_mask_pts),' loss: ',varem_loss)
+            
+
             # regress seediness values for background to 0
             bg_mask_pts = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
             bg_seediness_pts = seediness_per_seq[bg_mask_pts]
@@ -138,7 +188,7 @@ class EmbeddingLoss(nn.Module):
         else:
             # compute weighted sum of lovasz and variance losses based on number of instances per batch sample
             lovasz_loss = lovasz_loss / total_instances
-            bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
+            bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size           
             seediness_loss = seediness_loss / float(total_instances + 1)
 
         total_loss = (lovasz_loss * self.w_lovasz) + \

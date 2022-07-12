@@ -22,6 +22,7 @@ class Loss(object):
     LOVASZ_LOSS = "lovasz_loss"
     SEEDINESS_LOSS = "seediness_loss"
     VARIANCE_SMOOTHNESS = "variance_smoothness_loss"
+    VAREM_LOSS = "varem_loss"
     FOREGROUND = "foreground"
 
     def __init__(self):
