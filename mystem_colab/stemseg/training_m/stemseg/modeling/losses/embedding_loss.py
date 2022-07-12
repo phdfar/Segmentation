@@ -197,7 +197,7 @@ class EmbeddingLoss(nn.Module):
             lovasz_loss = lovasz_loss / total_instances
             try:
                 varem_loss = varem_loss / embedding_map.shape[0]
-                temp = torch.zeros_like(lovasz_loss)
+                temp = torch.zeros_like(lovasz_loss)+1
                 lovasz_loss = (((varem_loss/100)*temp)+lovasz_loss)
             except:
                 pass
