@@ -34,7 +34,7 @@ def get_varem_loss(instance_embeddings,nonzero_mask_pts):
 
     if num_instance==1:
         myloss = all_var/len(allembed)
-    else: 
+    elif num_instance>1:
         global_mean = allembed.mean(dim=0, keepdim=True)
 
         for n in range(0,num_instance):
@@ -44,10 +44,17 @@ def get_varem_loss(instance_embeddings,nonzero_mask_pts):
         df_between = num_instance-1
         MS1 = all_var/df_within
         MS2 = between_var/df_between
-        myloss = 100*(MS1/MS2)
-        
-    varem = F.mse_loss(myloss, torch.zeros_like(myloss), reduction='none')
-    return varem
+        myloss = 10*(MS1/MS2)
+        #print('MS2:',MS2)
+        #print('between_var:',between_var)
+        #print('global_mean:',global_mean)
+        #print('all_mean:',all_mean)
+        #print('----------------------')
+        #print('instance_embeddings',instance_embeddings)
+
+    #varem = F.mse_loss(myloss, torch.zeros_like(myloss), reduction='mean')
+
+    return myloss.mean().detach()
     
     
 
@@ -148,7 +155,7 @@ class EmbeddingLoss(nn.Module):
 
             # varem_loss
             varem_loss+=get_varem_loss(instance_embeddings,nonzero_mask_pts)
-            print('number_instance : ' , len(nonzero_mask_pts),' loss: ',varem_loss)
+            #print('number_instance : ' , len(nonzero_mask_pts),' loss: ',varem_loss)
             
 
             # regress seediness values for background to 0
@@ -188,9 +195,20 @@ class EmbeddingLoss(nn.Module):
         else:
             # compute weighted sum of lovasz and variance losses based on number of instances per batch sample
             lovasz_loss = lovasz_loss / total_instances
+            varem_loss = varem_loss / embedding_map.shape[0]
+            temp = torch.zeros_like(lovasz_loss)
+            lovasz_loss = (((varem_loss/100)*temp)+lovasz_loss)
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size           
             seediness_loss = seediness_loss / float(total_instances + 1)
 
+        #print('seediness_loss',seediness_loss)
+        #print('varem_loss',varem_loss)
+        #print(torch.isnan(varem_loss))
+        #if torch.isnan(varem_loss)==True:
+        #  varem_loss=torch.tensor(1);
+        #print(varem_loss/100)
+        #temp = torch.zeros_like(lovasz_loss)
+        #
         total_loss = (lovasz_loss * self.w_lovasz) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
