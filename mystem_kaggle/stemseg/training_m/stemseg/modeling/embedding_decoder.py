@@ -187,6 +187,7 @@ class SqueezingExpandDecoder(nn.Module):
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
 
+        """
         feat_map_32x = self.block_32x(feat_map_32x)
 
         # 32x to 16x
@@ -207,6 +208,8 @@ class SqueezingExpandDecoder(nn.Module):
         x = torch.cat((x, feat_map_4x), 1)
         x = self.conv_4(x)
       
+        """
+        x=feat_map_4x
         for i in range(0,8):
           y = x[:,:,i,:,:]
           y = torch.unsqueeze(CAM(y),2)
