@@ -62,7 +62,7 @@ class SqueezingExpandDecoder(nn.Module):
         super().__init__()
 
         PoolingLayerCallbacks = get_pooling_layer_creator(PoolType)
-        gate_channels = 128            
+        gate_channels = 256            
         reduction_ratio = 16
 
         self.pool_types = ['avg','max']
