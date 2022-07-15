@@ -154,7 +154,7 @@ class EmbeddingLoss(nn.Module):
             total_instances += len(nonzero_mask_pts)
 
             # varem_loss
-            varem_loss+=get_varem_loss(instance_embeddings,nonzero_mask_pts)
+            #varem_loss+=get_varem_loss(instance_embeddings,nonzero_mask_pts)
             #print('number_instance : ' , len(nonzero_mask_pts),' loss: ',varem_loss)
             
 
@@ -195,12 +195,12 @@ class EmbeddingLoss(nn.Module):
         else:
             # compute weighted sum of lovasz and variance losses based on number of instances per batch sample
             lovasz_loss = lovasz_loss / total_instances
-            try:
-                varem_loss = varem_loss / embedding_map.shape[0]
-                temp = torch.zeros_like(lovasz_loss)+1
-                lovasz_loss = (((varem_loss)*temp)+lovasz_loss)
-            except:
-                pass
+            #try:
+                #varem_loss = varem_loss / embedding_map.shape[0]
+                #temp = torch.zeros_like(lovasz_loss)+1
+                #lovasz_loss = (((varem_loss)*temp)+lovasz_loss)
+            #except:
+                #pass
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size           
             seediness_loss = seediness_loss / float(total_instances + 1)
 

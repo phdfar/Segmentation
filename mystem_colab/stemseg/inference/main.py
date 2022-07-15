@@ -149,7 +149,18 @@ class TrackGenerator(object):
         else:
             print("Obtaining foreground mask by thresholding seediness map at {}".format(self.seediness_fg_threshold))
             fg_masks = self.get_fg_masks_from_seediness(inference_output)
+            
+        sp=image_paths[0].split('/');
+        v=0;
+        allembedd=[]
+        for e in inference_output['embeddings']:
+          allembedd.append({'id':e.subseq_frames, 'embedding':e.embeddings.detach().cpu().numpy(), 'bandwidths':e.bandwidths.detach().cpu().numpy(), 'seediness':e.seediness.detach().cpu().numpy()})
+        multiclass_masksd = multiclass_masks.detach().cpu().numpy()
+        fg_masksd = fg_masks.detach().cpu().numpy()
 
+        import pickle
+        with open('alldata_inference_'+str(sp[-2])+'.pickle', 'wb') as handle:
+            pickle.dump([image_paths,multiclass_masksd,fg_masksd,allembedd], handle, protocol=pickle.HIGHEST_PROTOCOL)
         return inference_output["embeddings"], fg_masks, multiclass_masks
 
     @Timer.log_duration("postprocessing")
