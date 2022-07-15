@@ -62,7 +62,7 @@ class SqueezingExpandDecoder(nn.Module):
         super().__init__()
 
         PoolingLayerCallbacks = get_pooling_layer_creator(PoolType)
-        gate_channels = 256            
+        gate_channels = 128            
         reduction_ratio = 16
 
         self.pool_types = ['avg','max']
@@ -135,6 +135,8 @@ class SqueezingExpandDecoder(nn.Module):
             UpsampleTrilinear3D(scale_factor=(t_scales[2], 2, 2), align_corners=False)
         )
         self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
+
+        self.conv_44 = nn.Conv3d(256, 128, 1, bias=False)
 
         self.embedding_size = embedding_size
 
@@ -209,7 +211,8 @@ class SqueezingExpandDecoder(nn.Module):
         x = self.conv_4(x)
       
         """
-        x=feat_map_4x
+        x=self.conv_44(feat_map_4x)
+        
         for i in range(0,8):
           y = x[:,:,i,:,:]
           y = torch.unsqueeze(CAM(y),2)
