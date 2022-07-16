@@ -62,7 +62,7 @@ class SqueezingExpandDecoder(nn.Module):
         super().__init__()
 
         PoolingLayerCallbacks = get_pooling_layer_creator(PoolType)
-        gate_channels = 128            
+        gate_channels = 256            
         reduction_ratio = 16
 
         self.pool_types = ['avg','max']
@@ -189,7 +189,44 @@ class SqueezingExpandDecoder(nn.Module):
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
 
-        """
+
+        for i in range(0,8):
+          y = feat_map_4x[:,:,i,:,:]
+          y = torch.unsqueeze(CAM(y),2)
+          if i==0:
+            z = y;
+          else:
+             z = torch.cat((z, y),2)
+        feat_map_4x = z
+        
+        for i in range(0,8):
+          y = feat_map_8x[:,:,i,:,:]
+          y = torch.unsqueeze(CAM(y),2)
+          if i==0:
+            z = y;
+          else:
+             z = torch.cat((z, y),2)
+        feat_map_8x = z
+        
+        for i in range(0,8):
+          y = feat_map_16x[:,:,i,:,:]
+          y = torch.unsqueeze(CAM(y),2)
+          if i==0:
+            z = y;
+          else:
+             z = torch.cat((z, y),2)
+        feat_map_16x = z
+        
+        for i in range(0,8):
+          y = feat_map_32x[:,:,i,:,:]
+          y = torch.unsqueeze(CAM(y),2)
+          if i==0:
+            z = y;
+          else:
+             z = torch.cat((z, y),2)
+        feat_map_32x = z
+        
+        
         feat_map_32x = self.block_32x(feat_map_32x)
 
         # 32x to 16x
@@ -210,9 +247,10 @@ class SqueezingExpandDecoder(nn.Module):
         x = torch.cat((x, feat_map_4x), 1)
         x = self.conv_4(x)
       
-        """
-        x=self.conv_44(feat_map_4x)
         
+        #x=self.conv_44(feat_map_4x)
+        
+        """
         for i in range(0,8):
           y = x[:,:,i,:,:]
           y = torch.unsqueeze(CAM(y),2)
@@ -221,7 +259,8 @@ class SqueezingExpandDecoder(nn.Module):
           else:
              z = torch.cat((z, y),2)
         x = z
-
+        """
+        
         embeddings = self.conv_embedding(x)
         if self.tanh_activation:
             embeddings = (embeddings * 0.25).tanh()
