@@ -251,9 +251,30 @@ class InferenceModel(nn.Module):
                 subseq_seediness_dict = {t: subseq_seediness[:, i] for i, t in enumerate(current_subseq_as_list)}
                 subseq_seediness = torch.stack([subseq_seediness_dict[t] for t in sorted(current_subseq.keys())], 1)
 
-            embeddings_maps.append(self.EmbeddingMapEntry(
-                sorted(current_subseq.keys()), subseq_embeddings.cpu(), subseq_bandwidths.cpu(), subseq_seediness.cpu()))
+            #embeddings_maps.append(self.EmbeddingMapEntry(
+            #    sorted(current_subseq.keys()), subseq_embeddings.cpu(), subseq_bandwidths.cpu(), subseq_seediness.cpu()))
+            
+            embed = subseq_embeddings.cpu().numpy()
+            emd=[];
+            for j in range(0,4):
+              emd.append(interpol_func_2(1,embed[j],-1))
+            emd = np.asarray(emd)
 
+            bandwitdh = subseq_bandwidths.cpu().numpy()
+            band=[];
+            for j in range(0,2):
+              band.append(interpol_func_2(1,bandwitdh[j],-1))
+            band = np.asarray(band)
+            
+            seed = subseq_seediness.cpu().numpy()
+            sed=[];
+            for j in range(0,1):
+              sed.append(interpol_func_2(1,seed[j],-1))
+            sed = np.asarray(sed)
+
+            embeddings_maps.append(self.EmbeddingMapEntry(
+                sorted(current_subseq.keys()), torch.tensor(emd), torch.tensor(band), torch.tensor(sed) ))
+            
             # clear backbone feature maps which are not needed for the next sub-sequence
             frames_to_discard = set()
             for frame_id, subseqs in subseq_deps.items():
@@ -279,7 +300,9 @@ class InferenceModel(nn.Module):
 
         # compute semseg probabilities
         fg_masks, multiclass_masks = self.get_semseg_masks(semseg_logits)
-
+        fg_masksd = fg_masks.cpu().numpy()
+        fg_masksd = interpol_func_1(len(fg_masksd),fg_masksd,0.12)
+        fg_masks = torch.tensor(fg_masksd)
         return {
             "fg_masks": fg_masks,
             "multiclass_masks": multiclass_masks,
