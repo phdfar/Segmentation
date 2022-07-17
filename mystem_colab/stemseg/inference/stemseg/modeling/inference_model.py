@@ -11,7 +11,100 @@ import cv2
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
+def interpolate(img1,img2,img3):
+  a = 0.2; b = 0.3; c = 0.50
+  final_image = img1*a + img2*b + img3*c
+  return final_image
+
+def interpol_func_1(index,tensor,tr):
+  out=[]
+  dicforward={}
+  for i in range(0,index):
+    map = tensor[i]
+    if i>=2:
+      new_map = interpolate(dicforward[i-2],dicforward[i-1],map)
+      dicforward.update({i:new_map})
+    else:
+      dicforward.update({i:map})
+
+  dicbackward={}
+  for i in reversed(range(0,index)):
+    map = tensor[i]
+    if i<(index-2):
+      new_map = interpolate(dicbackward[i+2],dicbackward[i+1],map)
+      dicbackward.update({i:new_map})
+    else:
+      dicbackward.update({i:map})
+
+  dic={}
+  for i in range(0,index):
+    map = tensor[i]
+    #fig, ax = plt.subplots(1, 2, figsize=(10, 10))
+    #ax[0].imshow(map)
+    mask = (dicbackward[i] + dicforward[i])/2
+    """
+    if i>=2:
+      new_map = interpolate(dic[i-2],dic[i-1],map)
+      if tr!=-1:
+        new_map[new_map<tr]=0;new_map[new_map>=tr]=1;
+      ax[1].imshow(new_map)
+      dic.update({i:new_map})
+      plt.title(i)
+
+    else:
+      if tr!=-1:
+        mask[mask<tr]=0;mask[mask>=tr]=1;
+      ax[1].imshow(mask)
+      dic.update({i:mask})
+      plt.title(i)
+    """
+    mask[mask<tr]=0;mask[mask>=tr]=1
+    #ax[1].imshow(mask)
+    out.append(mask)
+  return np.asarray(out)  
+
+def interpol_func_2(index,tensor,tr):
+  dicforward={}
+  out=[]
+  for i in range(0,8):
+    map = tensor[i]
+    if i>=2:
+      new_map = interpolate(dicforward[i-2],dicforward[i-1],map)
+      dicforward.update({i:new_map})
+    else:
+      dicforward.update({i:map})
+
+  dicbackward={}
+  for i in reversed(range(0,8)):
+    map = tensor[i]
+    if i<6:
+      new_map = interpolate(dicbackward[i+2],dicbackward[i+1],map)
+      dicbackward.update({i:new_map})
+    else:
+      dicbackward.update({i:map})
+
+  dic={}
+  for i in range(0,8):
+    map = tensor[i]
+    #fig, ax = plt.subplots(1, 2, figsize=(10, 10))
+    #ax[0].imshow(map)
+    mask = (dicbackward[i] + dicforward[i])/2
+    if i>=2:
+      new_map = interpolate(dic[i-2],dic[i-1],map)
+      #ax[1].imshow(new_map)
+      dic.update({i:new_map})
+      #plt.title(i)
+      out.append(new_map)
+
+    else:
+      #ax[1].imshow(mask)
+      dic.update({i:mask})
+      #plt.title(i)
+      out.append(mask)
+
+  return np.asarray(out)
 
 class InferenceModel(nn.Module):
     def __init__(self, restore_path=None, cpu_workers=4, preload_images=False, semseg_output_type="probs",
