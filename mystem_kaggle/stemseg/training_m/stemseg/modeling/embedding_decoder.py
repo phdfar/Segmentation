@@ -132,6 +132,9 @@ class SqueezingExpandDecoder(nn.Module):
         :return: embedding map of shape [N, E, T, H, W]
         """
         assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
+        
+        x = x.contiguous()
+
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
 
