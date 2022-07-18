@@ -9,7 +9,7 @@ from torch import nn
 from torch.nn import init
 from torch.nn.modules.utils import _triple
 
-from deform_conv_func import DeformConvFunction
+from stemseg.modeling.deform_conv_func import DeformConvFunction
 
 
 class DeformConv(nn.Module):
