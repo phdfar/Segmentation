@@ -206,7 +206,7 @@ class EmbeddingLoss(nn.Module):
             #except:
                 #pass
             if len(allprop)==2:
-                kl_loss = nn.KLDivLoss(reduction="mean")
+                kl_loss = nn.KLDivLoss(reduction="sum")
                 klloss = kl_loss(allprop[0], allprop[1])
                 print('klloss:',klloss)
             
