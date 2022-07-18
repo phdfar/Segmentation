@@ -211,6 +211,8 @@ class EmbeddingLoss(nn.Module):
                 klloss = self.lovasz_hinge_loss(allprop[0].flatten(), allprop[1].flatten())
                 if klloss!=0:
                     klloss = 1/klloss
+                    lovasz_loss = (lovasz_loss+klloss)/2
+                    
                 #print('klloss:',klloss)
 
 
@@ -226,10 +228,15 @@ class EmbeddingLoss(nn.Module):
         #print(varem_loss/100)
         #temp = torch.zeros_like(lovasz_loss)
         #
+        """
         total_loss = (lovasz_loss * self.w_lovasz) + (klloss * self.w_lovasz) +  \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
-
+        """
+        total_loss = (lovasz_loss * self.w_lovasz) + \
+                     (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
+                     (seediness_loss * self.w_seediness)
+                     
         output_dict[ModelOutputConsts.OPTIMIZATION_LOSSES] = {
             LossConsts.EMBEDDING: total_loss * self.w
         }
