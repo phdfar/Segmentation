@@ -7,8 +7,8 @@ import torch.nn as nn
 
 EMBEDDING_HEAD_REGISTRY = GlobalRegistry.get("EmbeddingHead")
 
-from deform_conv import DeformConv, _DeformConv, DeformConvPack
-from deform_conv import DeformConv_d, _DeformConv, DeformConvPack_d
+from stemseg.modeling.deform_conv import DeformConv, _DeformConv, DeformConvPack
+#from deform_conv import DeformConv_d, _DeformConv, DeformConvPack_d
 
 
 @EMBEDDING_HEAD_REGISTRY.add("squeeze_expand_decoder")
