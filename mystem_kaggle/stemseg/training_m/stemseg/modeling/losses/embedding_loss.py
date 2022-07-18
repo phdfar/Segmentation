@@ -175,10 +175,11 @@ class EmbeddingLoss(nn.Module):
                 bandwidth_per_instance.exp() * 10.
                 for bandwidth_per_instance in instance_bandwidths
             ]
-
+            allprop=[]
             for n in range(len(nonzero_mask_pts)):  # iterate over instances
                 probs_map = self.compute_prob_map(embeddings_per_seq, instance_embeddings[n], instance_bandwidths[n])
                 logits_map = (probs_map * 2.) - 1.
+                allprop.append(logits_map)
                 instance_target = masks[n].flatten()
                 if instance_target.sum(dtype=torch.long) == 0:
                     continue
@@ -192,6 +193,8 @@ class EmbeddingLoss(nn.Module):
             lovasz_loss = (bandwidth_map.sum() + embedding_map.sum()) * 0
             bandwidth_smoothness_loss = bandwidth_map.sum() * 0
             seediness_loss = seediness_map.sum() * 0
+            klloss = (bandwidth_map.sum() + embedding_map.sum()) * 0
+
         else:
             # compute weighted sum of lovasz and variance losses based on number of instances per batch sample
             lovasz_loss = lovasz_loss / total_instances
@@ -201,6 +204,11 @@ class EmbeddingLoss(nn.Module):
                 #lovasz_loss = (((varem_loss)*temp)+lovasz_loss)
             #except:
                 #pass
+            if len(allprop)==2:
+                kl_loss = nn.KLDivLoss(reduction="mean")
+                klloss = kl_loss(allprop[0], allprop[1])
+                
+            
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size           
             seediness_loss = seediness_loss / float(total_instances + 1)
 
@@ -212,7 +220,7 @@ class EmbeddingLoss(nn.Module):
         #print(varem_loss/100)
         #temp = torch.zeros_like(lovasz_loss)
         #
-        total_loss = (lovasz_loss * self.w_lovasz) + \
+        total_loss = (lovasz_loss * self.w_lovasz) + (klloss * self.w_lovasz)   \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
 
