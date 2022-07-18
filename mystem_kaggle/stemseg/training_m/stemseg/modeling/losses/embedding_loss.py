@@ -107,6 +107,7 @@ class EmbeddingLoss(nn.Module):
         seediness_loss = 0.
         bandwidth_smoothness_loss = 0.
         varem_loss=0.;
+        klloss=0.;
 
         torch_zero = torch.tensor(0).to(embedding_map).requires_grad_(False)
 
