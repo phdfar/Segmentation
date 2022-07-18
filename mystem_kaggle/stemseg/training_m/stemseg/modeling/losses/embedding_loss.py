@@ -208,8 +208,10 @@ class EmbeddingLoss(nn.Module):
             if len(allprop)==2:
                 #kl_loss = nn.KLDivLoss(reduction="batchmean")
                 #klloss = kl_loss(allprop[0], allprop[1])
-                klloss = 1/self.lovasz_hinge_loss(allprop[0].flatten(), allprop[1].flatten())
-                print('klloss:',klloss)
+                klloss = self.lovasz_hinge_loss(allprop[0].flatten(), allprop[1].flatten())
+                if klloss!=0:
+                    klloss = 1/klloss
+                #print('klloss:',klloss)
 
 
             
