@@ -180,7 +180,7 @@ class EmbeddingLoss(nn.Module):
             for n in range(len(nonzero_mask_pts)):  # iterate over instances
                 probs_map = self.compute_prob_map(embeddings_per_seq, instance_embeddings[n], instance_bandwidths[n])
                 logits_map = (probs_map * 2.) - 1.
-                allprop.append(logits_map)
+                allprop.append(probs_map)
                 instance_target = masks[n].flatten()
                 if instance_target.sum(dtype=torch.long) == 0:
                     continue
