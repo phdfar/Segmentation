@@ -7,9 +7,6 @@ import torch.nn as nn
 
 EMBEDDING_HEAD_REGISTRY = GlobalRegistry.get("EmbeddingHead")
 
-from deform_conv import DeformConv, _DeformConv, DeformConvPack
-from deform_conv import DeformConv_d, _DeformConv, DeformConvPack_d
-
 
 @EMBEDDING_HEAD_REGISTRY.add("squeeze_expand_decoder")
 class SqueezingExpandDecoder(nn.Module):
@@ -19,59 +16,45 @@ class SqueezingExpandDecoder(nn.Module):
         super().__init__()
 
         PoolingLayerCallbacks = get_pooling_layer_creator(PoolType)
-        
 
         self.block_32x = nn.Sequential(
-            #ConvType(in_channels, inter_channels[0], 3, stride=1, padding=1, dilation=1),
-            DeformConvPack(in_channels, inter_channels[0], kernel_size=[3, 3, 3], stride=[1, 1, 1],padding=[1, 1, 1]).cuda(),
-            
+            ConvType(in_channels, inter_channels[0], 3, stride=1, padding=1, dilation=1),
             NormType(inter_channels[0]),
             nn.ReLU(inplace=True),
             PoolingLayerCallbacks[0](3, stride=(2, 1, 1), padding=1),
 
-            #ConvType(inter_channels[0], inter_channels[0], 3, stride=1, padding=1, dilation=1),
-            DeformConvPack(inter_channels[0], inter_channels[0], kernel_size=[3, 3, 3], stride=[1, 1, 1],padding=[1, 1, 1]).cuda(),
+            ConvType(inter_channels[0], inter_channels[0], 3, stride=1, padding=1, dilation=1),
             NormType(inter_channels[0]),
             nn.ReLU(inplace=True),
             PoolingLayerCallbacks[1](3, stride=(2, 1, 1), padding=1),
 
-            #ConvType(inter_channels[0], inter_channels[0], 3, stride=1, padding=1, dilation=1),
-            DeformConvPack(inter_channels[0], inter_channels[0], kernel_size=[3, 3, 3], stride=[1, 1, 1],padding=[1, 1, 1]).cuda(),
-            
+            ConvType(inter_channels[0], inter_channels[0], 3, stride=1, padding=1, dilation=1),
             NormType(inter_channels[0]),
             nn.ReLU(inplace=True),
             PoolingLayerCallbacks[2](3, stride=(2, 1, 1), padding=1),
         )
 
         self.block_16x = nn.Sequential(
-            
-            #ConvType(in_channels, inter_channels[1], 3, stride=1, padding=1),
-            DeformConvPack(in_channels, inter_channels[1], kernel_size=[3, 3, 3], stride=[1, 1, 1],padding=[1, 1, 1]).cuda(),
-            
+            ConvType(in_channels, inter_channels[1], 3, stride=1, padding=1),
             NormType(inter_channels[1]),
             nn.ReLU(inplace=True),
             PoolingLayerCallbacks[0](3, stride=(2, 1, 1), padding=1),
 
-            #ConvType(inter_channels[1], inter_channels[1], 3, stride=1, padding=1),
-            DeformConvPack(inter_channels[1], inter_channels[1], kernel_size=[3, 3, 3], stride=[1, 1, 1],padding=[1, 1, 1]).cuda(),
-
-
+            ConvType(inter_channels[1], inter_channels[1], 3, stride=1, padding=1),
             NormType(inter_channels[1]),
             nn.ReLU(inplace=True),
             PoolingLayerCallbacks[1](3, stride=(2, 1, 1), padding=1),
         )
 
         self.block_8x = nn.Sequential(
-            #ConvType(in_channels, inter_channels[2], 3, stride=1, padding=1),
-            DeformConvPack(in_channels, inter_channels[2], kernel_size=[3, 3, 3], stride=[1, 1, 1],padding=[1, 1, 1]).cuda(),
+            ConvType(in_channels, inter_channels[2], 3, stride=1, padding=1),
             NormType(inter_channels[2]),
             nn.ReLU(inplace=True),
             PoolingLayerCallbacks[0](3, stride=(2, 1, 1), padding=1),
         )
 
         self.block_4x = nn.Sequential(
-            #ConvType(in_channels, inter_channels[3], 3, stride=1, padding=1),
-            DeformConvPack(in_channels, inter_channels[3], kernel_size=[3, 3, 3], stride=[1, 1, 1],padding=[1, 1, 1]).cuda(),
+            ConvType(in_channels, inter_channels[3], 3, stride=1, padding=1),
             NormType(inter_channels[3]),
             nn.ReLU(inplace=True)
         )
@@ -82,23 +65,19 @@ class SqueezingExpandDecoder(nn.Module):
         self.upsample_32_to_16 = nn.Sequential(
             UpsampleTrilinear3D(scale_factor=(t_scales[0], 2, 2), align_corners=False)
         )
-        #self.conv_16 = nn.Conv3d(inter_channels[0] + inter_channels[1], inter_channels[1], 1, bias=False)
-        self.conv_16 = DeformConvPack(inter_channels[0] + inter_channels[1], inter_channels[1], kernel_size=[1, 1, 1], stride=[1, 1, 1],padding=[0, 0, 0]).cuda()
+        self.conv_16 = nn.Conv3d(inter_channels[0] + inter_channels[1], inter_channels[1], 1, bias=False)
 
         # 16x to 8x
         self.upsample_16_to_8 = nn.Sequential(
             UpsampleTrilinear3D(scale_factor=(t_scales[1], 2, 2), align_corners=False)
         )
-        #self.conv_8 = nn.Conv3d(inter_channels[1] + inter_channels[2], inter_channels[2], 1, bias=False)
-        self.conv_8 = DeformConvPack(inter_channels[1] + inter_channels[2], inter_channels[2], kernel_size=[1, 1, 1], stride=[1, 1, 1],padding=[0, 0, 0]).cuda()
+        self.conv_8 = nn.Conv3d(inter_channels[1] + inter_channels[2], inter_channels[2], 1, bias=False)
 
         # 8x to 4x
         self.upsample_8_to_4 = nn.Sequential(
             UpsampleTrilinear3D(scale_factor=(t_scales[2], 2, 2), align_corners=False)
         )
-        #self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
-        self.conv_4 = DeformConvPack(inter_channels[2] + inter_channels[3], inter_channels[3], kernel_size=[1, 1, 1], stride=[1, 1, 1],padding=[0, 0, 0]).cuda()
-
+        self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
 
         self.embedding_size = embedding_size
 
@@ -108,18 +87,12 @@ class SqueezingExpandDecoder(nn.Module):
         self.embedding_dim_mode = experimental_dims
         embedding_output_size = get_nb_embedding_dims(self.embedding_dim_mode)
 
-        #self.conv_embedding = nn.Conv3d(inter_channels[-1], embedding_output_size, kernel_size=1, padding=0, bias=False)
-        self.conv_embedding = DeformConvPack(inter_channels[-1], embedding_output_size, kernel_size=[1, 1, 1], stride=[1, 1, 1],padding=[0, 0, 0]).cuda()
-
-        #self.conv_variance = nn.Conv3d(inter_channels[-1], self.variance_channels, kernel_size=1, padding=0, bias=True)
-        self.conv_variance = DeformConvPack(inter_channels[-1], self.variance_channels, kernel_size=[1, 1, 1], stride=[1, 1, 1],padding=[0, 0, 0]).cuda()
-
+        self.conv_embedding = nn.Conv3d(inter_channels[-1], embedding_output_size, kernel_size=1, padding=0, bias=False)
+        self.conv_variance = nn.Conv3d(inter_channels[-1], self.variance_channels, kernel_size=1, padding=0, bias=True)
 
         self.conv_seediness, self.seediness_channels = None, 0
         if seediness_output:
-            #self.conv_seediness = nn.Conv3d(inter_channels[-1], 1, kernel_size=1, padding=0, bias=False)
-            self.conv_seediness = DeformConvPack(inter_channels[-1], 1, kernel_size=[1, 1, 1], stride=[1, 1, 1],padding=[0, 0, 0]).cuda()
-
+            self.conv_seediness = nn.Conv3d(inter_channels[-1], 1, kernel_size=1, padding=0, bias=False)
             self.seediness_channels = 1
 
         self.tanh_activation = tanh_activation

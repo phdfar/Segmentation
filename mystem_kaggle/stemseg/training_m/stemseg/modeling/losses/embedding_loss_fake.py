@@ -7,6 +7,57 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+def compute_within_var(instance_embeddings):
+    #instance_embeddings = torch.tensor(instance_embeddings)
+    mean_embeddings = instance_embeddings.mean(dim=0, keepdim=True)
+    withinvar = torch.sum(torch.pow(mean_embeddings - instance_embeddings, 2),0)
+    return withinvar,mean_embeddings
+
+def compute_between_var(global_mean,mean_c,instance_embeddings):
+    #instance_embeddings = torch.tensor(instance_embeddings)
+    between_var = len(instance_embeddings)*(torch.pow(global_mean - mean_c, 2))
+    return between_var
+
+def get_varem_loss(instance_embeddings,nonzero_mask_pts):
+    allvar_within={};between_var=0;allembed=0;all_mean={};all_var=0;
+    myloss=0;
+    num_instance = len(nonzero_mask_pts) 
+    for n in range(0,num_instance):
+        var,mean = compute_within_var(instance_embeddings[n])
+        all_var+=var
+        allvar_within.update({n:var})
+        all_mean.update({n:mean})
+        if n==0:
+            allembed = instance_embeddings[n]
+        else:
+            allembed = torch.cat((instance_embeddings[n], allembed), 0)
+
+    if num_instance==1:
+        myloss = all_var/len(allembed)
+    elif num_instance>1:
+        global_mean = allembed.mean(dim=0, keepdim=True)
+
+        for n in range(0,num_instance):
+            between_var+=compute_between_var(global_mean,all_mean[n],instance_embeddings[n])
+    
+        df_within = len(allembed)-num_instance
+        df_between = num_instance-1
+        MS1 = all_var/df_within
+        MS2 = between_var/df_between
+        myloss = 10*(MS1/MS2)
+        #print('MS2:',MS2)
+        #print('between_var:',between_var)
+        #print('global_mean:',global_mean)
+        #print('all_mean:',all_mean)
+        #print('----------------------')
+        #print('instance_embeddings',instance_embeddings)
+
+    #varem = F.mse_loss(myloss, torch.zeros_like(myloss), reduction='mean')
+
+    return myloss.mean().detach()
+    
+    
+
 class EmbeddingLoss(nn.Module):
     def __init__(self, embedding_map_scale, **kwargs):
         super().__init__()
@@ -55,6 +106,8 @@ class EmbeddingLoss(nn.Module):
         lovasz_loss = 0.
         seediness_loss = 0.
         bandwidth_smoothness_loss = 0.
+        varem_loss=0.;
+        klloss=0.;
 
         torch_zero = torch.tensor(0).to(embedding_map).requires_grad_(False)
 
@@ -101,6 +154,11 @@ class EmbeddingLoss(nn.Module):
 
             total_instances += len(nonzero_mask_pts)
 
+            # varem_loss
+            #varem_loss+=get_varem_loss(instance_embeddings,nonzero_mask_pts)
+            #print('number_instance : ' , len(nonzero_mask_pts),' loss: ',varem_loss)
+            
+
             # regress seediness values for background to 0
             bg_mask_pts = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
             bg_seediness_pts = seediness_per_seq[bg_mask_pts]
@@ -118,10 +176,11 @@ class EmbeddingLoss(nn.Module):
                 bandwidth_per_instance.exp() * 10.
                 for bandwidth_per_instance in instance_bandwidths
             ]
-
+            allprop=[]
             for n in range(len(nonzero_mask_pts)):  # iterate over instances
                 probs_map = self.compute_prob_map(embeddings_per_seq, instance_embeddings[n], instance_bandwidths[n])
                 logits_map = (probs_map * 2.) - 1.
+                allprop.append(probs_map)
                 instance_target = masks[n].flatten()
                 if instance_target.sum(dtype=torch.long) == 0:
                     continue
@@ -135,16 +194,49 @@ class EmbeddingLoss(nn.Module):
             lovasz_loss = (bandwidth_map.sum() + embedding_map.sum()) * 0
             bandwidth_smoothness_loss = bandwidth_map.sum() * 0
             seediness_loss = seediness_map.sum() * 0
+            klloss = (bandwidth_map.sum() + embedding_map.sum()) * 0
+
         else:
             # compute weighted sum of lovasz and variance losses based on number of instances per batch sample
             lovasz_loss = lovasz_loss / total_instances
-            bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
+            #try:
+                #varem_loss = varem_loss / embedding_map.shape[0]
+                #temp = torch.zeros_like(lovasz_loss)+1
+                #lovasz_loss = (((varem_loss)*temp)+lovasz_loss)
+            #except:
+                #pass
+            if len(allprop)==2:
+                #kl_loss = nn.KLDivLoss(reduction="batchmean")
+                #klloss = kl_loss(allprop[0], allprop[1])
+                klloss = self.lovasz_hinge_loss(allprop[0].flatten(), allprop[1].flatten())
+                if klloss!=0:
+                    klloss = 1/klloss
+                    lovasz_loss = (lovasz_loss+klloss)/2
+                    
+                #print('klloss:',klloss)
+
+
+            
+            bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size           
             seediness_loss = seediness_loss / float(total_instances + 1)
 
+        #print('seediness_loss',seediness_loss)
+        #print('varem_loss',varem_loss)
+        #print(torch.isnan(varem_loss))
+        #if torch.isnan(varem_loss)==True:
+        #  varem_loss=torch.tensor(1);
+        #print(varem_loss/100)
+        #temp = torch.zeros_like(lovasz_loss)
+        #
+        """
+        total_loss = (lovasz_loss * self.w_lovasz) + (klloss * self.w_lovasz) +  \
+                     (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
+                     (seediness_loss * self.w_seediness)
+        """
         total_loss = (lovasz_loss * self.w_lovasz) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
-
+                     
         output_dict[ModelOutputConsts.OPTIMIZATION_LOSSES] = {
             LossConsts.EMBEDDING: total_loss * self.w
         }
