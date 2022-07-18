@@ -208,7 +208,7 @@ class EmbeddingLoss(nn.Module):
             if len(allprop)==2:
                 kl_loss = nn.KLDivLoss(reduction="mean")
                 klloss = kl_loss(allprop[0], allprop[1])
-                
+                print('klloss:',klloss)
             
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size           
             seediness_loss = seediness_loss / float(total_instances + 1)
