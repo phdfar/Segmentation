@@ -133,11 +133,17 @@ class SqueezingExpandDecoder(nn.Module):
         """
         assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
         
-        x = x.contiguous()
 
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
+        
+        
+        feat_map_4x = feat_map_4x.contiguous()
+        feat_map_8x = feat_map_8x.contiguous()
 
+        feat_map_16x = feat_map_16x.contiguous()
+        feat_map_32x = feat_map_32x.contiguous()
+        
         feat_map_32x = self.block_32x(feat_map_32x)
 
         # 32x to 16x
