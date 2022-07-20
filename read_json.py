@@ -33,9 +33,9 @@ def extract_gt(gt_mask,h,w):
   Total_mask[Total_mask==2]=1;
   return Total_mask
 
-def binary_seg_totoal(pred,gt,allrgb,path):
+def binary_seg_totoal(pred,gt,allrgb,path,all_FS,all_PR,all_RE,all_AC):
   keys = gt.keys()
-  all_FS=[];all_PR=[];all_RE=[];all_AC=[];
+  
   TP=0;FP=0;FN=0;TN=0;
   for k in list(keys):
     mask = pred[k].astype('float32'); gtn = gt[k].astype('float32')
@@ -73,7 +73,7 @@ def binary_seg_totoal(pred,gt,allrgb,path):
       FS = (2*recall*precision)/(precision+recall)
     except:
       FS=0
-    all_FS.append(FS); all_RE.append(recall); all_PR.append(precision); all_AC.append(precision);
+    all_FS.append(FS); all_RE.append(recall); all_PR.append(precision); all_AC.append(accuracy);
     sp = path[k].split('/'); filename = sp[-2]+'_'+sp[-1]
     result = cv2.resize(result, (320,192), interpolation = cv2.INTER_NEAREST)
 
@@ -87,7 +87,7 @@ def binary_seg_totoal(pred,gt,allrgb,path):
     result = np.concatenate((result,footer1,footer),axis=0); 
     result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB);
     cv2.imwrite('vis/'+filename,result)
-  return np.mean(all_FS),np.mean(all_RE),np.mean(all_PR),np.mean(all_AC)
+  return all_FS,all_RE,all_PR,all_AC
 
 def run(args):
   with open('youtube_vis_train.json', 'r') as fh:
@@ -158,8 +158,8 @@ def run(args):
               new_mask = Total_mask_pred[i]+mask_pred
               new_mask[new_mask==2]=1;
               Total_mask_pred.update({i:new_mask})
-      FS,RE,PR,AC = binary_seg_totoal(Total_mask_pred,Total_mask_gt,allrgb,gt_data[video][2])
-      all_FS.append(FS); all_RE.append(RE); all_PR.append(PR); all_AC.append(AC);
+      all_FS,all_PR,all_RE,all_AC = binary_seg_totoal(Total_mask_pred,Total_mask_gt,allrgb,gt_data[video][2],all_FS,all_PR,all_RE,all_AC)
+      #all_FS.append(FS); all_RE.append(RE); all_PR.append(PR); all_AC.append(AC);
   
   FS = np.mean(all_FS);RE = np.mean(all_RE);PR=np.mean(all_PR);AC=np.mean(all_AC)
   print(FS,RE,PR,AC)
