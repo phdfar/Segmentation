@@ -251,9 +251,10 @@ class InferenceModel(nn.Module):
                 subseq_seediness_dict = {t: subseq_seediness[:, i] for i, t in enumerate(current_subseq_as_list)}
                 subseq_seediness = torch.stack([subseq_seediness_dict[t] for t in sorted(current_subseq.keys())], 1)
 
-            #embeddings_maps.append(self.EmbeddingMapEntry(
-            #    sorted(current_subseq.keys()), subseq_embeddings.cpu(), subseq_bandwidths.cpu(), subseq_seediness.cpu()))
+            embeddings_maps.append(self.EmbeddingMapEntry(
+                    sorted(current_subseq.keys()), subseq_embeddings.cpu(), subseq_bandwidths.cpu(), subseq_seediness.cpu()))
             
+            """
             embed = subseq_embeddings.cpu().numpy()
             emd=[];
             for j in range(0,4):
@@ -274,7 +275,7 @@ class InferenceModel(nn.Module):
 
             embeddings_maps.append(self.EmbeddingMapEntry(
                 sorted(current_subseq.keys()), torch.tensor(emd), torch.tensor(band), torch.tensor(sed) ))
-            
+            """
             # clear backbone feature maps which are not needed for the next sub-sequence
             frames_to_discard = set()
             for frame_id, subseqs in subseq_deps.items():
