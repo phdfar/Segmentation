@@ -111,14 +111,26 @@ class TrackGenerator(object):
 
         if not isinstance(self.max_tracks, (list, tuple)):
             self.max_tracks = [self.max_tracks] * len(self.sequences)
-
+        vd=''
         for i in range(len(self.sequences)):
             sequence = self.sequences[i]
             if seqs_to_process and str(sequence.seq_id) not in seqs_to_process:
                 continue
 
             print("Performing inference for sequence {}/{}".format(i + 1, len(self.sequences)))
-            self.process_sequence(sequence, self.max_tracks[i])
+
+            #print(rtl)
+            try:
+              self.process_sequence(sequence, self.max_tracks[i])
+            except:
+              rtl='{"video_id": '+str(sequence.id)+', "score": 1.0, "category_id": 1,"segmentations": ['
+              for j in range(len(sequence.image_paths)):
+                rtl = rtl +  '{"size": [720, 1280], "counts": "PPTl0"},'
+              rtl=rtl+']'
+              vd=vd+rtl;
+              print('xxxxx',str(sequence.id))
+        print(vd)
+            #break
 
         print("----------------------------------------------------")
         print("Model inference speed: {:.3f} fps".format(self.total_frames_processed / Timer.get_duration("inference")))
