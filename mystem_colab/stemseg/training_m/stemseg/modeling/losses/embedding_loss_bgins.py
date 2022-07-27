@@ -62,6 +62,7 @@ class EmbeddingLoss(nn.Module):
                 enumerate(zip(embedding_map, bandwidth_map, seediness_map, targets)):
 
             masks = targets_per_seq['masks']
+            
             if masks.numel() == 0:
                 continue
 
@@ -83,6 +84,17 @@ class EmbeddingLoss(nn.Module):
             nonzero_mask_pts = nonzero_mask_pts[instance_id_sort_idx]
             nonzero_mask_pts = nonzero_mask_pts.split(tuple(instance_pt_counts.tolist()))
             nonzero_mask_pts = tuple([nonzero_mask_pts[i].unbind(1)[1:] for i in range(len(nonzero_mask_pts))])
+
+
+            unmask = torch.zeros_like(masks[0])
+            bg_mask_pts = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
+            unmask[bg_mask_pts]=1
+            unmask = unmask.unsqueeze(0)
+            masks = torch.cat((masks, unmask), 0)
+            ds = (bg_mask_pts[0],bg_mask_pts[1],bg_mask_pts[2])
+            nonzero_mask_pts = list(nonzero_mask_pts);nonzero_mask_pts.append(ds)
+            nonzero_mask_pts = tuple(nonzero_mask_pts)
+            
 
             instance_embeddings = [
                 embeddings_per_seq[nonzero_mask_pts[n]]
