@@ -85,16 +85,20 @@ class EmbeddingLoss(nn.Module):
             nonzero_mask_pts = nonzero_mask_pts.split(tuple(instance_pt_counts.tolist()))
             nonzero_mask_pts = tuple([nonzero_mask_pts[i].unbind(1)[1:] for i in range(len(nonzero_mask_pts))])
 
-
+            maskc = torch.clone(masks)
             unmask = torch.zeros_like(masks[0])
-            bg_mask_pts = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
-            unmask[bg_mask_pts]=1
+            bg_mask_ptsx = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
+            unmask[bg_mask_ptsx]=1
             unmask = unmask.unsqueeze(0)
             masks = torch.cat((masks, unmask), 0)
-            ds = (bg_mask_pts[0],bg_mask_pts[1],bg_mask_pts[2])
+            ds = (bg_mask_ptsx[0],bg_mask_ptsx[1],bg_mask_ptsx[2])
             nonzero_mask_pts = list(nonzero_mask_pts);nonzero_mask_pts.append(ds)
             nonzero_mask_pts = tuple(nonzero_mask_pts)
-            
+            #print(unmask.shape)
+            #print(masks.shape)
+            #print(len(nonzero_mask_pts))
+
+            #print(asd)
 
             instance_embeddings = [
                 embeddings_per_seq[nonzero_mask_pts[n]]
@@ -114,7 +118,7 @@ class EmbeddingLoss(nn.Module):
             total_instances += len(nonzero_mask_pts)
 
             # regress seediness values for background to 0
-            bg_mask_pts = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
+            bg_mask_pts = (maskc == 0).all(0).nonzero(as_tuple=False).unbind(1)
             bg_seediness_pts = seediness_per_seq[bg_mask_pts]
             bg_seediness_loss = F.mse_loss(bg_seediness_pts, torch.zeros_like(bg_seediness_pts), reduction='none')
 
