@@ -60,7 +60,7 @@ class EmbeddingLoss(nn.Module):
             
         if klloss!=0:
             klloss = 1/klloss
-        klloss = kl_loss.mean().detach().cpu()
+        klloss = klloss.mean().detach().cpu().numpy()
         return klloss
                     
     def lda_loss(self,instance_embeddings):
@@ -102,24 +102,24 @@ class EmbeddingLoss(nn.Module):
       
         sl_loss = 0.
         try:
-            sl_loss1 = sklearn.metrics.silhouette_score(Xtrain,Ytrain)
-            sl_loss2 = sklearn.metrics.silhouette_score(Xtest,Ytest)
+            sl_loss1 = sklearn.metrics.silhouette_score(Xtrain,Ytrain.ravel())
+            sl_loss2 = sklearn.metrics.silhouette_score(Xtest,Ytest.ravel())
             sl_loss = (sl_loss1 + sl_loss2)/2
         except:
             pass
         
         bl_loss = 0.
         try:
-            bl_loss1 = sklearn.metrics.davies_bouldin_score(Xtrain,Ytrain)
-            bl_loss2 = sklearn.metrics.davies_bouldin_score(Xtest,Ytest)
+            bl_loss1 = sklearn.metrics.davies_bouldin_score(Xtrain,Ytrain.ravel())
+            bl_loss2 = sklearn.metrics.davies_bouldin_score(Xtest,Ytest.ravel())
             bl_loss = (bl_loss1 + bl_loss2)/2
         except:
             pass
                 
         cl_loss = 0.
         try:
-            cl_loss1 = sklearn.metrics.calinski_harabasz_score(Xtrain,Ytrain)
-            cl_loss2 = sklearn.metrics.calinski_harabasz_score(Xtest,Ytest)
+            cl_loss1 = sklearn.metrics.calinski_harabasz_score(Xtrain,Ytrain.ravel())
+            cl_loss2 = sklearn.metrics.calinski_harabasz_score(Xtest,Ytest.ravel())
             cl_loss = (cl_loss1 + cl_loss2)/2
         except:
             pass
@@ -142,8 +142,8 @@ class EmbeddingLoss(nn.Module):
   
         for tfgpath in glob.iglob(os.path.join(self.currentpath, '*.tfg')):
             os.remove(tfgpath)
-        with open(self.currentpath+str(minute)+'.tfg','rb') as f:
-            f.writeline('ff')
+        with open(self.currentpath+str(minute)+'.tfg','w') as f:
+            f.write('ff')
             
         
     def forward(self, embedding_map, targets, output_dict, *args, **kwargs):
@@ -232,7 +232,7 @@ class EmbeddingLoss(nn.Module):
                 bandwidth_per_instance.exp() * 10.
                 for bandwidth_per_instance in instance_bandwidths
             ]
-            allprop=0;
+            allprop=[];
             for n in range(len(nonzero_mask_pts)):  # iterate over instances
                 probs_map = self.compute_prob_map(embeddings_per_seq, instance_embeddings[n], instance_bandwidths[n])
                 logits_map = (probs_map * 2.) - 1.
@@ -265,23 +265,26 @@ class EmbeddingLoss(nn.Module):
         total_loss = (lovasz_loss * self.w_lovasz) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
-                     
-        if minute%3==0:
-            if exists(self.currentpath+str(minute)+'.tfg')==False: 
-                
-                klloss = 0 ;
-                ldaloss = 0 ;
-                if total_instances>=2:
-                    ldaloss,slloss,blloss,clloss = self.lda_loss(instance_embeddings)
+        
+        try:
+            if minute%3==0:
+                if exists(self.currentpath+str(minute)+'.tfg')==False: 
                     
-                if 2<=total_instances<=3:
-                    klloss = self.kl_loss_func(allprop,total_instances)
-                    
-                lovas = lovasz_loss.mean().detach().cpu()
-                seed = seediness_loss.mean().detach().cpu()
-                total_loss = total_loss.detach().cpu()
-                     
-                self.logger(minute,now,klloss,ldaloss,slloss,blloss,clloss,lovas,seed,total_loss)
+                    klloss = 0 ;
+                    ldaloss = 0 ;
+                    if total_instances>=2:
+                        ldaloss,slloss,blloss,clloss = self.lda_loss(instance_embeddings)
+                        
+                    if 2<=total_instances<=3:
+                        klloss = self.kl_loss_func(allprop,total_instances)
+                        
+                    lovas = lovasz_loss.mean().detach().cpu().numpy()
+                    seed = seediness_loss.mean().detach().cpu().numpy()
+                    total_loss = total_loss.detach().cpu().numpy()
+                         
+                    self.logger(minute,now,klloss,ldaloss,slloss,blloss,clloss,lovas,seed,total_loss)
+        except:
+            pass
                              
 
         output_dict[ModelOutputConsts.OPTIMIZATION_LOSSES] = {
