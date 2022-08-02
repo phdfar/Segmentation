@@ -1,0 +1,324 @@
+from stemseg.utils import ModelOutputConsts, LossConsts
+from stemseg.utils import distributed as dist_utils
+from stemseg.modeling.losses._lovasz import LovaszHingeLoss
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import datetime
+import pickle
+from os.path import exists
+from pathlib import Path
+import os
+import glob
+import shutil
+import random
+import numpy as np
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+import sklearn
+
+
+class EmbeddingLoss(nn.Module):
+    def __init__(self, embedding_map_scale, **kwargs):
+        super().__init__()
+        kwargs = {k.lower(): v for k, v in kwargs.items()}
+
+        self.embedding_map_scale = embedding_map_scale
+        self.embedding_size = kwargs["embedding_size"]
+        self.w_variance_smoothness = kwargs["weight_variance_smoothness"]
+        self.w_lovasz = kwargs["weight_lovasz"]
+        self.w_regularization = kwargs["weight_regularization"]
+        self.w_seediness = kwargs["weight_seediness"]
+        self.w = kwargs["weight"]
+        self.n_free_dims = kwargs["nbr_free_dims"]
+
+        assert len(kwargs["free_dim_stds"]) == self.n_free_dims, \
+            "List of std values {} does not match number of free dims {}".format(len(kwargs["free_dim_stds"]), self.n_free_dims)
+
+        if self.n_free_dims > 0:
+            self.register_buffer("free_dim_bandwidths", 1. / torch.tensor(kwargs["free_dim_stds"]).float().unsqueeze(0) ** 2)  # [1, N_FREE_DIMS]
+
+        self.lovasz_hinge_loss = LovaszHingeLoss()
+
+        self.split_sizes = (self.embedding_size, self.embedding_size - self.n_free_dims, 1)
+        self.num_input_channels = sum(self.split_sizes)
+        paths  = str(Path().absolute())
+        if 'content' in paths:
+            self.currentpath = '/content/'
+        if 'kaggle' in paths:
+            self.currentpath = '/kaggle/working/'
+            
+    def kl_loss_func(self,allprop,total_instances):
+        kl_loss = nn.KLDivLoss(reduction="batchmean")
+        if total_instances==2:
+            klloss = -1*kl_loss(allprop[0], allprop[1])
+        else:
+            klloss = -1*kl_loss(allprop[0], allprop[1])
+            klloss = klloss + (-1*kl_loss(allprop[0], allprop[2]))
+            klloss = klloss + (-1*kl_loss(allprop[1], allprop[2]))
+            klloss=klloss/3
+            
+        if klloss!=0:
+            klloss = 1/klloss
+        klloss = kl_loss.mean().detach().cpu()
+        return klloss
+                    
+    def lda_loss(self,instance_embeddings):
+
+        #instance_embeddingsx = instance_embeddings.detach().cpu()
+        Xtrain=[];Ytrain=[];Xtest=[];Ytest=[];
+        for n in range(len(instance_embeddings)):
+            ln = len(instance_embeddings[n])
+            index = random.sample(range(1, ln), int(0.40*ln))
+            idx_train = index[:len(index)//2]
+            idx_test = index[len(index)//2:]
+            if n == 0:
+                Xtrain = instance_embeddings[n][idx_train]
+                Xtrain = Xtrain.detach().cpu()
+                Ytrain = np.zeros((len(Xtrain),1))+n+1
+                Xtest = instance_embeddings[n][idx_test]
+                Xtest = Xtest.detach().cpu()
+                Ytest = np.zeros((len(Xtest),1))+n+1
+            else:
+                new = instance_embeddings[n][idx_train]
+                new = new.detach().cpu()
+                Xtrain = np.concatenate((Xtrain,new))
+                Ytrain = np.concatenate((Ytrain,np.zeros((len(new),1))+n+1))
+                new = instance_embeddings[n][idx_test]
+                new = new.detach().cpu()
+                Xtest = np.concatenate((Xtest,new))
+                Ytest = np.concatenate((Ytest, np.zeros((len(new),1))+n+1))
+    
+        random.Random(1337).shuffle(Xtrain)
+        random.Random(1337).shuffle(Ytrain)
+    
+        wscore = 0.
+        try:
+          clf = LinearDiscriminantAnalysis()
+          clf.fit(Xtrain,Ytrain.ravel())
+          wscore = clf.score(Xtest,Ytest.ravel())
+        except:
+          pass
+      
+        sl_loss = 0.
+        try:
+            sl_loss1 = sklearn.metrics.silhouette_score(Xtrain,Ytrain)
+            sl_loss2 = sklearn.metrics.silhouette_score(Xtest,Ytest)
+            sl_loss = (sl_loss1 + sl_loss2)/2
+        except:
+            pass
+        
+        bl_loss = 0.
+        try:
+            bl_loss1 = sklearn.metrics.davies_bouldin_score(Xtrain,Ytrain)
+            bl_loss2 = sklearn.metrics.davies_bouldin_score(Xtest,Ytest)
+            bl_loss = (bl_loss1 + bl_loss2)/2
+        except:
+            pass
+                
+        cl_loss = 0.
+        try:
+            cl_loss1 = sklearn.metrics.calinski_harabasz_score(Xtrain,Ytrain)
+            cl_loss2 = sklearn.metrics.calinski_harabasz_score(Xtest,Ytest)
+            cl_loss = (cl_loss1 + cl_loss2)/2
+        except:
+            pass
+
+        return 1-wscore,1-sl_loss,bl_loss,1-cl_loss
+        
+  
+    def logger(self,minute,now,klloss,ldaloss,slloss,blloss,clloss,lovas,seed,total_loss):
+        
+        with open(self.currentpath+'Logger.pickle', 'rb') as handle:
+            old_data = pickle.load(handle)
+            
+        shutil.copy(self.currentpath+'Logger.pickle',self.currentpath+'Logger_copy.pickle')
+        with open(self.currentpath+'Logger.pickle', 'wb') as handle:
+            
+            new_data = [{'id':now , 'klloss':klloss, 'ldaloss':ldaloss, 'slloss':slloss, 'blloss':blloss, 'clloss':clloss,'lovas':lovas, 'seed':seed, 'total_loss':total_loss} ]
+            data = old_data + new_data
+            
+            pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+  
+        for tfgpath in glob.iglob(os.path.join(self.currentpath, '*.tfg')):
+            os.remove(tfgpath)
+        with open(self.currentpath+str(minute)+'.tfg','rb') as f:
+            f.writeline('ff')
+            
+        
+    def forward(self, embedding_map, targets, output_dict, *args, **kwargs):
+        """
+        Computes the embedding loss.
+        :param embedding_map: Tensor of shape [N, C, T, H, W] (C = embedding dims + variance dims + seediness dims)
+        :param targets: List (length N) of dicts, each containing a 'masks' field containing a tensor of
+        shape (I (instances), T, H, W)
+        :param output_dict: dict to populate with loss values.
+        :return: Scalar loss
+        """
+        assert embedding_map.shape[1] == self.num_input_channels, "Expected {} channels in input tensor, got {}".format(
+            self.num_input_channels, embedding_map.shape[1])
+
+        embedding_map = embedding_map.permute(0, 2, 3, 4, 1)  # [N, T, H, W, C]
+
+        embedding_map, bandwidth_map, seediness_map = embedding_map.split(self.split_sizes, dim=-1)
+        assert bandwidth_map.shape[-1] + self.n_free_dims == embedding_map.shape[-1], \
+            "Number of predicted bandwidth dims {} + number of free dims {} should equal number of total embedding " \
+            "dims {}".format(bandwidth_map.shape[-1], self.n_free_dims, embedding_map.shape[-1])
+
+        total_instances = 0.
+        lovasz_loss = 0.
+        seediness_loss = 0.
+        bandwidth_smoothness_loss = 0.
+
+        torch_zero = torch.tensor(0).to(embedding_map).requires_grad_(False)
+
+        for idx, (embeddings_per_seq, bandwidth_per_seq, seediness_per_seq, targets_per_seq) in \
+                enumerate(zip(embedding_map, bandwidth_map, seediness_map, targets)):
+
+            masks = targets_per_seq['masks']
+            if masks.numel() == 0:
+                continue
+
+            ignore_masks = targets_per_seq['ignore_masks']
+
+            assert masks.shape[-2:] == ignore_masks.shape[-2:], \
+                "Masks tensor has shape {} while ignore mask has shape {}".format(masks.shape, ignore_masks.shape)
+
+            assert masks.shape[-2:] == embedding_map.shape[2:4], \
+                "Masks tensor has shape {} while embedding map has shape {}".format(masks.shape, embedding_map.shape)
+
+            nonzero_mask_pts = masks.nonzero(as_tuple=False)
+            if nonzero_mask_pts.shape[0] == 0:
+                print("[ WARN] No valid mask points exist in sample.")
+                continue
+
+            _, instance_pt_counts = nonzero_mask_pts[:, 0].unique(sorted=True, return_counts=True)
+            instance_id_sort_idx = nonzero_mask_pts[:, 0].argsort()
+            nonzero_mask_pts = nonzero_mask_pts[instance_id_sort_idx]
+            nonzero_mask_pts = nonzero_mask_pts.split(tuple(instance_pt_counts.tolist()))
+            nonzero_mask_pts = tuple([nonzero_mask_pts[i].unbind(1)[1:] for i in range(len(nonzero_mask_pts))])
+
+            instance_embeddings = [
+                embeddings_per_seq[nonzero_mask_pts[n]]
+                for n in range(len(nonzero_mask_pts))
+            ]  # list(tensor[I, E])
+
+            instance_bandwidths = [
+                bandwidth_per_seq[nonzero_mask_pts[n]]
+                for n in range(len(nonzero_mask_pts))
+            ]  # list(tensor[I, E])
+
+            instance_seediness = [
+                seediness_per_seq[nonzero_mask_pts[n]]
+                for n in range(len(nonzero_mask_pts))
+            ]  # list(tensor[I, E])
+
+            total_instances += len(nonzero_mask_pts)
+
+            # regress seediness values for background to 0
+            bg_mask_pts = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
+            bg_seediness_pts = seediness_per_seq[bg_mask_pts]
+            bg_seediness_loss = F.mse_loss(bg_seediness_pts, torch.zeros_like(bg_seediness_pts), reduction='none')
+
+            # ignore loss for ignore mask points
+            ignore_mask_pts = ignore_masks[bg_mask_pts].unsqueeze(1)
+            seediness_loss = seediness_loss + torch.where(ignore_mask_pts, torch_zero, bg_seediness_loss).mean()
+
+            # compute bandwidth smoothness loss before applying activation
+            bandwidth_smoothness_loss = bandwidth_smoothness_loss + self.compute_bandwidth_smoothness_loss(instance_bandwidths)
+
+            # apply activation to bandwidths
+            instance_bandwidths = [
+                bandwidth_per_instance.exp() * 10.
+                for bandwidth_per_instance in instance_bandwidths
+            ]
+            allprop=0;
+            for n in range(len(nonzero_mask_pts)):  # iterate over instances
+                probs_map = self.compute_prob_map(embeddings_per_seq, instance_embeddings[n], instance_bandwidths[n])
+                logits_map = (probs_map * 2.) - 1.
+                allprop.append(probs_map)
+                instance_target = masks[n].flatten()
+                if instance_target.sum(dtype=torch.long) == 0:
+                    continue
+
+                lovasz_loss = lovasz_loss + self.lovasz_hinge_loss(logits_map.flatten(), instance_target)
+                instance_probs = probs_map.unsqueeze(3)[nonzero_mask_pts[n]].detach()
+                seediness_loss = seediness_loss + F.mse_loss(instance_seediness[n], instance_probs, reduction='mean')
+
+        if total_instances == 0:
+            print("Process {}: Zero instances case occurred embedding loss".format(dist_utils.get_rank()))
+            lovasz_loss = (bandwidth_map.sum() + embedding_map.sum()) * 0
+            bandwidth_smoothness_loss = bandwidth_map.sum() * 0
+            seediness_loss = seediness_map.sum() * 0
+        else:
+            # compute weighted sum of lovasz and variance losses based on number of instances per batch sample
+            lovasz_loss = lovasz_loss / total_instances
+            bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
+            seediness_loss = seediness_loss / float(total_instances + 1)
+	
+        now = str(datetime.datetime.now().time())[0:5]
+        minute = int(now[3:5])
+        
+
+                       
+
+        total_loss = (lovasz_loss * self.w_lovasz) + \
+                     (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
+                     (seediness_loss * self.w_seediness)
+                     
+        if minute%3==0:
+            if exists(self.currentpath+str(minute)+'.tfg')==False: 
+                
+                klloss = 0 ;
+                ldaloss = 0 ;
+                if total_instances>=2:
+                    ldaloss,slloss,blloss,clloss = self.lda_loss(instance_embeddings)
+                    
+                if 2<=total_instances<=3:
+                    klloss = self.kl_loss_func(allprop,total_instances)
+                    
+                lovas = lovasz_loss.mean().detach().cpu()
+                seed = seediness_loss.mean().detach().cpu()
+                total_loss = total_loss.detach().cpu()
+                     
+                self.logger(minute,now,klloss,ldaloss,slloss,blloss,clloss,lovas,seed,total_loss)
+                             
+
+        output_dict[ModelOutputConsts.OPTIMIZATION_LOSSES] = {
+            LossConsts.EMBEDDING: total_loss * self.w
+        }
+
+        output_dict[ModelOutputConsts.OTHERS] = {
+            LossConsts.LOVASZ_LOSS: lovasz_loss,
+            LossConsts.VARIANCE_SMOOTHNESS: bandwidth_smoothness_loss,
+        }
+
+        output_dict[ModelOutputConsts.OTHERS][LossConsts.SEEDINESS_LOSS] = seediness_loss
+
+    def compute_prob_map(self, embedding_map, instance_embeddings, instance_bandwidth):
+        """
+        Compute the fg/bg probability per instance
+        :param embedding_map: tensor(T, H, W, E)
+        :param instance_embeddings: tensor(N, E)
+        :param instance_bandwidth: tensor(N, E - N_FREE_DIMS)
+        :return: tensor(T, H, W)
+        """
+        embedding_center = instance_embeddings.mean(dim=0, keepdim=True)[None, None, :]
+        mean_bandwidth = instance_bandwidth.mean(dim=0, keepdim=True)  # [1, E - N_FREE_DIMS]
+
+        if self.n_free_dims > 0:
+            mean_bandwidth = torch.cat((mean_bandwidth, self.free_dim_bandwidths), 1)
+
+        mean_bandwidth = mean_bandwidth[None, None, :]
+
+        probs = torch.exp(-0.5 * torch.sum(
+            torch.pow(embedding_map - embedding_center, 2) * mean_bandwidth, dim=-1))
+
+        return probs
+
+    def compute_bandwidth_smoothness_loss(self, bandwidths):
+        loss = 0.
+        for bandwidths_per_instance in bandwidths:
+            mean_bandwidth = bandwidths_per_instance.mean(dim=0, keepdim=True)
+            loss += torch.pow(mean_bandwidth - bandwidths_per_instance, 2).mean()
+        return loss / float(len(bandwidths))
