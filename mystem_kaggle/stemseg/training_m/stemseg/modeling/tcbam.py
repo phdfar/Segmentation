@@ -81,4 +81,4 @@ class TCBAM(nn.Module):
         x_out2 = self.ChannelGate2(x_transpose)
         x_transpose = torch.permute(x_out2, (0, 2, 1, 3, 4))
         x_out = x + x_transpose
-        return x_out2
+        return x_out
