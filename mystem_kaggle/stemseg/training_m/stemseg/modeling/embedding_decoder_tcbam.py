@@ -115,42 +115,10 @@ class SqueezingExpandDecoder(nn.Module):
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
         
-        for i in range(0,8):
-          y = feat_map_4x[:,:,i,:,:]
-          y = torch.unsqueeze(self.cbam(y),2)
-          if i==0:
-            z = y;
-          else:
-             z = torch.cat((z, y),2)
-        feat_map_4x = z
-        
-        for i in range(0,8):
-          y = feat_map_8x[:,:,i,:,:]
-          y = torch.unsqueeze(self.cbam(y),2)
-          if i==0:
-            z = y;
-          else:
-             z = torch.cat((z, y),2)
-        feat_map_8x = z
-        
-        for i in range(0,8):
-          y = feat_map_16x[:,:,i,:,:]
-          y = torch.unsqueeze(self.cbam(y),2)
-          if i==0:
-            z = y;
-          else:
-             z = torch.cat((z, y),2)
-        feat_map_16x = z
-        
-        for i in range(0,8):
-          y = feat_map_32x[:,:,i,:,:]
-          y = torch.unsqueeze(self.cbam(y),2)
-          if i==0:
-            z = y;
-          else:
-             z = torch.cat((z, y),2)
-        feat_map_32x = z
-        
+        feat_map_32x = self.cbam(feat_map_32x)
+        feat_map_16x = self.cbam(feat_map_16x)
+        feat_map_8x = self.cbam(feat_map_8x)
+        feat_map_4x = self.cbam(feat_map_4x)
 
         feat_map_32x = self.block_32x(feat_map_32x)
 
