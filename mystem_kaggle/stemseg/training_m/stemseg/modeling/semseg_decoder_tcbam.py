@@ -68,7 +68,7 @@ class SqueezeExpandDecoder(nn.Module):
 
         t_scales = get_temporal_scales()
 
-        self.cbam = TCBAM(in_channels)
+        self.cbam = TCBAM(in_channels,8)
 
 
         # 32x -> 16x
