@@ -97,9 +97,8 @@ class SqueezeExpandDecoder(nn.Module):
     def forward(self, x):
         assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
 
-        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1]
-        
-        
+        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1];print('feat_map_32xxxxxxxxxxxxxxxx',feat_map_32x.shape)
+
         feat_map_32x = self.cbam(feat_map_32x)
         feat_map_16x = self.cbam(feat_map_16x)
         feat_map_8x = self.cbam(feat_map_8x)
