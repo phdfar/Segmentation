@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import sklearn
+import sklearn.metrics
 
 
 class EmbeddingLoss(nn.Module):
@@ -144,7 +145,7 @@ class EmbeddingLoss(nn.Module):
                 cl_loss1 = sklearn.metrics.calinski_harabasz_score(Xtrain,Ytrain.ravel())
                 cl_loss2 = sklearn.metrics.calinski_harabasz_score(Xtest,Ytest.ravel())
                 cl_loss = (cl_loss1 + cl_loss2)/2
-                clsx = (-1*cl_loss) / 500
+                clsx = (cl_loss) / 500
                 if clsx!=0:
                     cl_loss = 1/clsx
                 else:

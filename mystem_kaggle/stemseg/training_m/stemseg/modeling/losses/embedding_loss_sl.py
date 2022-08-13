@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import sklearn
+import sklearn.metrics
 
 
 class EmbeddingLoss(nn.Module):

@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import sklearn
-import sklearn.metrics
 
 
 class EmbeddingLoss(nn.Module):
@@ -140,6 +139,19 @@ class EmbeddingLoss(nn.Module):
             #   wscore = clf.score(Xtest,Ytest.ravel())
             # except:
             #   pass
+            cl_loss = 0.
+            try:
+                cl_loss1 = sklearn.metrics.calinski_harabasz_score(Xtrain,Ytrain.ravel())
+                cl_loss2 = sklearn.metrics.calinski_harabasz_score(Xtest,Ytest.ravel())
+                cl_loss = (cl_loss1 + cl_loss2)/2
+                clsx = (-1*cl_loss) / 500
+                if clsx!=0:
+                    cl_loss = 1/clsx
+                else:
+                    cl_loss = 0.
+            except:
+                pass
+            
             bl_loss = 0.
             try:
                 bl_loss1 = sklearn.metrics.davies_bouldin_score(Xtrain,Ytrain.ravel())
@@ -147,6 +159,9 @@ class EmbeddingLoss(nn.Module):
                 bl_loss = (bl_loss1 + bl_loss2)/2
             except:
                 pass
+            
+            cl_loss+=bl_loss
+            
             #print('wscore : ', wscore)
 
             # regress seediness values for background to 0
@@ -189,7 +204,7 @@ class EmbeddingLoss(nn.Module):
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
             seediness_loss = seediness_loss / float(total_instances + 1)
 
-        total_loss = (lovasz_loss * (self.w_lovasz + (1-bl_loss)) ) + \
+        total_loss = (lovasz_loss * (self.w_lovasz + cl_loss) ) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
 

@@ -8,7 +8,6 @@ import torch.nn.functional as F
 import sklearn
 import sklearn.metrics
 
-
 class EmbeddingLoss(nn.Module):
     def __init__(self, embedding_map_scale, **kwargs):
         super().__init__()
@@ -140,11 +139,16 @@ class EmbeddingLoss(nn.Module):
             #   wscore = clf.score(Xtest,Ytest.ravel())
             # except:
             #   pass
-            bl_loss = 0.
+            cl_loss = 0.
             try:
-                bl_loss1 = sklearn.metrics.davies_bouldin_score(Xtrain,Ytrain.ravel())
-                bl_loss2 = sklearn.metrics.davies_bouldin_score(Xtest,Ytest.ravel())
-                bl_loss = (bl_loss1 + bl_loss2)/2
+              cl_loss1 = sklearn.metrics.calinski_harabasz_score(Xtrain,Ytrain.ravel())
+              cl_loss2 = sklearn.metrics.calinski_harabasz_score(Xtest,Ytest.ravel())
+              cl_loss = (cl_loss1 + cl_loss2)/2
+              clsx = (cl_loss) / 500
+              if clsx!=0:
+                  cl_loss = 1/clsx
+              else:
+                  cl_loss = 0.
             except:
                 pass
             #print('wscore : ', wscore)
@@ -178,6 +182,12 @@ class EmbeddingLoss(nn.Module):
                 instance_probs = probs_map.unsqueeze(3)[nonzero_mask_pts[n]].detach()
                 seediness_loss = seediness_loss + F.mse_loss(instance_seediness[n], instance_probs, reduction='mean')
 
+        
+        tr = torch.zeros_like(masks[0].flatten())
+        pr = (torch.zeros_like(masks[0].flatten())+1)*cl_loss
+        #print(cl_loss)
+        sep_loss = F.mse_loss(pr, tr, reduction='mean')
+        #print(sep_loss)
         if total_instances == 0:
             print("Process {}: Zero instances case occurred embedding loss".format(dist_utils.get_rank()))
             lovasz_loss = (bandwidth_map.sum() + embedding_map.sum()) * 0
@@ -189,7 +199,7 @@ class EmbeddingLoss(nn.Module):
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
             seediness_loss = seediness_loss / float(total_instances + 1)
 
-        total_loss = (lovasz_loss * (self.w_lovasz + (1-bl_loss)) ) + \
+        total_loss = (lovasz_loss * self.w_lovasz) + (sep_loss *self.w_lovasz) +  \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
 
