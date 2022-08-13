@@ -14,11 +14,19 @@ class ModelPaths(object):
 
     @staticmethod
     def checkpoint_base_dir():
-        return os.path.join(_get_env_var('/kaggle/working/'), 'checkpoints')
+        path = os.path.abspath(os.getcwd())
+        if 'kaggle' in path:
+            return os.path.join(_get_env_var('/kaggle/working/'), 'checkpoints')
+        else:
+            return os.path.join(_get_env_var('/home/kasaei2/FarnooshArefi/VIS/'), 'checkpoints')
 
     @staticmethod
     def pretrained_backbones_dir():
-        return os.path.join(_get_env_var('/kaggle/working/'), 'pretrained')
+        path = os.path.abspath(os.getcwd())
+        if 'kaggle' in path:
+            return os.path.join(_get_env_var('/kaggle/working/'), 'pretrained')
+        else:
+            return os.path.join(_get_env_var('/home/kasaei2/FarnooshArefi/VIS/'), 'pretrained')
 
     @staticmethod
     def pretrained_maskrcnn_x101_fpn():

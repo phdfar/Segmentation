@@ -27,7 +27,11 @@ class YoutubeVISPaths(object):
 
     @staticmethod
     def training_base_dir():
-        return os.path.join(_get_env_var('/kaggle/input/train-vis/'), 'train')
+        path = os.path.abspath(os.getcwd())
+        if 'kaggle' in path:
+            return os.path.join(_get_env_var('/kaggle/input/train-vis/'), 'train')
+        else:
+            return os.path.join(_get_env_var('/home/kasaei2/FarnooshArefi/VIS/'), 'train')
 
     @staticmethod
     def val_base_dir():
@@ -35,7 +39,12 @@ class YoutubeVISPaths(object):
 
     @staticmethod
     def train_vds_file():
-        return os.path.join(_get_env_var('/kaggle/working/'), 'youtube_vis_train.json')
+        path = os.path.abspath(os.getcwd())
+        if 'kaggle' in path:
+            return os.path.join(_get_env_var('/kaggle/working/'), 'youtube_vis_train.json')
+        else:
+            return os.path.join(_get_env_var('/home/kasaei2/FarnooshArefi/VIS/'), 'youtube_vis_train.json')
+
 
     @staticmethod
     def val_vds_file():

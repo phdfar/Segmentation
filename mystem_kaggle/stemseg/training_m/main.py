@@ -2,7 +2,7 @@ import os
 
 os.environ['/kaggle/working/'] = '/kaggle/working/'
 os.environ['/kaggle/input/train-vis/'] = '/kaggle/input/train-vis/'
-
+os.environ['/home/kasaei2/FarnooshArefi/VIS/'] = '/home/kasaei2/FarnooshArefi/VIS/'
 
 from argparse import ArgumentParser
 from datetime import timedelta
