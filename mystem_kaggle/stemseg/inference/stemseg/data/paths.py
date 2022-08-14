@@ -31,7 +31,11 @@ class YoutubeVISPaths(object):
 
     @staticmethod
     def val_base_dir():
-        return os.path.join(_get_env_var('/content/'), 'valid')
+        path = os.path.abspath(os.getcwd())
+        if 'kaggle' in path:
+            return os.path.join(_get_env_var('/kaggle/working/'), 'valid')
+        else:
+            return os.path.join(_get_env_var('/home/kasaei2/FarnooshArefi/VIS/'), 'valid')
 
     @staticmethod
     def train_vds_file():
@@ -39,7 +43,12 @@ class YoutubeVISPaths(object):
 
     @staticmethod
     def val_vds_file():
-        return os.path.join(_get_env_var('/content/'), 'youtube_vis_val.json')
+        path = os.path.abspath(os.getcwd())
+        if 'kaggle' in path:
+            return os.path.join(_get_env_var('/content/'), 'youtube_vis_val.json')
+        else:
+            return os.path.join(_get_env_var('/home/kasaei2/FarnooshArefi/VIS/'), 'youtube_vis_val.json')
+
 
 
 class DavisUnsupervisedPaths(object):

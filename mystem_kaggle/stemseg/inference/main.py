@@ -20,6 +20,7 @@ import os
 import torch
 
 os.environ['/content/'] = '/content/'
+os.environ['/home/kasaei2/FarnooshArefi/VIS/'] = '/home/kasaei2/FarnooshArefi/VIS/'
 
 def get_subsequence_frames(seq_len, subseq_len, dataset_name, frame_overlap=-1):
     subseq_idxes = []
