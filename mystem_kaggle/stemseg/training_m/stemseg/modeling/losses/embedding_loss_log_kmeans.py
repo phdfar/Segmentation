@@ -5,8 +5,20 @@ from stemseg.modeling.losses._lovasz import LovaszHingeLoss
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import datetime
+import pickle
+from os.path import exists
+from pathlib import Path
+import os
+import glob
+import shutil
+import random
+import numpy as np
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 import sklearn
-import sklearn.metrics
+from sklearn import metrics
+from sklearn.cluster import KMeans
+
 
 class EmbeddingLoss(nn.Module):
     def __init__(self, embedding_map_scale, **kwargs):
@@ -32,7 +44,97 @@ class EmbeddingLoss(nn.Module):
 
         self.split_sizes = (self.embedding_size, self.embedding_size - self.n_free_dims, 1)
         self.num_input_channels = sum(self.split_sizes)
+        paths  = str(Path().absolute())
+        if 'content' in paths:
+            self.currentpath = '/content/'
+        if 'kaggle' in paths:
+            self.currentpath = '/kaggle/working/'
+            
+    def clustermetric(self,instance_embeddings):
+        instance_embeddingsz = []
+        labels_true = []
+        for n in range(len(instance_embeddings)):
+            emb = instance_embeddings[n]
+            labels_true.append(np.zeros((len(emb),1))+n)
+            instance_embeddingsz.append(emb.detach().cpu().numpy())
 
+        arr = np.vstack(instance_embeddingsz)
+        kmeans = KMeans(n_clusters=len(instance_embeddings), random_state=0).fit(arr)
+        labels = kmeans.labels_
+        #cnp = kmeans.cluster_centers_
+        labels_true = np.vstack(labels_true).ravel()
+        try:
+          Homogeneity = metrics.homogeneity_score(labels_true, labels)
+        except:
+          Homogeneity=  0
+          
+        try:
+          Completeness =  metrics.completeness_score(labels_true, labels)
+        except:
+          Completeness =0
+
+
+        try:
+          V_measure =  metrics.v_measure_score(labels_true, labels)
+        except:
+          V_measure = 0;
+
+
+        try:
+          Adjusted_Rand_Index = metrics.adjusted_rand_score(labels_true, labels)
+        except:
+          Adjusted_Rand_Index=0
+
+        try:
+          score_mutual = metrics.mutual_info_score(labels_true, labels)
+        except:
+          score_mutual=0
+
+        try:
+          score_fowlkes_mallows = metrics.fowlkes_mallows_score(labels_true, labels)
+        except:
+          score_fowlkes_mallows=0
+
+        try:
+          Silhouette =  metrics.silhouette_score(arr, labels)
+        except:
+          Silhouette =0
+
+        try:
+          Calinski = metrics.calinski_harabasz_score(arr, labels)
+        except:
+          Calinski=0
+
+        try:
+          Bouldin = metrics.davies_bouldin_score(arr, labels)
+        except:
+          Bouldin=0
+
+        return [Homogeneity,Completeness,V_measure,Adjusted_Rand_Index,score_mutual,score_fowlkes_mallows,Silhouette,Calinski,Bouldin]
+        
+            
+        
+        
+  
+    def logger(self,minute,now,metric,lovas,seed,total_loss):
+        
+        with open(self.currentpath+'Logger.pickle', 'rb') as handle:
+            old_data = pickle.load(handle)
+            
+        shutil.copy(self.currentpath+'Logger.pickle',self.currentpath+'Logger_copy.pickle')
+        with open(self.currentpath+'Logger.pickle', 'wb') as handle:
+            
+            new_data = [{'id':now , 'Homogeneity':metric[0], 'Completeness':metric[1], 'V_measure':metric[2], 'Adjusted_Rand_Index':metric[3], 'Mutual':metric[4],'Fowlkes':metric[5],'Silhouette':metric[6],'Calinski':metric[7],'Bouldin':metric[8],'lovas':lovas, 'seed':seed, 'total_loss':total_loss} ]
+            data = old_data + new_data
+            print(new_data)
+            pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+  
+        for tfgpath in glob.iglob(os.path.join(self.currentpath, '*.tfg')):
+            os.remove(tfgpath)
+        with open(self.currentpath+str(minute)+'.tfg','w') as f:
+            f.write('ff')
+            
+        
     def forward(self, embedding_map, targets, output_dict, *args, **kwargs):
         """
         Computes the embedding loss.
@@ -102,57 +204,6 @@ class EmbeddingLoss(nn.Module):
 
             total_instances += len(nonzero_mask_pts)
 
-            import random
-            import numpy as np
-            #instance_embeddingsx = instance_embeddings.detach().cpu()
-            Xtrain=[];Ytrain=[];Xtest=[];Ytest=[];
-            for n in range(len(instance_embeddings)):
-                ln = len(instance_embeddings[n])
-                index = random.sample(range(1, ln), int(0.40*ln))
-                idx_train = index[:len(index)//2]
-                idx_test = index[len(index)//2:]
-                if n == 0:
-                    Xtrain = instance_embeddings[n][idx_train]
-                    Xtrain = Xtrain.detach().cpu()
-                    Ytrain = np.zeros((len(Xtrain),1))+n+1
-                    Xtest = instance_embeddings[n][idx_test]
-                    Xtest = Xtest.detach().cpu()
-                    Ytest = np.zeros((len(Xtest),1))+n+1
-                else:
-                    new = instance_embeddings[n][idx_train]
-                    new = new.detach().cpu()
-                    Xtrain = np.concatenate((Xtrain,new))
-                    Ytrain = np.concatenate((Ytrain,np.zeros((len(new),1))+n+1))
-                    new = instance_embeddings[n][idx_test]
-                    new = new.detach().cpu()
-                    Xtest = np.concatenate((Xtest,new))
-                    Ytest = np.concatenate((Ytest, np.zeros((len(new),1))+n+1))
-
-            random.Random(1337).shuffle(Xtrain)
-            random.Random(1337).shuffle(Ytrain)
-
-            # from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-            # wscore = 0.
-            # try:
-            #   clf = LinearDiscriminantAnalysis()
-            #   clf.fit(Xtrain,Ytrain.ravel())
-            #   wscore = clf.score(Xtest,Ytest.ravel())
-            # except:
-            #   pass
-            cl_loss = 0.
-            try:
-                cl_loss1 = sklearn.metrics.calinski_harabasz_score(Xtrain,Ytrain.ravel())
-                cl_loss2 = sklearn.metrics.calinski_harabasz_score(Xtest,Ytest.ravel())
-                cl_loss = (cl_loss1 + cl_loss2)/2
-                clsx = (-1*cl_loss) / 500
-                if clsx!=0:
-                    cl_loss = 1/clsx
-                else:
-                    cl_loss = 0.
-            except:
-                pass
-            #print('wscore : ', wscore)
-
             # regress seediness values for background to 0
             bg_mask_pts = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
             bg_seediness_pts = seediness_per_seq[bg_mask_pts]
@@ -170,10 +221,11 @@ class EmbeddingLoss(nn.Module):
                 bandwidth_per_instance.exp() * 10.
                 for bandwidth_per_instance in instance_bandwidths
             ]
-
+            allprop=[];
             for n in range(len(nonzero_mask_pts)):  # iterate over instances
                 probs_map = self.compute_prob_map(embeddings_per_seq, instance_embeddings[n], instance_bandwidths[n])
                 logits_map = (probs_map * 2.) - 1.
+                allprop.append(probs_map)
                 instance_target = masks[n].flatten()
                 if instance_target.sum(dtype=torch.long) == 0:
                     continue
@@ -192,13 +244,33 @@ class EmbeddingLoss(nn.Module):
             lovasz_loss = lovasz_loss / total_instances
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
             seediness_loss = seediness_loss / float(total_instances + 1)
+	
+        now = str(datetime.datetime.now().time())[0:5]
+        minute = int(now[3:5])
+        
 
-        total_loss = (lovasz_loss * (self.w_lovasz + cl_loss) ) + \
+                       
+
+        total_loss = (lovasz_loss * self.w_lovasz) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
+        
+        try:
+          if minute%3==0:
+              if exists(self.currentpath+str(minute)+'.tfg')==False: 
+                  metric = self.clustermetric(instance_embeddings)
+                      
+                  lovas = lovasz_loss.mean().detach().cpu().numpy()
+                  seed = seediness_loss.mean().detach().cpu().numpy()
+                  total_loss = total_loss.detach().cpu().numpy()
+                        
+                  self.logger(minute,now,metric,lovas,seed,total_loss)
+        except:
+            pass
+                             
 
         output_dict[ModelOutputConsts.OPTIMIZATION_LOSSES] = {
-            LossConsts.EMBEDDING: total_loss * (self.w)
+            LossConsts.EMBEDDING: total_loss * self.w
         }
 
         output_dict[ModelOutputConsts.OTHERS] = {
