@@ -131,25 +131,32 @@ class EmbeddingLoss(nn.Module):
               center=[]
               for n in range(len(instance_embeddingsd)):
                   emb = instance_embeddingsd[n]
-                  labels_true.append(np.zeros((len(emb),1)).astype('int32')+n)
+                  labels_true.append(np.zeros((len(emb),1)).astype('int')+n)
                   emb = emb.detach().cpu().numpy()
                   instance_embeddingsz.append(emb)
 
                   center.append(np.mean(emb,axis=0))
                   
+              center = np.asarray(center)
+  
               arr = np.vstack(instance_embeddingsz)
               kmeans = KMeans(n_clusters=len(instance_embeddingsd), random_state=0).fit(arr)
               labels = kmeans.labels_
               cnp = kmeans.cluster_centers_
               labels_true = np.vstack(labels_true).ravel()
               
-              d_center=[]
-              for i,a in enumerate(arr):
-                  d_center.append(mean_squared_error(cnp[labels[i]], center[labels_true[i]]))
-                  
+
+              gt = cnp[labels]
+              pt = center[labels_true]
+
+
+              d_center = np.mean(np.square(np.subtract(gt,pt)),axis=1)
+
+
               d_center = torch.from_numpy(np.asarray(d_center))
               d_center = d_center.to(torch.device('cuda:0'))
 
+              
               #center_loss_mse = F.mse_loss(d_center, torch.zeros_like(d_center), reduction='mean')
               center_loss_lovas = self.lovasz_hinge_loss(d_center, torch.zeros_like(d_center))
             except:
