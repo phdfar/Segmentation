@@ -118,7 +118,11 @@ class InferenceModel(nn.Module):
             raise ValueError("Only implemend for 2D backbones")
 
         if restore_path:
-            self._model.load_state_dict(torch.load(restore_path)['model'])
+            try:
+                self._model.load_state_dict(torch.load(restore_path)['model'])
+            except:
+                self._model.load_state_dict(torch.load(restore_path,map_location=torch.device('cuda:0'))['model'])
+
 
         self.cpu_workers = cpu_workers
 
