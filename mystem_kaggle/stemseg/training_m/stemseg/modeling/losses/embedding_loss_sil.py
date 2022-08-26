@@ -165,7 +165,7 @@ class EmbeddingLoss(nn.Module):
                 bandwidth_per_instance.exp() * 10.
                 for bandwidth_per_instance in instance_bandwidths
             ]
-
+            """
             for n in range(len(nonzero_mask_pts)):  # iterate over instances
                 probs_map = self.compute_prob_map(embeddings_per_seq, instance_embeddings[n], instance_bandwidths[n])
                 logits_map = (probs_map * 2.) - 1.
@@ -176,6 +176,7 @@ class EmbeddingLoss(nn.Module):
                 lovasz_loss = lovasz_loss + self.lovasz_hinge_loss(logits_map.flatten(), instance_target)
                 instance_probs = probs_map.unsqueeze(3)[nonzero_mask_pts[n]].detach()
                 seediness_loss = seediness_loss + F.mse_loss(instance_seediness[n], instance_probs, reduction='mean')
+            """
 
         if total_instances == 0:
             print("Process {}: Zero instances case occurred embedding loss".format(dist_utils.get_rank()))
@@ -188,9 +189,22 @@ class EmbeddingLoss(nn.Module):
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
             seediness_loss = seediness_loss / float(total_instances + 1)
 
+
+        tr = torch.zeros_like(masks[0].flatten())
+        pr = (torch.zeros_like(masks[0].flatten())+1)*(1-V_measure)
+        #print(cl_loss)
+        sep_loss = F.mse_loss(pr, tr, reduction='mean')
+        
+        
+        """
         total_loss = (lovasz_loss * (self.w_lovasz + (1-V_measure)) ) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
+        """
+                     
+        
+        total_loss = sep_loss *self.w_lovasz
+
 
         output_dict[ModelOutputConsts.OPTIMIZATION_LOSSES] = {
             LossConsts.EMBEDDING: total_loss * (self.w)

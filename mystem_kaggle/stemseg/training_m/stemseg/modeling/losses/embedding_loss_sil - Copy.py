@@ -7,6 +7,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sklearn
 import sklearn.metrics
+from sklearn import metrics
+from sklearn.cluster import KMeans
 
 class EmbeddingLoss(nn.Module):
     def __init__(self, embedding_map_scale, **kwargs):
@@ -108,50 +110,43 @@ class EmbeddingLoss(nn.Module):
             Xtrain=[];Ytrain=[];Xtest=[];Ytest=[];
             for n in range(len(instance_embeddings)):
                 ln = len(instance_embeddings[n])
-                index = random.sample(range(1, ln), int(0.40*ln))
+                index = random.sample(range(1, ln), int(0.80*ln))
                 idx_train = index[:len(index)//2]
                 idx_test = index[len(index)//2:]
                 if n == 0:
                     Xtrain = instance_embeddings[n][idx_train]
                     Xtrain = Xtrain.detach().cpu()
-                    Ytrain = np.zeros((len(Xtrain),1))+n+1
+                    Ytrain = np.zeros((len(Xtrain),1)).astype('int32')+n
                     Xtest = instance_embeddings[n][idx_test]
                     Xtest = Xtest.detach().cpu()
-                    Ytest = np.zeros((len(Xtest),1))+n+1
+                    Ytest = np.zeros((len(Xtest),1)).astype('int32')+n
                 else:
                     new = instance_embeddings[n][idx_train]
                     new = new.detach().cpu()
                     Xtrain = np.concatenate((Xtrain,new))
-                    Ytrain = np.concatenate((Ytrain,np.zeros((len(new),1))+n+1))
+                    Ytrain = np.concatenate((Ytrain,np.zeros((len(new),1)).astype('int32')+n))
                     new = instance_embeddings[n][idx_test]
                     new = new.detach().cpu()
                     Xtest = np.concatenate((Xtest,new))
-                    Ytest = np.concatenate((Ytest, np.zeros((len(new),1))+n+1))
+                    Ytest = np.concatenate((Ytest, np.zeros((len(new),1)).astype('int32')+n))
 
-            random.Random(1337).shuffle(Xtrain)
-            random.Random(1337).shuffle(Ytrain)
+            #random.Random(1337).shuffle(Xtrain)
+            #random.Random(1337).shuffle(Ytrain)
+            
+            
+            kmeans = KMeans(n_clusters=len(instance_embeddings), random_state=0).fit(Xtrain)
+            labels = kmeans.labels_
+            #cnp = kmeans.cluster_centers_
+            labels_true = Ytrain.ravel()
 
-            # from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-            # wscore = 0.
-            # try:
-            #   clf = LinearDiscriminantAnalysis()
-            #   clf.fit(Xtrain,Ytrain.ravel())
-            #   wscore = clf.score(Xtest,Ytest.ravel())
-            # except:
-            #   pass
-            cl_loss = 0.
+                
             try:
-              cl_loss1 = sklearn.metrics.calinski_harabasz_score(Xtrain,Ytrain.ravel())
-              cl_loss2 = sklearn.metrics.calinski_harabasz_score(Xtest,Ytest.ravel())
-              cl_loss = (cl_loss1 + cl_loss2)/2
-              clsx = (cl_loss) / 500
-              if clsx!=0:
-                  cl_loss = 1/clsx
-              else:
-                  cl_loss = 0.
+              V_measure =  metrics.silhouette_score(Xtrain, labels)
             except:
-                pass
-            #print('wscore : ', wscore)
+              V_measure =0
+                
+
+
 
             # regress seediness values for background to 0
             bg_mask_pts = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
@@ -171,7 +166,6 @@ class EmbeddingLoss(nn.Module):
                 for bandwidth_per_instance in instance_bandwidths
             ]
 
-            """
             for n in range(len(nonzero_mask_pts)):  # iterate over instances
                 probs_map = self.compute_prob_map(embeddings_per_seq, instance_embeddings[n], instance_bandwidths[n])
                 logits_map = (probs_map * 2.) - 1.
@@ -182,13 +176,7 @@ class EmbeddingLoss(nn.Module):
                 lovasz_loss = lovasz_loss + self.lovasz_hinge_loss(logits_map.flatten(), instance_target)
                 instance_probs = probs_map.unsqueeze(3)[nonzero_mask_pts[n]].detach()
                 seediness_loss = seediness_loss + F.mse_loss(instance_seediness[n], instance_probs, reduction='mean')
-            """
-        
-        tr = torch.zeros_like(masks[0].flatten())
-        pr = (torch.zeros_like(masks[0].flatten())+1)*cl_loss
-        #print(cl_loss)
-        sep_loss = F.mse_loss(pr, tr, reduction='mean')
-        #print(sep_loss)
+
         if total_instances == 0:
             print("Process {}: Zero instances case occurred embedding loss".format(dist_utils.get_rank()))
             lovasz_loss = (bandwidth_map.sum() + embedding_map.sum()) * 0
@@ -200,14 +188,10 @@ class EmbeddingLoss(nn.Module):
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
             seediness_loss = seediness_loss / float(total_instances + 1)
 
-        """
-        total_loss = (lovasz_loss * self.w_lovasz) + (sep_loss *self.w_lovasz) +  \
+        total_loss = (lovasz_loss * (self.w_lovasz + (1-V_measure)) ) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
-        """
-        
-        total_loss = sep_loss *self.w_lovasz
-        
+
         output_dict[ModelOutputConsts.OPTIMIZATION_LOSSES] = {
             LossConsts.EMBEDDING: total_loss * (self.w)
         }
