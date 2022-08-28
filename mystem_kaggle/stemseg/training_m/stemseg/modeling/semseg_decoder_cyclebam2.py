@@ -99,14 +99,8 @@ class SqueezeExpandDecoder(nn.Module):
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1];#print('feat_map_32xxxxxxxxxxxxxxxx',feat_map_32x.shape)
 
-        #F4
-        feat_map_4x = self.tcbam(feat_map_4x)
-        
-        #F4
-        x = self.tcbam(feat_map_4x)
-        
 
-        return self.conv_out(x)
+        return self.conv_out(feat_map_4x)
 
 
 class SqueezeExpandDilatedDecoder(nn.Module):

@@ -115,13 +115,9 @@ class SqueezingExpandDecoder(nn.Module):
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
         
-        #F4
-        feat_map_4x = self.tcbam(feat_map_4x)
         
-        #F4
-        x = self.tcbam(feat_map_4x)
        
-        x = self.conv_4(x)
+        x = self.conv_4(feat_map_4x)
 
 
         embeddings = self.conv_embedding(x)
