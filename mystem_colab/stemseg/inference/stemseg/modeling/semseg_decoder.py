@@ -5,6 +5,8 @@ from stemseg.modeling.common import UpsampleTrilinear3D, AtrousPyramid3D, get_po
     get_temporal_scales
 from stemseg.utils.global_registry import GlobalRegistry
 
+from .cyclebam import *
+import torch.nn.functional as F
 
 SEMSEG_HEAD_REGISTRY = GlobalRegistry.get("SemsegHead")
 
@@ -65,6 +67,10 @@ class SqueezeExpandDecoder(nn.Module):
 
         t_scales = get_temporal_scales()
 
+        self.tcbam = TCBAM(in_channels,8)
+        self.mc = MC(in_channels,8)
+        self.tcbamin = TCBAMIN(in_channels,8)
+
         # 32x -> 16x
         self.upsample_32_to_16 = nn.Sequential(
             UpsampleTrilinear3D(scale_factor=(t_scales[0], 2, 2), align_corners=False),
@@ -91,29 +97,10 @@ class SqueezeExpandDecoder(nn.Module):
     def forward(self, x):
         assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
 
-        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1]
+        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1];#print('feat_map_32xxxxxxxxxxxxxxxx',feat_map_32x.shape)
 
-        feat_map_32x = self.block_32x(feat_map_32x)
 
-        # 32x to 16x
-        x = self.upsample_32_to_16(feat_map_32x)
-        feat_map_16x = self.block_16x(feat_map_16x)
-        x = torch.cat((x, feat_map_16x), 1)
-        x = self.conv_16(x)
-
-        # 16x to 8x
-        x = self.upsample_16_to_8(x)
-        feat_map_8x = self.block_8x(feat_map_8x)
-        x = torch.cat((x, feat_map_8x), 1)
-        x = self.conv_8(x)
-
-        # 8x to 4x
-        x = self.upsample_8_to_4(x)
-        feat_map_4x = self.block_4x(feat_map_4x)
-        x = torch.cat((x, feat_map_4x), 1)
-        x = self.conv_4(x)
-
-        return self.conv_out(x)
+        return self.conv_out(feat_map_4x)
 
 
 class SqueezeExpandDilatedDecoder(nn.Module):
