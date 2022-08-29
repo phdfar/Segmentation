@@ -123,7 +123,7 @@ class SqueezingExpandDecoder(nn.Module):
         def todo(z,MCIN):
             w = torch.permute(z, (0, 2, 1, 3, 4))
             MC = MCIN.unsqueeze(2).unsqueeze(3).unsqueeze(4).expand_as(w)
-            t = z * MC
+            t = w * MC
             y = torch.permute(t, (0, 2, 1, 3, 4))
             return y
             
