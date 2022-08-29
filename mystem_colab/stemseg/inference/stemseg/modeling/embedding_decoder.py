@@ -4,12 +4,8 @@ from stemseg.utils.global_registry import GlobalRegistry
 
 import torch
 import torch.nn as nn
-from .cbam import *
-from .bam import *
-from .tcbam import *
 
 EMBEDDING_HEAD_REGISTRY = GlobalRegistry.get("EmbeddingHead")
-
 
 
 @EMBEDDING_HEAD_REGISTRY.add("squeeze_expand_decoder")
@@ -64,9 +60,6 @@ class SqueezingExpandDecoder(nn.Module):
         )
 
         t_scales = get_temporal_scales()
-        
-        self.cbam = TCBAM(in_channels,8)
-        
 
         # 32x -> 16x
         self.upsample_32_to_16 = nn.Sequential(
@@ -114,11 +107,6 @@ class SqueezingExpandDecoder(nn.Module):
         assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
-        
-        feat_map_32x = self.cbam(feat_map_32x)
-        feat_map_16x = self.cbam(feat_map_16x)
-        feat_map_8x = self.cbam(feat_map_8x)
-        feat_map_4x = self.cbam(feat_map_4x)
 
         feat_map_32x = self.block_32x(feat_map_32x)
 

@@ -5,9 +5,6 @@ from stemseg.modeling.common import UpsampleTrilinear3D, AtrousPyramid3D, get_po
     get_temporal_scales
 from stemseg.utils.global_registry import GlobalRegistry
 
-from .cbam import *
-from .bam import *
-from .tcbam import *
 
 SEMSEG_HEAD_REGISTRY = GlobalRegistry.get("SemsegHead")
 
@@ -68,9 +65,6 @@ class SqueezeExpandDecoder(nn.Module):
 
         t_scales = get_temporal_scales()
 
-        self.cbam = TCBAM(in_channels,8)
-
-
         # 32x -> 16x
         self.upsample_32_to_16 = nn.Sequential(
             UpsampleTrilinear3D(scale_factor=(t_scales[0], 2, 2), align_corners=False),
@@ -97,14 +91,7 @@ class SqueezeExpandDecoder(nn.Module):
     def forward(self, x):
         assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
 
-        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1];#print('feat_map_32xxxxxxxxxxxxxxxx',feat_map_32x.shape)
-
-        feat_map_32x = self.cbam(feat_map_32x)
-        feat_map_16x = self.cbam(feat_map_16x)
-        feat_map_8x = self.cbam(feat_map_8x)
-        feat_map_4x = self.cbam(feat_map_4x)
-        
-        
+        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1]
 
         feat_map_32x = self.block_32x(feat_map_32x)
 
