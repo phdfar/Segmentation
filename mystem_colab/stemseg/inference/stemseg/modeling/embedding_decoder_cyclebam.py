@@ -1,11 +1,13 @@
 from stemseg.modeling.embedding_utils import add_spatiotemporal_offset, get_nb_embedding_dims, get_nb_free_dims
 from stemseg.modeling.common import UpsampleTrilinear3D, AtrousPyramid3D, get_temporal_scales, get_pooling_layer_creator
 from stemseg.utils.global_registry import GlobalRegistry
-
+import torch.nn.functional as F
 import torch
 import torch.nn as nn
+from .cyclebam import *
 
 EMBEDDING_HEAD_REGISTRY = GlobalRegistry.get("EmbeddingHead")
+
 
 
 @EMBEDDING_HEAD_REGISTRY.add("squeeze_expand_decoder")
@@ -60,6 +62,11 @@ class SqueezingExpandDecoder(nn.Module):
         )
 
         t_scales = get_temporal_scales()
+        
+        self.tcbam = TCBAM(in_channels,8)
+        self.mc = MC(in_channels,8)
+        self.tcbamin = TCBAMIN(in_channels,8)
+        
 
         # 32x -> 16x
         self.upsample_32_to_16 = nn.Sequential(
@@ -78,12 +85,6 @@ class SqueezingExpandDecoder(nn.Module):
             UpsampleTrilinear3D(scale_factor=(t_scales[2], 2, 2), align_corners=False)
         )
         self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
-        
-        self.conv_s128 = nn.Conv3d(128,64, 3, bias=False,padding=1)
-        self.conv_s64 = nn.Conv3d(64,32, 3, bias=False,padding=1)
-        self.conv_s32 = nn.Conv3d(32,16, 3, bias=False,padding=1)
-        self.conv_s16 = nn.Conv3d(16,8, 3, bias=False,padding=1)
-
 
         self.embedding_size = embedding_size
 
@@ -93,12 +94,12 @@ class SqueezingExpandDecoder(nn.Module):
         self.embedding_dim_mode = experimental_dims
         embedding_output_size = get_nb_embedding_dims(self.embedding_dim_mode)
 
-        self.conv_embedding = nn.Conv3d(8, embedding_output_size, kernel_size=1, padding=0, bias=False)
-        self.conv_variance = nn.Conv3d(8, self.variance_channels, kernel_size=1, padding=0, bias=True)
+        self.conv_embedding = nn.Conv3d(inter_channels[-1], embedding_output_size, kernel_size=1, padding=0, bias=False)
+        self.conv_variance = nn.Conv3d(inter_channels[-1], self.variance_channels, kernel_size=1, padding=0, bias=True)
 
         self.conv_seediness, self.seediness_channels = None, 0
         if seediness_output:
-            self.conv_seediness = nn.Conv3d(8, 1, kernel_size=1, padding=0, bias=False)
+            self.conv_seediness = nn.Conv3d(inter_channels[-1], 1, kernel_size=1, padding=0, bias=False)
             self.seediness_channels = 1
 
         self.tanh_activation = tanh_activation
@@ -113,32 +114,37 @@ class SqueezingExpandDecoder(nn.Module):
         assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
-
-        feat_map_32x = self.block_32x(feat_map_32x)
-
-        # 32x to 16x
-        x = self.upsample_32_to_16(feat_map_32x)
-        feat_map_16x = self.block_16x(feat_map_16x)
-        x = torch.cat((x, feat_map_16x), 1)
-        x = self.conv_16(x)
-
-        # 16x to 8x
-        x = self.upsample_16_to_8(x)
-        feat_map_8x = self.block_8x(feat_map_8x)
-        x = torch.cat((x, feat_map_8x), 1)
-        x = self.conv_8(x)
-
-        # 8x to 4x
-        x = self.upsample_8_to_4(x)
-        feat_map_4x = self.block_4x(feat_map_4x)
-        x = torch.cat((x, feat_map_4x), 1)
+        
+        #F4
+        feat_map_4x = self.tcbam(feat_map_4x)
+        MC_F4 = self.mc(feat_map_4x)
+        cycle = F.sigmoid(MC_F4)
+        
+        #F8
+        MCIn = F.sigmoid(cycle)
+        feat_map_8x = self.tcbamin(feat_map_8x,MCIn)
+        MC_F8 = self.mc(feat_map_8x)
+        cycle = cycle +  F.sigmoid(MC_F8)
+        
+        #F16
+        MCIn = F.sigmoid(cycle)
+        feat_map_16x = self.tcbamin(feat_map_16x,MCIn)
+        MC_F16 = self.mc(feat_map_16x)
+        cycle = cycle +  F.sigmoid(MC_F16)
+        
+        #F32
+        MCIn = F.sigmoid(cycle)
+        feat_map_32x = self.tcbamin(feat_map_32x,MCIn)
+        MC_F32 = self.mc(feat_map_32x)
+        cycle = cycle +  F.sigmoid(MC_F32)
+        
+        #F4 final
+        MCIn = F.sigmoid(cycle)
+        x = self.tcbamin(feat_map_4x,MCIn)
         x = self.conv_4(x)
-        x = self.conv_s128(x)
-        x = self.conv_s64(x)
-        x = self.conv_s32(x)
-        x = self.conv_s16(x)
-        embeddings = self.conv_embedding(x)
 
+
+        embeddings = self.conv_embedding(x)
         if self.tanh_activation:
             embeddings = (embeddings * 0.25).tanh()
 
