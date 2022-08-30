@@ -115,33 +115,9 @@ class SqueezingExpandDecoder(nn.Module):
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
         
-        #F4
-        feat_map_4x = self.tcbam(feat_map_4x)
-        MC_F4 = self.mc(feat_map_4x)
-        cycle = F.sigmoid(MC_F4)
         
-        #F8
-        MCIn = F.sigmoid(cycle)
-        feat_map_8x = self.tcbamin(feat_map_8x,MCIn)
-        MC_F8 = self.mc(feat_map_8x)
-        cycle = cycle +  F.sigmoid(MC_F8)
-        
-        #F16
-        MCIn = F.sigmoid(cycle)
-        feat_map_16x = self.tcbamin(feat_map_16x,MCIn)
-        MC_F16 = self.mc(feat_map_16x)
-        cycle = cycle +  F.sigmoid(MC_F16)
-        
-        #F32
-        MCIn = F.sigmoid(cycle)
-        feat_map_32x = self.tcbamin(feat_map_32x,MCIn)
-        MC_F32 = self.mc(feat_map_32x)
-        cycle = cycle +  F.sigmoid(MC_F32)
-        
-        #F4 final
-        MCIn = F.sigmoid(cycle)
-        x = self.tcbamin(feat_map_4x,MCIn)
-        x = self.conv_4(x)
+       
+        x = self.conv_4(feat_map_4x)
 
 
         embeddings = self.conv_embedding(x)
