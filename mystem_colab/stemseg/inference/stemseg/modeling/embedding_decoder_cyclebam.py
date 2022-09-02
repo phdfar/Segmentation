@@ -118,40 +118,31 @@ class SqueezingExpandDecoder(nn.Module):
         #F4
         feat_map_4x = self.tcbam(feat_map_4x)
         MC_F4 = self.mc(feat_map_4x)
+        cycle = F.sigmoid(MC_F4)
         
+        #F8
+        MCIn = F.sigmoid(cycle)
+        feat_map_8x = self.tcbamin(feat_map_8x,MCIn)
+        MC_F8 = self.mc(feat_map_8x)
+        cycle = cycle +  F.sigmoid(MC_F8)
         
-        def todo(z,MCIN):
-            w = torch.permute(z, (0, 2, 1, 3, 4))
-            MC = MCIN.unsqueeze(2).unsqueeze(3).unsqueeze(4).expand_as(w)
-            t = w * MC
-            y = torch.permute(t, (0, 2, 1, 3, 4))
-            return y
-            
-        feat_map_8x = todo(feat_map_8x,MC_F4)
-        feat_map_16x = todo(feat_map_16x,MC_F4)
-        feat_map_32x = todo(feat_map_32x,MC_F4)
+        #F16
+        MCIn = F.sigmoid(cycle)
+        feat_map_16x = self.tcbamin(feat_map_16x,MCIn)
+        MC_F16 = self.mc(feat_map_16x)
+        cycle = cycle +  F.sigmoid(MC_F16)
         
+        #F32
+        MCIn = F.sigmoid(cycle)
+        feat_map_32x = self.tcbamin(feat_map_32x,MCIn)
+        MC_F32 = self.mc(feat_map_32x)
+        cycle = cycle +  F.sigmoid(MC_F32)
         
-        feat_map_32x = self.block_32x(feat_map_32x)
-
-        # 32x to 16x
-        x = self.upsample_32_to_16(feat_map_32x)
-        feat_map_16x = self.block_16x(feat_map_16x)
-        x = torch.cat((x, feat_map_16x), 1)
-        x = self.conv_16(x)
-
-        # 16x to 8x
-        x = self.upsample_16_to_8(x)
-        feat_map_8x = self.block_8x(feat_map_8x)
-        x = torch.cat((x, feat_map_8x), 1)
-        x = self.conv_8(x)
-
-        # 8x to 4x
-        x = self.upsample_8_to_4(x)
-        feat_map_4x = self.block_4x(feat_map_4x)
-        x = torch.cat((x, feat_map_4x), 1)
+        #F4 final
+        MCIn = F.sigmoid(cycle)
+        x = self.tcbamin(feat_map_4x,MCIn)
         x = self.conv_4(x)
-        
+
 
         embeddings = self.conv_embedding(x)
         if self.tanh_activation:
