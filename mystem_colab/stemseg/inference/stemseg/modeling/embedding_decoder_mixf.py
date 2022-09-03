@@ -1,13 +1,11 @@
 from stemseg.modeling.embedding_utils import add_spatiotemporal_offset, get_nb_embedding_dims, get_nb_free_dims
 from stemseg.modeling.common import UpsampleTrilinear3D, AtrousPyramid3D, get_temporal_scales, get_pooling_layer_creator
 from stemseg.utils.global_registry import GlobalRegistry
-import torch.nn.functional as F
+
 import torch
 import torch.nn as nn
-from .cyclebam import *
 
 EMBEDDING_HEAD_REGISTRY = GlobalRegistry.get("EmbeddingHead")
-
 
 
 @EMBEDDING_HEAD_REGISTRY.add("squeeze_expand_decoder")
@@ -62,11 +60,6 @@ class SqueezingExpandDecoder(nn.Module):
         )
 
         t_scales = get_temporal_scales()
-        
-        self.tcbam = TCBAM(in_channels,8)
-        self.mc = MC(in_channels,8)
-        self.tcbamin = TCBAMIN(in_channels,8)
-        
 
         # 32x -> 16x
         self.upsample_32_to_16 = nn.Sequential(
@@ -94,8 +87,8 @@ class SqueezingExpandDecoder(nn.Module):
         self.embedding_dim_mode = experimental_dims
         embedding_output_size = get_nb_embedding_dims(self.embedding_dim_mode)
 
-        self.conv_embedding = nn.Conv3d(inter_channels[-1], embedding_output_size, kernel_size=1, padding=0, bias=False)
-        self.conv_variance = nn.Conv3d(inter_channels[-1], self.variance_channels, kernel_size=1, padding=0, bias=True)
+        self.conv_embedding = nn.Conv3d(inter_channels[-1], 4, kernel_size=1, padding=0, bias=False)
+        self.conv_variance = nn.Conv3d(inter_channels[-1], 2, kernel_size=1, padding=0, bias=True)
 
         self.conv_seediness, self.seediness_channels = None, 0
         if seediness_output:
@@ -114,24 +107,7 @@ class SqueezingExpandDecoder(nn.Module):
         assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
-        
-        #F4
-        feat_map_4x = self.tcbam(feat_map_4x)
-        MC_F4 = self.mc(feat_map_4x)
-        
-        
-        def todo(z,MCIN):
-            w = torch.permute(z, (0, 2, 1, 3, 4))
-            MC = MCIN.unsqueeze(2).unsqueeze(3).unsqueeze(4).expand_as(w)
-            t = w * MC
-            y = torch.permute(t, (0, 2, 1, 3, 4))
-            return y
-            
-        feat_map_8x = todo(feat_map_8x,MC_F4)
-        feat_map_16x = todo(feat_map_16x,MC_F4)
-        feat_map_32x = todo(feat_map_32x,MC_F4)
-        
-        
+
         feat_map_32x = self.block_32x(feat_map_32x)
 
         # 32x to 16x
@@ -151,13 +127,16 @@ class SqueezingExpandDecoder(nn.Module):
         feat_map_4x = self.block_4x(feat_map_4x)
         x = torch.cat((x, feat_map_4x), 1)
         x = self.conv_4(x)
-        
 
         embeddings = self.conv_embedding(x)
         if self.tanh_activation:
             embeddings = (embeddings * 0.25).tanh()
 
+        original = embeddings[:,0:2,:]
+        #print(original.shape)
         embeddings = add_spatiotemporal_offset(embeddings, self.time_scale, self.embedding_dim_mode)
+        embeddings = torch.cat((embeddings, original), 1)
+        #print(embeddings.shape)
 
         variances = self.conv_variance(x)
 
