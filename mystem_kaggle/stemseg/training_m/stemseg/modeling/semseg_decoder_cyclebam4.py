@@ -99,7 +99,7 @@ class SqueezeExpandDecoder(nn.Module):
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1];#print('feat_map_32xxxxxxxxxxxxxxxx',feat_map_32x.shape)        
         
-                #F32
+        #F32
         feat_map_32x = self.tcbam(feat_map_32x)
         MC_F32 = self.mc(feat_map_32x)
              
@@ -114,8 +114,8 @@ class SqueezeExpandDecoder(nn.Module):
         feat_map_8x = todo(feat_map_8x,MC_F32)
         feat_map_16x = todo(feat_map_16x,MC_F32)
         
-        #F4
-        feat_map_4x = self.tcbam(feat_map_4x)
+        ##F4
+        #feat_map_4x = self.tcbam(feat_map_4x)
         MC_F4 = self.mc(feat_map_4x)
         
         feat_map_8x = todo(feat_map_8x,MC_F4)

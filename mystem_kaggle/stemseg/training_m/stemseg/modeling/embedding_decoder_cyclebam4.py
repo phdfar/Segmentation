@@ -131,7 +131,7 @@ class SqueezingExpandDecoder(nn.Module):
         feat_map_16x = todo(feat_map_16x,MC_F32)
         
         #F4
-        feat_map_4x = self.tcbam(feat_map_4x)
+        #feat_map_4x = self.tcbam(feat_map_4x)
         MC_F4 = self.mc(feat_map_4x)
         
         feat_map_8x = todo(feat_map_8x,MC_F4)
