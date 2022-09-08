@@ -33,7 +33,7 @@ class YoutubeVISPaths(object):
     def val_base_dir():
         path = os.path.abspath(os.getcwd())
         if 'kaggle' in path:
-            return os.path.join(_get_env_var('/kaggle/working/'), 'valid')
+            return os.path.join(_get_env_var('/kaggle/working/input/valid-vis/'), 'valid')
         else:
             return os.path.join(_get_env_var('/home/kasaei2/FarnooshArefi/VIS/'), 'valid')
 
@@ -45,7 +45,7 @@ class YoutubeVISPaths(object):
     def val_vds_file():
         path = os.path.abspath(os.getcwd())
         if 'kaggle' in path:
-            return os.path.join(_get_env_var('/content/'), 'youtube_vis_val.json')
+            return os.path.join(_get_env_var('/kaggle/working/'), 'youtube_vis_val.json')
         else:
             return os.path.join(_get_env_var('/home/kasaei2/FarnooshArefi/VIS/'), 'youtube_vis_val.json')
 

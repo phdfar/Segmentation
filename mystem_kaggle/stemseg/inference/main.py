@@ -19,6 +19,7 @@ from stemseg.utils import Timer, RepoPaths
 import os
 import torch
 
+os.environ['/kaggle/working/'] = '/kaggle/working/'
 os.environ['/content/'] = '/content/'
 os.environ['/home/kasaei2/FarnooshArefi/VIS/'] = '/home/kasaei2/FarnooshArefi/VIS/'
 
