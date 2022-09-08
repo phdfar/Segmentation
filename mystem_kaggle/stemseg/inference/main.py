@@ -20,7 +20,7 @@ import os
 import torch
 
 os.environ['/kaggle/working/'] = '/kaggle/working/'
-os.environ['/kaggle/input/valid-vis/valid/'] = '/kaggle/input/valid-vis/valid/'
+os.environ['/kaggle/input/valid-vis/'] = '/kaggle/input/valid-vis/'
 os.environ['/content/'] = '/content/'
 os.environ['/home/kasaei2/FarnooshArefi/VIS/'] = '/home/kasaei2/FarnooshArefi/VIS/'
 
