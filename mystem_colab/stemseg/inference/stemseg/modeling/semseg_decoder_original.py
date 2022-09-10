@@ -5,8 +5,6 @@ from stemseg.modeling.common import UpsampleTrilinear3D, AtrousPyramid3D, get_po
     get_temporal_scales
 from stemseg.utils.global_registry import GlobalRegistry
 
-from .cyclebam import *
-import torch.nn.functional as F
 
 SEMSEG_HEAD_REGISTRY = GlobalRegistry.get("SemsegHead")
 
@@ -67,10 +65,6 @@ class SqueezeExpandDecoder(nn.Module):
 
         t_scales = get_temporal_scales()
 
-        self.tcbam = TCBAM(in_channels,8)
-        self.mc = MC(in_channels,8)
-        self.tcbamin = TCBAMIN(in_channels,8)
-
         # 32x -> 16x
         self.upsample_32_to_16 = nn.Sequential(
             UpsampleTrilinear3D(scale_factor=(t_scales[0], 2, 2), align_corners=False),
@@ -97,24 +91,8 @@ class SqueezeExpandDecoder(nn.Module):
     def forward(self, x):
         assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
 
-        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1];#print('feat_map_32xxxxxxxxxxxxxxxx',feat_map_32x.shape)        
-        #F4
-        feat_map_4x = self.tcbam(feat_map_4x)
-        MC_F4 = self.mc(feat_map_4x)
-        
-        
-        def todo(z,MCIN):
-            w = torch.permute(z, (0, 2, 1, 3, 4))
-            MC = MCIN.unsqueeze(2).unsqueeze(3).unsqueeze(4).expand_as(w)
-            t = w * MC
-            y = torch.permute(t, (0, 2, 1, 3, 4))
-            return y
-            
-        feat_map_8x = todo(feat_map_8x,MC_F4)
-        feat_map_16x = todo(feat_map_16x,MC_F4)
-        feat_map_32x = todo(feat_map_32x,MC_F4)
-        
-        
+        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1]
+
         feat_map_32x = self.block_32x(feat_map_32x)
 
         # 32x to 16x
@@ -135,8 +113,7 @@ class SqueezeExpandDecoder(nn.Module):
         x = torch.cat((x, feat_map_4x), 1)
         x = self.conv_4(x)
 
-
-        return self.conv_out(feat_map_4x)
+        return self.conv_out(x)
 
 
 class SqueezeExpandDilatedDecoder(nn.Module):
@@ -221,23 +198,6 @@ class SqueezeExpandDilatedDecoder(nn.Module):
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1]
 
-        #F4
-        feat_map_4x = self.tcbam(feat_map_4x)
-        MC_F4 = self.mc(feat_map_4x)
-        
-        
-        def todo(z,MCIN):
-            w = torch.permute(z, (0, 2, 1, 3, 4))
-            MC = MCIN.unsqueeze(2).unsqueeze(3).unsqueeze(4).expand_as(w)
-            t = w * MC
-            y = torch.permute(t, (0, 2, 1, 3, 4))
-            return y
-            
-        feat_map_8x = todo(feat_map_8x,MC_F4)
-        feat_map_16x = todo(feat_map_16x,MC_F4)
-        feat_map_32x = todo(feat_map_32x,MC_F4)
-        
-        
         feat_map_32x = self.block_32x(feat_map_32x)
 
         # 32x to 16x
@@ -257,6 +217,5 @@ class SqueezeExpandDilatedDecoder(nn.Module):
         feat_map_4x = self.block_4x(feat_map_4x)
         x = torch.cat((x, feat_map_4x), 1)
         x = self.conv_4(x)
-        
 
         return self.conv_out(x)
