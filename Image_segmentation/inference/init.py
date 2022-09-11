@@ -10,7 +10,7 @@ def init(args):
     os.system('rm valid.zip')
   if args.mode=='dropbox':
     os.system('pip install -U --no-cache-dir gdown --pre')
-    os.system('wget https://www.dropbox.com/s/3chm2ns5e03t0rp/valid.zip')
+    os.system('wget https://www.dropbox.com/s/y7ebpe7nkrdss8o/valid.zip')
     os.system('unzip -qq valid.zip')
     os.system('rm valid.zip')
 
