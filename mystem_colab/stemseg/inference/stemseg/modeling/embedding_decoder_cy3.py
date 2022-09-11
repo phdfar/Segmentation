@@ -115,9 +115,9 @@ class SqueezingExpandDecoder(nn.Module):
 
         feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
         
-        #F4
-        feat_map_4x = self.tcbam(feat_map_4x)
-        MC_F4 = self.mc(feat_map_4x)
+        #F32
+        feat_map_32x = self.tcbam(feat_map_32x)
+        MC_F32 = self.mc(feat_map_32x)
         
         
         def todo(z,MCIN):
@@ -127,9 +127,9 @@ class SqueezingExpandDecoder(nn.Module):
             y = torch.permute(t, (0, 2, 1, 3, 4))
             return y
             
-        feat_map_8x = todo(feat_map_8x,MC_F4)
-        feat_map_16x = todo(feat_map_16x,MC_F4)
-        feat_map_32x = todo(feat_map_32x,MC_F4)
+        feat_map_4x = todo(feat_map_4x,MC_F32)
+        feat_map_8x = todo(feat_map_8x,MC_F32)
+        feat_map_16x = todo(feat_map_16x,MC_F32)
         
         
         feat_map_32x = self.block_32x(feat_map_32x)
