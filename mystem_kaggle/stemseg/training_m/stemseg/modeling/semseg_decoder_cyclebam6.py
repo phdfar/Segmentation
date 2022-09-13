@@ -71,6 +71,9 @@ class SqueezeExpandDecoder(nn.Module):
         self.mc = MC(in_channels,8)
         self.tcbamin = TCBAMIN(in_channels,8)
 
+        self.conv_getway = nn.Conv3d(8, 8, 1 , bias=False)
+
+
         # 32x -> 16x
         self.upsample_32_to_16 = nn.Sequential(
             UpsampleTrilinear3D(scale_factor=(t_scales[0], 2, 2), align_corners=False),
