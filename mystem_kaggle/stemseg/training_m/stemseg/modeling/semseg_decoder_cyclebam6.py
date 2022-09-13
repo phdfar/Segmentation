@@ -71,7 +71,7 @@ class SqueezeExpandDecoder(nn.Module):
         self.mc = MC(in_channels,8)
         self.tcbamin = TCBAMIN(in_channels,8)
 
-        self.conv_getway = nn.Conv3d(8, 8, 1 , bias=False)
+        self.conv_gateway = nn.Conv3d(8, 8, 1 , bias=False)
 
 
         # 32x -> 16x
@@ -109,33 +109,40 @@ class SqueezeExpandDecoder(nn.Module):
             y = torch.permute(t, (0, 2, 1, 3, 4))
             return y
         
+        def gateway(MCIN):
+            z = MCIN.unsqueeze(2).unsqueeze(3).unsqueeze(4)
+            t = self.conv_gateway(z)
+            y = t.squeeze(2).squeeze(3).squeeze(2)
+            return y
+        
+        
         #F4
         feat_map_4x = self.tcbam(feat_map_4x)
         MC_F4 = self.mc(feat_map_4x)
-        flow = self.conv_getway(MC_F4)
+        flow = gateway(MC_F4)
         
         #F8
         MC_F8 = self.mc(feat_map_8x) + flow
         feat_map_8x =todo(feat_map_8x,MC_F8)
         MC_F8 = self.mc(feat_map_8x)
-        flow = flow + self.conv_getway(MC_F8)
+        flow = flow + gateway(MC_F8)
 
         #F16
-        MC_F16 = self.mc(feat_map_16x) + self.conv_getway(flow)
+        MC_F16 = self.mc(feat_map_16x) + gateway(flow)
         feat_map_16x =todo(feat_map_16x,MC_F16)
         MC_F16 = self.mc(feat_map_16x)
-        flow = flow + self.conv_getway(MC_F16)
+        flow = flow + gateway(MC_F16)
         
         
         #F32
-        MC_F32 = self.mc(feat_map_32x) + self.conv_getway(flow)
+        MC_F32 = self.mc(feat_map_32x) + gateway(flow)
         feat_map_32x =todo(feat_map_32x,MC_F32)
         MC_F32 = self.mc(feat_map_32x)
-        flow = flow + self.conv_getway(MC_F32)
+        flow = flow + gateway(MC_F32)
         
         #F4 final
-        MC_F4 = self.mc(feat_map_4x) + self.conv_getway(flow)
-        x = todo(feat_map_4x,MC_F4)
+        MC_F4 = self.mc(feat_map_4x) + gateway(flow)
+        x =todo(feat_map_4x,MC_F4)
         
         #x = self.conv_4(x)
 
