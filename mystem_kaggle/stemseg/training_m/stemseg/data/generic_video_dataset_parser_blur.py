@@ -5,6 +5,7 @@ import json
 import numpy as np
 import os
 import pickle
+import random
 
 def select_def(dataset_json,base_dir,dataset):
 
@@ -123,24 +124,37 @@ def parse_generic_video_dataset(base_dir, dataset_json):
                 }
                 for seg_t in seq["segmentations"]
             ]
-
+            
             # sanity check: instance IDs in "segmentations" must match those in "categories"
             seg_iids = set(sum([list(seg_t.keys()) for seg_t in seq["segmentations"]], []))
             assert seg_iids == set(seq["categories"].keys()), "Instance ID mismatch: {} vs. {}".format(
                 seg_iids, set(seq["categories"].keys())
             )
     
+
    
 
-    seqs = [GenericVideoSequence(seq, base_dir) for seq in dataset["sequences"]]  
+    seqs = [GenericVideoSequence(seq, base_dir) for seq in dataset["sequences"]]
+    seqs_aug = [GenericVideoSequence(seq, base_dir,False) for seq in dataset["sequences"]]  
+    seqs = seqs + seqs_aug
+    random.shuffle(seqs)
+    
 
     return seqs, meta_info
 
 
 class GenericVideoSequence(object):
-    def __init__(self, seq_dict, base_dir):
+    def __init__(self, seq_dict, base_dir,flag=True):
         self.base_dir = base_dir
-        self.image_paths = seq_dict["image_paths"]
+        if flag:    
+            self.image_paths = seq_dict["image_paths"]
+        else:
+            temp = []
+            for path in seq_dict["image_paths"]:
+                temp.append(path+'_aug')
+            self.image_paths = temp
+                
+            
         self.image_dims = (seq_dict["height"], seq_dict["width"])
         self.id = seq_dict["id"]
 
@@ -164,10 +178,16 @@ class GenericVideoSequence(object):
 
         images = []
         for t in frame_idxes:
-            im = cv2.imread(os.path.join(self.base_dir, self.image_paths[t]), cv2.IMREAD_COLOR)
+            #print(self.image_paths[t])
+            if '_aug' not in self.image_paths[t]:
+                im = cv2.imread(os.path.join(self.base_dir, self.image_paths[t]), cv2.IMREAD_COLOR)
+            else:
+                pathaug = self.image_paths[t].replace('_aug','')
+                im = cv2.imread(os.path.join(self.base_dir, pathaug), cv2.IMREAD_COLOR)
+                im = cv2.blur(im,(15,15))
+                
             if im is None:
                 raise ValueError("No image found at path: {}".format(os.path.join(self.base_dir, self.image_paths[t])))
-            im = cv2.blur(im,(15,15))
             images.append(im)
 
         return images
