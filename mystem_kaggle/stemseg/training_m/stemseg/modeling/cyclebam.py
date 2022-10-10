@@ -153,7 +153,7 @@ class TCBAM(nn.Module):
     
 class TCBAMMC(nn.Module):
     def __init__(self, gate_channels,gate_temporal, reduction_ratio=16, pool_types=['avg', 'max'], no_spatial=False):
-        super(TCBAM, self).__init__()
+        super(TCBAMMC, self).__init__()
         self.ChannelGate1 = ChannelGate(gate_channels, reduction_ratio, pool_types)
         self.ChannelGate2 = ChannelGate(gate_temporal, 2, pool_types)
         self.SpatialGate = SpatialGate()
