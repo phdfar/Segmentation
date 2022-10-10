@@ -133,6 +133,8 @@ class SpatialGate(nn.Module):
         scale = F.sigmoid(x_out) # broadcasting
         return x * scale
     
+
+    
 class TCBAM(nn.Module):
     def __init__(self, gate_channels,gate_temporal, reduction_ratio=16, pool_types=['avg', 'max'], no_spatial=False):
         super(TCBAM, self).__init__()
@@ -148,6 +150,22 @@ class TCBAM(nn.Module):
         x_sp = self.SpatialGate(x_transpose)
         x_out = x + x_sp
         return x_out
+    
+class TCBAMMC(nn.Module):
+    def __init__(self, gate_channels,gate_temporal, reduction_ratio=16, pool_types=['avg', 'max'], no_spatial=False):
+        super(TCBAM, self).__init__()
+        self.ChannelGate1 = ChannelGate(gate_channels, reduction_ratio, pool_types)
+        self.ChannelGate2 = ChannelGate(gate_temporal, 2, pool_types)
+        self.SpatialGate = SpatialGate()
+
+    def forward(self, x):
+        x_out1,mc1 = self.ChannelGate1(x)
+        x_transpose = torch.permute(x_out1, (0, 2, 1, 3, 4))
+        x_out2,mc2 = self.ChannelGate2(x_transpose)
+        x_transpose = torch.permute(x_out2, (0, 2, 1, 3, 4))
+        x_sp = self.SpatialGate(x_transpose)
+        x_out = x + x_sp
+        return x_out,mc2 
     
 class MC(nn.Module):
     def __init__(self, gate_channels,gate_temporal, reduction_ratio=16, pool_types=['avg', 'max'], no_spatial=False):
