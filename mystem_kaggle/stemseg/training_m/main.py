@@ -43,6 +43,7 @@ class Trainer(object):
         self.num_gpus = dist_utils.get_world_size()
         self.local_rank = dist_utils.get_rank()
         self.local_device = dist_utils.get_device()
+        print('local_device',self.local_device)
         self.is_main_process = dist_utils.is_main_process()
 
         self.console_logger = logger
@@ -378,9 +379,11 @@ def main(args):
     global_cfg.merge_from_file(cfg_path)
 
     num_gpus = torch.cuda.device_count()
-
+    print('num_gpus ',num_gpus)
     if args.allow_multigpu and num_gpus > 1:
         init_distributed(args, global_cfg.TRAINING, num_gpus)
+        print('run ',num_gpus)
+
     else:
         start(args, global_cfg.TRAINING)
 
