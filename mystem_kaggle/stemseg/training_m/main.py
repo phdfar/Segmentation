@@ -381,8 +381,8 @@ def main(args):
     num_gpus = torch.cuda.device_count()
     print('num_gpus ',num_gpus)
     if args.allow_multigpu and num_gpus > 1:
-        init_distributed(args, global_cfg.TRAINING, num_gpus)
         print('run ',num_gpus)
+        init_distributed(args, global_cfg.TRAINING, num_gpus)
 
     else:
         start(args, global_cfg.TRAINING)
