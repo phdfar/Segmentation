@@ -127,9 +127,7 @@ class TrackGenerator(object):
         print("----------------------------------------------------")
 
     def process_sequence(self, sequence, max_tracks):
-        print('--> xxxxxxxxxxxxxxxxxxxxxxxx inference start')
         embeddings, fg_masks, multiclass_masks = self.do_inference(sequence)
-        print('--> xxxxxxxxxxxxxxxxxxxxxxxx inference finish')
         self.do_clustering(sequence, embeddings, fg_masks, multiclass_masks, max_tracks)
 
         self.total_frames_processed += len(sequence)
@@ -141,7 +139,6 @@ class TrackGenerator(object):
 
         image_paths = [os.path.join(sequence.base_dir, path) for path in sequence.image_paths]
         inference_output = self.model(image_paths, subseq_idxes)
-        print('--> xxxxxxxxxxxxxxxxxxxxxxxx inference_output finish')
         fg_masks, multiclass_masks = inference_output['fg_masks'], inference_output['multiclass_masks']
 
         if torch.is_tensor(fg_masks):
