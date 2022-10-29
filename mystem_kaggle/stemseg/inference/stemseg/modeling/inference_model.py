@@ -98,20 +98,6 @@ class InferenceModel(nn.Module):
 
         for images, idxes in tqdm(image_loader, total=len(image_loader)):
             
-            import torch
-            # setting device on GPU if available, else CPU
-            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            #print('Using device:', device)
-            #print()
-
-            #Additional Info when using cuda
-            if device.type == 'cuda':
-                print(torch.cuda.get_device_name(0))
-                print('Memory Usage:')
-                print('Allocated:',idxes ,round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
-                print('Cached:   ', idxes, round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
-    
-    
             assert len(idxes) == 1
             frame_id = idxes[0]
             backbone_features[frame_id] = self._model.run_backbone(images.cuda())
@@ -199,23 +185,7 @@ class InferenceModel(nn.Module):
                 if t in current_subseq:
                     current_subseq[t] = True
         
-        import torch
-        # setting device on GPU if available, else CPU
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        #print('Using device:', device)
-        #print()
-
-        #Additional Info when using cuda
-        if device.type == 'cuda':
-            print(torch.cuda.get_device_name(0))
-            print('Memory Usage:')
-            print('Allocated:','xxxxx' ,round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
-            print('Cached:   ', 'xxxxx' , round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
-        print('--------->  compute semseg probabilities ')
-        # compute semseg probabilities
-        #cuda1 = torch.device('cuda:1')
-        #semseg_logits = semseg_logits.to(cuda1)
-        #print('semseg_logits',semseg_logits)
+      
         fg_masks, multiclass_masks = self.get_semseg_masks(semseg_logits)
         print('--------->  return compute semseg probabilities ')
 
@@ -235,12 +205,10 @@ class InferenceModel(nn.Module):
         if self._model.semseg_head is None:
             return fg_masks, multiclass_masks
 
-        print('ssssssssssssssssssss')
-        device = "cuda:1" if self.semseg_generation_on_gpu else "cpu"
-        #device = "cpu"
-        print('self.semseg_generation_on_gpu',self.semseg_generation_on_gpu)
-        device = "cuda:1"
-        #semseg_logits = torch.cat( [(logits.to(device=device) / float(num_entries)) for logits, num_entries in semseg_logits], 0)
+        
+       
+        semseg_logits = torch.cat( [(logits.to(device=device) / float(num_entries)) for logits, num_entries in semseg_logits], 0)
+        """
         p=0;s=0;
         for logits, num_entries in semseg_logits:
             a = logits.to(device=device) / float(num_entries)
@@ -255,6 +223,7 @@ class InferenceModel(nn.Module):
             p+=1;
         semseg_logits = s    
         print('hhhhhhhhhhhhhhhhhhhh')
+        """
         if semseg_logits.shape[1] > 2:
             # multi-class segmentation: first N-1 channels correspond to logits for N-1 classes and the Nth channels is
             # a fg/bg mask
