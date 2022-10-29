@@ -246,7 +246,7 @@ class InferenceModel(nn.Module):
             if p==0:
                 s = a;
             else:
-                torch.cat((s,a),dim=0)
+                s = torch.cat((s,a),dim=0)
             print('a',a.size())
             p+=1;
         semseg_logits = s    
