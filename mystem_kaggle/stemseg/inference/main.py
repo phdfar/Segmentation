@@ -127,8 +127,8 @@ class TrackGenerator(object):
         print("----------------------------------------------------")
 
     def process_sequence(self, sequence, max_tracks):
+        print('inference start')
         embeddings, fg_masks, multiclass_masks = self.do_inference(sequence)
-        print('inference done')
         self.do_clustering(sequence, embeddings, fg_masks, multiclass_masks, max_tracks)
 
         self.total_frames_processed += len(sequence)
