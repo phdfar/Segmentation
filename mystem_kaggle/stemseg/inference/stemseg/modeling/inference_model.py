@@ -241,7 +241,7 @@ class InferenceModel(nn.Module):
         #semseg_logits = torch.cat( [(logits.to(device=device) / float(num_entries)) for logits, num_entries in semseg_logits], 0)
         p=0;
         for logits, num_entries in semseg_logits:
-            a = logits.to(device=device) / float(num_entries))
+            a = logits.to(device=device) / float(num_entries)
             print('p',p)
             print('a',a.size())
             p+=1;
