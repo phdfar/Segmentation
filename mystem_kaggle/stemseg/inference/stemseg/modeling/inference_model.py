@@ -215,7 +215,7 @@ class InferenceModel(nn.Module):
         # compute semseg probabilities
         #cuda1 = torch.device('cuda:1')
         #semseg_logits = semseg_logits.to(cuda1)
-        print('semseg_logits',semseg_logits)
+        #print('semseg_logits',semseg_logits)
         fg_masks, multiclass_masks = self.get_semseg_masks(semseg_logits)
         print('--------->  return compute semseg probabilities ')
 
@@ -235,9 +235,10 @@ class InferenceModel(nn.Module):
         if self._model.semseg_head is None:
             return fg_masks, multiclass_masks
 
+        print('ssssssssssssssssssss')
         device = "cuda:1" if self.semseg_generation_on_gpu else "cpu"
         semseg_logits = torch.cat([(logits.to(device=device) / float(num_entries)) for logits, num_entries in semseg_logits], 0)
-
+        print('hhhhhhhhhhhhhhhhhhhh')
         if semseg_logits.shape[1] > 2:
             # multi-class segmentation: first N-1 channels correspond to logits for N-1 classes and the Nth channels is
             # a fg/bg mask
