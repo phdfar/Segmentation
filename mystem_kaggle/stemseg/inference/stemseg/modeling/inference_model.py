@@ -206,7 +206,7 @@ class InferenceModel(nn.Module):
             return fg_masks, multiclass_masks
 
         
-       
+        device = "cuda:1"
         semseg_logits = torch.cat( [(logits.to(device=device) / float(num_entries)) for logits, num_entries in semseg_logits], 0)
         """
         p=0;s=0;
