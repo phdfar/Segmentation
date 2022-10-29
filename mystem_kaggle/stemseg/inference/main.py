@@ -307,7 +307,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--resize_embeddings',  action='store_true')
     parser.add_argument('--min_seediness_prob', '-msp', type=float, required=False)
-    parser.add_argument('--clustering_device', default="cuda:0")
+    parser.add_argument('--clustering_device', default="cuda:1")
 
     parser.add_argument('--save_vis',      action='store_true')
 
