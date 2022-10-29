@@ -213,8 +213,12 @@ class InferenceModel(nn.Module):
             print('Cached:   ', 'xxxxx' , round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
         print('--------->  compute semseg probabilities ')
         # compute semseg probabilities
+        cuda1 = torch.device('cuda:1')
+        semseg_logits = semseg_logits.to(cuda1)
+        print('semseg_logits',semseg_logits)
         fg_masks, multiclass_masks = self.get_semseg_masks(semseg_logits)
-        
+        print('--------->  return compute semseg probabilities ')
+
         return {
             "fg_masks": fg_masks,
             "multiclass_masks": multiclass_masks,
