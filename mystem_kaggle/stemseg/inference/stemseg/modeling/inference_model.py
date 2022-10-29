@@ -213,8 +213,8 @@ class InferenceModel(nn.Module):
             print('Cached:   ', 'xxxxx' , round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
         print('--------->  compute semseg probabilities ')
         # compute semseg probabilities
-        cuda1 = torch.device('cuda:1')
-        semseg_logits = semseg_logits.to(cuda1)
+        #cuda1 = torch.device('cuda:1')
+        #semseg_logits = semseg_logits.to(cuda1)
         print('semseg_logits',semseg_logits)
         fg_masks, multiclass_masks = self.get_semseg_masks(semseg_logits)
         print('--------->  return compute semseg probabilities ')
@@ -235,7 +235,7 @@ class InferenceModel(nn.Module):
         if self._model.semseg_head is None:
             return fg_masks, multiclass_masks
 
-        device = "cuda:0" if self.semseg_generation_on_gpu else "cpu"
+        device = "cuda:1" if self.semseg_generation_on_gpu else "cpu"
         semseg_logits = torch.cat([(logits.to(device=device) / float(num_entries)) for logits, num_entries in semseg_logits], 0)
 
         if semseg_logits.shape[1] > 2:
