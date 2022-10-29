@@ -239,13 +239,17 @@ class InferenceModel(nn.Module):
         device = "cuda:1" if self.semseg_generation_on_gpu else "cpu"
         device = "cpu"
         #semseg_logits = torch.cat( [(logits.to(device=device) / float(num_entries)) for logits, num_entries in semseg_logits], 0)
-        p=0;
+        p=0;s=0;
         for logits, num_entries in semseg_logits:
             a = logits.to(device=device) / float(num_entries)
             print('p',p)
+            if p==0:
+                s = a;
+            else:
+                torch.cat((s,a),dim=0)
             print('a',a.size())
             p+=1;
-            
+        semseg_logits = s    
         print('hhhhhhhhhhhhhhhhhhhh')
         if semseg_logits.shape[1] > 2:
             # multi-class segmentation: first N-1 channels correspond to logits for N-1 classes and the Nth channels is
