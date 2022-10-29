@@ -97,6 +97,21 @@ class InferenceModel(nn.Module):
         current_subseq_as_list = subseq_idxes[0]
 
         for images, idxes in tqdm(image_loader, total=len(image_loader)):
+            
+            import torch
+            # setting device on GPU if available, else CPU
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            #print('Using device:', device)
+            #print()
+
+            #Additional Info when using cuda
+            if device.type == 'cuda':
+                print(torch.cuda.get_device_name(0))
+                print('Memory Usage:')
+                print('Allocated:',idxes ,round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
+                print('Cached:   ', idxes, round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
+    
+    
             assert len(idxes) == 1
             frame_id = idxes[0]
             backbone_features[frame_id] = self._model.run_backbone(images.cuda())
