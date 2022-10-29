@@ -237,7 +237,7 @@ class InferenceModel(nn.Module):
 
         print('ssssssssssssssssssss')
         device = "cuda:1" if self.semseg_generation_on_gpu else "cpu"
-        device = "cpu"
+        #device = "cpu"
         #semseg_logits = torch.cat( [(logits.to(device=device) / float(num_entries)) for logits, num_entries in semseg_logits], 0)
         p=0;s=0;
         for logits, num_entries in semseg_logits:
