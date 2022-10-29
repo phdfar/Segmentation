@@ -184,10 +184,8 @@ class InferenceModel(nn.Module):
             for t in backbone_features:
                 if t in current_subseq:
                     current_subseq[t] = True
-        
-      
+              
         fg_masks, multiclass_masks = self.get_semseg_masks(semseg_logits)
-        print('--------->  return compute semseg probabilities ')
 
         return {
             "fg_masks": fg_masks,
@@ -208,22 +206,7 @@ class InferenceModel(nn.Module):
         
         device = "cuda:1"
         semseg_logits = torch.cat( [(logits.to(device=device) / float(num_entries)) for logits, num_entries in semseg_logits], 0)
-        """
-        p=0;s=0;
-        for logits, num_entries in semseg_logits:
-            a = logits.to(device=device) / float(num_entries)
-            print('num_entries',float(num_entries))
-            print('a',a)      
-            print('p',p)
-            if p==0:
-                s = a;
-            else:
-                s = torch.cat((s,a),dim=0)
-            print('a',a.size())
-            p+=1;
-        semseg_logits = s    
-        print('hhhhhhhhhhhhhhhhhhhh')
-        """
+
         if semseg_logits.shape[1] > 2:
             # multi-class segmentation: first N-1 channels correspond to logits for N-1 classes and the Nth channels is
             # a fg/bg mask
