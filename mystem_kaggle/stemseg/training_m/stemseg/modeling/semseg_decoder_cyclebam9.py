@@ -179,7 +179,7 @@ class SqueezeExpandDecoder(nn.Module):
           return ft
             
         for i in range(0,8):
-          print('iiiiiiiii',i)
+          #print('iiiiiiiii',i)
           fc = x[:,:,i,:,:] #[1 C H W]
           #fc = fc.to(device='cuda:0')  
           ft = tempattn(fc,fskey,fsvalue,C,T,H,W)
