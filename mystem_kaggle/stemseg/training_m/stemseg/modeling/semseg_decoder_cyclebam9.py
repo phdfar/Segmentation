@@ -131,7 +131,7 @@ class SqueezeExpandDecoder(nn.Module):
         x = self.conv_4(x)
 
         #temporal attention
-        for i in range(0,8):
+        for i in range(0,8,2):
           fs = x[:,:,i,:,:]  #[1 C H W]
          
           if i==0:
