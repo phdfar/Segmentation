@@ -151,7 +151,8 @@ class SqueezeExpandDecoder(nn.Module):
         #fsvalue = fsvalue.to(device='cuda:1')  
         #fskey = fskey.to(device='cuda:1')  
 
-        def tempattn(fc,fskey,fsvalue,C,T,H,W):
+        def tempattn(fcx,fskey,fsvalue,C,T,H,W):
+          fc = self.maxpool(fcx)
           fckey = self.fckey_conv(fc) #[1 C/4 H W]
           fckey = torch.permute(fckey,(1,0,2,3)) #[c/4 1 H W]
           fskeyi = torch.permute(fskey,(1,0,2,3)) #[c/4 T H W]
@@ -172,14 +173,14 @@ class SqueezeExpandDecoder(nn.Module):
           #fA = fA.to(device='cuda:0')
           fA = self.fA_conv(fA) #[1 C H W]
           fA = fA.unsqueeze(0)
-          ft = (fc + fA).unsqueeze(2)
+          fA = self.upsample(fA)
+          ft = (fcx + fA).unsqueeze(2)
           #ft = ft.to(device='cuda:1')
           return ft
             
         for i in range(0,8):
           print('iiiiiiiii',i)
           fc = x[:,:,i,:,:] #[1 C H W]
-          fc = self.maxpool(fc)
           #fc = fc.to(device='cuda:0')  
           ft = tempattn(fc,fskey,fsvalue,C,T,H,W)
           if i==0:
@@ -188,7 +189,7 @@ class SqueezeExpandDecoder(nn.Module):
             ff = torch.cat((ff,ft),dim=2)
 
         x = ff 
-        x = self.upsample(x)
+        
         return self.conv_out(x)
 
 
