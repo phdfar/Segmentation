@@ -147,9 +147,8 @@ class SqueezeExpandDecoder(nn.Module):
         C = fskey.size(1); H = fskey.size(2); W = fskey.size(3); T= fskey.size(0);  
         fsvalue = torch.permute(fsvalue,(1,0,2,3)) #[c/4 T H W]
         fsvalue = torch.reshape(fsvalue,(C,H*W*T))
-                      
-        for i in range(0,8):
-          fc = x[:,:,i,:,:] #[1 C H W]
+        
+        def tempattn(fc,fskey,fsvalue,C,T,H,W):
           fckey = self.fckey_conv(fc) #[1 C/4 H W]
           fckey = torch.permute(fckey,(1,0,2,3)) #[c/4 1 H W]
           fskeyi = torch.permute(fskey,(1,0,2,3)) #[c/4 T H W]
@@ -166,12 +165,18 @@ class SqueezeExpandDecoder(nn.Module):
           fA = self.fA_conv(fA) #[1 C H W]
           fA = fA.unsqueeze(0)
           ft = (fc + fA).unsqueeze(2)
+
+          return ft
+            
+        for i in range(0,8):
+          print('iiiiiiiii',i)
+          fc = x[:,:,i,:,:] #[1 C H W]
+          ft = tempattn(fc,fskey,fsvalue,C,T,H,W)
           if i==0:
             ff = ft
           else:
             ff = torch.cat((ff,ft),dim=2)
 
-        
         x = ff 
 
         return self.conv_out(x)
