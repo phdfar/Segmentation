@@ -91,12 +91,12 @@ class SqueezeExpandDecoder(nn.Module):
         self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
 
         
-        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
-        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
-        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
+        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same',device='cuda:1')
+        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same',device='cuda:1')
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same',device='cuda:1')
         self.softmax_attn = nn.Softmax(dim=1)
-        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
-        self.fA_conv  = nn.Conv2d(inter_channels[3]//4,inter_channels[3],1,padding='same')
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same',device='cuda:1')
+        self.fA_conv  = nn.Conv2d(inter_channels[3]//4,inter_channels[3],1,padding='same',device='cuda:1')
 
         
         out_channels = num_classes + 1 if foreground_channel else num_classes
