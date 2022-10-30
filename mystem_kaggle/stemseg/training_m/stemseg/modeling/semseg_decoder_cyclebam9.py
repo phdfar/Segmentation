@@ -147,19 +147,21 @@ class SqueezeExpandDecoder(nn.Module):
         C = fskey.size(1); H = fskey.size(2); W = fskey.size(3); T= fskey.size(0);  
         fsvalue = torch.permute(fsvalue,(1,0,2,3)) #[c/4 T H W]
         fsvalue = torch.reshape(fsvalue,(C,H*W*T))
-        
+        fsvalue = fsvalue.to(device='cuda:1')  
+        fskey = fskey.to(device='cuda:1')  
+
         def tempattn(fc,fskey,fsvalue,C,T,H,W):
           fckey = self.fckey_conv(fc) #[1 C/4 H W]
           fckey = torch.permute(fckey,(1,0,2,3)) #[c/4 1 H W]
           fskeyi = torch.permute(fskey,(1,0,2,3)) #[c/4 T H W]
           fckey = torch.reshape(fckey,(C,H*W))
-          fskeyi = torch.reshape(fskeyi,(C,H*W*T))           
+          fskeyi = torch.reshape(fskeyi,(C,H*W*T))
+            
           X = torch.tensordot(fskeyi, fckey, dims=([0], [0]));
           
-          X = X.to(device='cuda:1')  
+          #X = X.to(device='cuda:1')  
           fA = self.softmax_attn(X)
           fA = torch.reshape(fA,(H*W*T,H,W))
-          fA = fA.to(device='cuda:0')  
           fA = torch.tensordot(fsvalue, fA, dims=([1], [0]));
           
           fA = self.fA_conv(fA) #[1 C H W]
@@ -171,6 +173,7 @@ class SqueezeExpandDecoder(nn.Module):
         for i in range(0,8):
           print('iiiiiiiii',i)
           fc = x[:,:,i,:,:] #[1 C H W]
+          fc = fc.to(device='cuda:1')  
           ft = tempattn(fc,fskey,fsvalue,C,T,H,W)
           if i==0:
             ff = ft
