@@ -96,7 +96,7 @@ class SqueezeExpandDecoder(nn.Module):
         self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//16,3,padding='same')
         self.softmax_attn = nn.Softmax(dim=1)
         self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//16,3,padding='same')
-        self.fA_conv  = nn.Conv2d(inter_channels[3]//16,inter_channels[3],1,padding='same',device=torch.device('cuda:1'))
+        self.fA_conv  = nn.Conv2d(inter_channels[3]//16,inter_channels[3],1,padding='same')
 
         
         out_channels = num_classes + 1 if foreground_channel else num_classes
@@ -168,7 +168,7 @@ class SqueezeExpandDecoder(nn.Module):
           fA = torch.reshape(fA,(H*W*T,H,W))
           fsvalue = fsvalue.to(device='cuda:1')
           fA = torch.tensordot(fsvalue, fA, dims=([1], [0]));
-          #fA = fA.to(device='cuda:1')
+          fA = fA.to(device='cuda:0')
           fA = self.fA_conv(fA) #[1 C H W]
           fA = fA.unsqueeze(0)
           ft = (fc + fA).unsqueeze(2)
