@@ -158,6 +158,8 @@ class SqueezeExpandDecoder(nn.Module):
           X = torch.tensordot(fskeyi, fckey, dims=([0], [0]));
           del fckey
           del fskeyi
+          torch.cuda.empty_cache()
+
           fA = self.softmax_attn(X)
           fA = torch.reshape(fA,(H*W*T,H,W))
           fA = torch.tensordot(fsvalue, fA, dims=([1], [0]));
