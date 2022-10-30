@@ -97,7 +97,8 @@ class SqueezeExpandDecoder(nn.Module):
         self.softmax_attn = nn.Softmax(dim=1)
         self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//32,3,padding='same')
         self.fA_conv  = nn.Conv2d(inter_channels[3]//32,inter_channels[3],1,padding='same')
-
+        self.maxpool = nn.MaxPool2d(2)
+        self.upsample = nn.UpsamplingBilinear2d(scale_factor=2)
         
         out_channels = num_classes + 1 if foreground_channel else num_classes
         self.conv_out = nn.Conv3d(inter_channels[3], out_channels, kernel_size=1, padding=0, bias=False)
@@ -133,7 +134,7 @@ class SqueezeExpandDecoder(nn.Module):
         #temporal attention
         for i in range(0,8,2):
           fs = x[:,:,i,:,:]  #[1 C H W]
-         
+          fs = self.maxpool(fs)
           if i==0:
             fskey = self.fskey_conv(fs) #[1 C/4 H W]
             fsvalue = self.fsvalue_conv(fs) #[1 C/4 H W]
@@ -178,6 +179,7 @@ class SqueezeExpandDecoder(nn.Module):
         for i in range(0,8):
           print('iiiiiiiii',i)
           fc = x[:,:,i,:,:] #[1 C H W]
+          fc = self.maxpool(fc)
           #fc = fc.to(device='cuda:0')  
           ft = tempattn(fc,fskey,fsvalue,C,T,H,W)
           if i==0:
@@ -186,7 +188,7 @@ class SqueezeExpandDecoder(nn.Module):
             ff = torch.cat((ff,ft),dim=2)
 
         x = ff 
-
+        x = self.upsample(x)
         return self.conv_out(x)
 
 
