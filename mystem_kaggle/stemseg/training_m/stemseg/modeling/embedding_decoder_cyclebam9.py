@@ -88,13 +88,15 @@ class SqueezingExpandDecoder(nn.Module):
         self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
 
 
-        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
-        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
-        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
+        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//32,3,padding='same')
+        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//32,3,padding='same')
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//32,3,padding='same')
         self.softmax_attn = nn.Softmax(dim=1)
-        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
-        self.fA_conv  = nn.Conv2d(inter_channels[3]//4,inter_channels[3],1,padding='same')
-
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//32,3,padding='same')
+        self.fA_conv  = nn.Conv2d(inter_channels[3]//32,inter_channels[3],1,padding='same')
+        self.maxpool = nn.MaxPool2d(2)
+        self.upsample = nn.UpsamplingBilinear2d(scale_factor=2)
+        
         self.embedding_size = embedding_size
 
         n_free_dims = get_nb_free_dims(experimental_dims)
@@ -164,7 +166,7 @@ class SqueezingExpandDecoder(nn.Module):
         #temporal attention
         for i in range(0,8):
           fs = x[:,:,i,:,:]  #[1 C H W]
-         
+          fs = self.maxpool(fs)
           if i==0:
             fskey = self.fskey_conv(fs) #[1 C/4 H W]
             fsvalue = self.fsvalue_conv(fs) #[1 C/4 H W]
@@ -178,30 +180,48 @@ class SqueezingExpandDecoder(nn.Module):
         C = fskey.size(1); H = fskey.size(2); W = fskey.size(3); T= fskey.size(0);  
         fsvalue = torch.permute(fsvalue,(1,0,2,3)) #[c/4 T H W]
         fsvalue = torch.reshape(fsvalue,(C,H*W*T))
-                      
-        for i in range(0,8):
-          fc = x[:,:,i,:,:] #[1 C H W]
+        #fsvalue = fsvalue.to(device='cuda:1')  
+        #fskey = fskey.to(device='cuda:1')  
+
+        def tempattn(fcx,fskey,fsvalue,C,T,H,W):
+          fc = self.maxpool(fcx)
           fckey = self.fckey_conv(fc) #[1 C/4 H W]
           fckey = torch.permute(fckey,(1,0,2,3)) #[c/4 1 H W]
           fskeyi = torch.permute(fskey,(1,0,2,3)) #[c/4 T H W]
           fckey = torch.reshape(fckey,(C,H*W))
-          fskeyi = torch.reshape(fskeyi,(C,H*W*T))           
+          fskeyi = torch.reshape(fskeyi,(C,H*W*T))
+          #fckey = fckey.to(device='cuda:1')  
+  
+          #fckey = fckey.to(device='cuda:1')
+          #fskeyi = fskeyi.to(device='cuda:1')  
+
           X = torch.tensordot(fskeyi, fckey, dims=([0], [0]));
+          
+          #X = X.to(device='cuda:1')
           fA = self.softmax_attn(X)
           fA = torch.reshape(fA,(H*W*T,H,W))
+          #fsvalue = fsvalue.to(device='cuda:1')
           fA = torch.tensordot(fsvalue, fA, dims=([1], [0]));
-          
+          #fA = fA.to(device='cuda:0')
           fA = self.fA_conv(fA) #[1 C H W]
           fA = fA.unsqueeze(0)
-          ft = (fc + fA).unsqueeze(2)
+          fA = self.upsample(fA)
+          ft = (fcx + fA).unsqueeze(2)
+          #ft = ft.to(device='cuda:1')
+          return ft
+            
+        for i in range(0,8):
+          #print('iiiiiiiii',i)
+          fc = x[:,:,i,:,:] #[1 C H W]
+          #fc = fc.to(device='cuda:0')  
+          ft = tempattn(fc,fskey,fsvalue,C,T,H,W)
           if i==0:
             ff = ft
           else:
             ff = torch.cat((ff,ft),dim=2)
 
-        
-        x = ff          
-        
+        x = ff 
+
         embeddings = self.conv_embedding(x)
         if self.tanh_activation:
             embeddings = (embeddings * 0.25).tanh()
