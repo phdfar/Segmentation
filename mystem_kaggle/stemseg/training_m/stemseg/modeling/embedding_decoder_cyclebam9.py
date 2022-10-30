@@ -87,6 +87,14 @@ class SqueezingExpandDecoder(nn.Module):
         )
         self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
 
+
+        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
+        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
+        self.softmax_attn = nn.Softmax(dim=1)
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
+        self.fA_conv  = nn.Conv2d(inter_channels[3]//4,inter_channels[3],1,padding='same')
+
         self.embedding_size = embedding_size
 
         n_free_dims = get_nb_free_dims(experimental_dims)
@@ -155,30 +163,44 @@ class SqueezingExpandDecoder(nn.Module):
         
         #temporal attention
         for i in range(0,8):
-          fs = x[:][:][i] #[1 C H W]
+          fs = x[:,:,i,:,:]  #[1 C H W]
+         
           if i==0:
             fskey = self.fskey_conv(fs) #[1 C/4 H W]
             fsvalue = self.fsvalue_conv(fs) #[1 C/4 H W]
           else:
-            fskey = torch.cat((fskey,self.fskey_conv(fs))
-            fsvalue = torch.cat((fsvalue,self.fsvalue_conv(fs))
+            fskey = torch.cat((fskey,self.fskey_conv(fs)))
+            fsvalue = torch.cat((fsvalue,self.fsvalue_conv(fs)))
 
+       
         #fsvalue  #[T C/4 H W]  
-        #fskey    #[T C/4 H W]
-        C = fskey.size(1); H = fskey.size(2); W = fskey.size(3);                         
+        #fskey    #[T C/4 H W]                                
+        C = fskey.size(1); H = fskey.size(2); W = fskey.size(3); T= fskey.size(0);  
+        fsvalue = torch.permute(fsvalue,(1,0,2,3)) #[c/4 T H W]
+        fsvalue = torch.reshape(fsvalue,(C,H*W*T))
+                      
         for i in range(0,8):
-          fc = x[:][:][i] #[1 C H W]
-          fckey = self.fc_conv(fc) #[1 C/4 H W]
-          fckey = torch.permute(fckey,(1,0,2)) #[c/4 1 H W]
-          fskey = torch.permute(fskey,(1,0,2)) #[c/4 T H W]
+          fc = x[:,:,i,:,:] #[1 C H W]
+          fckey = self.fckey_conv(fc) #[1 C/4 H W]
+          fckey = torch.permute(fckey,(1,0,2,3)) #[c/4 1 H W]
+          fskeyi = torch.permute(fskey,(1,0,2,3)) #[c/4 T H W]
           fckey = torch.reshape(fckey,(C,H*W))
-          fskey = torch.reshape(fskey,(C,H*W*T))                      
-          X = torch.tensordot(fskey, fckey, dims=([0], [0]));
+          fskeyi = torch.reshape(fskeyi,(C,H*W*T))           
+          X = torch.tensordot(fskeyi, fckey, dims=([0], [0]));
           fA = self.softmax_attn(X)
-          fA = torch.reshape(fA,(1,H*W*T,H,W))
+          fA = torch.reshape(fA,(H*W*T,H,W))
+          fA = torch.tensordot(fsvalue, fA, dims=([1], [0]));
+          
           fA = self.fA_conv(fA) #[1 C H W]
+          fA = fA.unsqueeze(0)
+          ft = (fc + fA).unsqueeze(2)
           if i==0:
-                
+            ff = ft
+          else:
+            ff = torch.cat((ff,ft),dim=2)
+
+        
+        x = ff          
         
         embeddings = self.conv_embedding(x)
         if self.tanh_activation:
