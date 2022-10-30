@@ -91,12 +91,12 @@ class SqueezeExpandDecoder(nn.Module):
         self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
 
         
-        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same',device='cuda:1')
-        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same',device='cuda:1')
-        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same',device='cuda:1')
+        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
+        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
         self.softmax_attn = nn.Softmax(dim=1)
-        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same',device='cuda:1')
-        self.fA_conv  = nn.Conv2d(inter_channels[3]//4,inter_channels[3],1,padding='same',device='cuda:1')
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
+        self.fA_conv  = nn.Conv2d(inter_channels[3]//4,inter_channels[3],1,padding='same')
 
         
         out_channels = num_classes + 1 if foreground_channel else num_classes
@@ -156,7 +156,8 @@ class SqueezeExpandDecoder(nn.Module):
           fskeyi = torch.permute(fskey,(1,0,2,3)) #[c/4 T H W]
           fckey = torch.reshape(fckey,(C,H*W))
           fskeyi = torch.reshape(fskeyi,(C,H*W*T))
-            
+          fckey = fckey.to(device='cuda:1')  
+  
           X = torch.tensordot(fskeyi, fckey, dims=([0], [0]));
           
           #X = X.to(device='cuda:1')  
@@ -173,7 +174,7 @@ class SqueezeExpandDecoder(nn.Module):
         for i in range(0,8):
           print('iiiiiiiii',i)
           fc = x[:,:,i,:,:] #[1 C H W]
-          fc = fc.to(device='cuda:1')  
+          fc = fc.to(device='cuda:0')  
           ft = tempattn(fc,fskey,fsvalue,C,T,H,W)
           if i==0:
             ff = ft
