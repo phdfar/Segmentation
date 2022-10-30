@@ -91,12 +91,12 @@ class SqueezeExpandDecoder(nn.Module):
         self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
 
         
-        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
-        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
-        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
+        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//16,3,padding='same')
+        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//16,3,padding='same')
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//16,3,padding='same')
         self.softmax_attn = nn.Softmax(dim=1)
-        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//4,3,padding='same')
-        self.fA_conv  = nn.Conv2d(inter_channels[3]//4,inter_channels[3],1,padding='same')
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//16,3,padding='same')
+        self.fA_conv  = nn.Conv2d(inter_channels[3]//16,inter_channels[3],1,padding='same')
 
         
         out_channels = num_classes + 1 if foreground_channel else num_classes
@@ -147,8 +147,8 @@ class SqueezeExpandDecoder(nn.Module):
         C = fskey.size(1); H = fskey.size(2); W = fskey.size(3); T= fskey.size(0);  
         fsvalue = torch.permute(fsvalue,(1,0,2,3)) #[c/4 T H W]
         fsvalue = torch.reshape(fsvalue,(C,H*W*T))
-        fsvalue = fsvalue.to(device='cuda:1')  
-        fskey = fskey.to(device='cuda:1')  
+        #fsvalue = fsvalue.to(device='cuda:1')  
+        #fskey = fskey.to(device='cuda:1')  
 
         def tempattn(fc,fskey,fsvalue,C,T,H,W):
           fckey = self.fckey_conv(fc) #[1 C/4 H W]
@@ -160,22 +160,22 @@ class SqueezeExpandDecoder(nn.Module):
   
           X = torch.tensordot(fskeyi, fckey, dims=([0], [0]));
           
-          X = X.to(device='cpu')
+          #X = X.to(device='cpu')
           fA = self.softmax_attn(X)
           fA = torch.reshape(fA,(H*W*T,H,W))
-          fsvalue = fsvalue.to(device='cpu')
+          #fsvalue = fsvalue.to(device='cpu')
           fA = torch.tensordot(fsvalue, fA, dims=([1], [0]));
           
           fA = self.fA_conv(fA) #[1 C H W]
           fA = fA.unsqueeze(0)
           ft = (fc + fA).unsqueeze(2)
-          ft = ft.to(device='cuda:1')
+          #ft = ft.to(device='cuda:1')
           return ft
             
         for i in range(0,8):
           print('iiiiiiiii',i)
           fc = x[:,:,i,:,:] #[1 C H W]
-          fc = fc.to(device='cuda:0')  
+          #fc = fc.to(device='cuda:0')  
           ft = tempattn(fc,fskey,fsvalue,C,T,H,W)
           if i==0:
             ff = ft
