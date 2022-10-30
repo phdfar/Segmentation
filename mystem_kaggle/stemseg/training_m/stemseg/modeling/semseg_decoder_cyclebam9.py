@@ -91,12 +91,12 @@ class SqueezeExpandDecoder(nn.Module):
         self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
 
         
-        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//32,3,padding='same')
-        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//32,3,padding='same')
-        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//32,3,padding='same')
+        self.fskey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//16,3,padding='same')
+        self.fsvalue_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//16,3,padding='same')
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//16,3,padding='same')
         self.softmax_attn = nn.Softmax(dim=1)
-        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//32,3,padding='same')
-        self.fA_conv  = nn.Conv2d(inter_channels[3]//32,inter_channels[3],1,padding='same')
+        self.fckey_conv = nn.Conv2d(inter_channels[3],inter_channels[3]//16,3,padding='same')
+        self.fA_conv  = nn.Conv2d(inter_channels[3]//16,inter_channels[3],1,padding='same')
         self.maxpool = nn.MaxPool2d(2)
         self.upsample = nn.UpsamplingBilinear2d(scale_factor=2)
         
