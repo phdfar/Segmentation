@@ -156,7 +156,7 @@ class SqueezeExpandDecoder(nn.Module):
           fskeyi = torch.permute(fskey,(1,0,2,3)) #[c/4 T H W]
           fckey = torch.reshape(fckey,(C,H*W))
           fskeyi = torch.reshape(fskeyi,(C,H*W*T))
-          fckey = fckey.to(device='cuda:1')  
+          #fckey = fckey.to(device='cuda:1')  
   
           X = torch.tensordot(fskeyi, fckey, dims=([0], [0]));
           
