@@ -166,7 +166,7 @@ class SqueezeExpandDecoder(nn.Module):
           #X = X.to(device='cuda:1')
           fA = self.softmax_attn(X)
           fA = torch.reshape(fA,(H*W*T,H,W))
-          fsvalue = fsvalue.to(device='cuda:1')
+          #fsvalue = fsvalue.to(device='cuda:1')
           fA = torch.tensordot(fsvalue, fA, dims=([1], [0]));
           #fA = fA.to(device='cuda:0')
           fA = self.fA_conv(fA) #[1 C H W]
