@@ -1,7 +1,10 @@
 import os
 
-os.environ['/content/'] = '/content/'
-os.environ['/content/stemseg/mystem_colab/'] = '/content/stemseg/mystem_colab/'
+os.environ['/kaggle/working/'] = '/kaggle/working/'
+os.environ['/kaggle/input/valid-vis/'] = '/kaggle/input/valid-vis/'
+
+os.environ['/kaggle/input/train-vis/'] = '/kaggle/input/train-vis/'
+os.environ['/home/kasaei2/FarnooshArefi/VIS/'] = '/home/kasaei2/FarnooshArefi/VIS/'
 
 
 from argparse import ArgumentParser
