@@ -112,7 +112,7 @@ class TrackGenerator(object):
         if not isinstance(self.max_tracks, (list, tuple)):
             self.max_tracks = [self.max_tracks] * len(self.sequences)
         vd=''
-        for i in range(0,3):
+        for i in range(0,152):
             sequence = self.sequences[i]
             if seqs_to_process and str(sequence.seq_id) not in seqs_to_process:
                 continue
