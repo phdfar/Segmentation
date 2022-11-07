@@ -87,7 +87,7 @@ class SqueezingExpandDecoder(nn.Module):
         self.embedding_dim_mode = experimental_dims
         embedding_output_size = get_nb_embedding_dims(self.embedding_dim_mode)
 
-        self.conv_embedding = nn.Conv3d(inter_channels[-1], embedding_output_size, kernel_size=1, padding=0, bias=False)
+        self.conv_embedding = nn.Conv3d(inter_channels[-1], embedding_output_size-2, kernel_size=1, padding=0, bias=False)
         self.conv_variance = nn.Conv3d(inter_channels[-1], self.variance_channels, kernel_size=1, padding=0, bias=True)
 
         self.conv_seediness, self.seediness_channels = None, 0
@@ -100,8 +100,11 @@ class SqueezingExpandDecoder(nn.Module):
         
         self.convop1 = nn.Conv3d(1, 8, 3,padding='same')
         self.convop2 = nn.Conv3d(8, 16, 3,padding='same')
-        self.convop3 = nn.Conv3d(16, 2, 3,padding='same')
-        self.maxop = nn.maxop((1, 2, 2))
+        self.convop3 = nn.Conv3d(32, 16, 3,padding='same')
+        self.convop4 = nn.Conv3d(16, 2, 3,padding='same')
+        self.convop5 = nn.Conv3d(6, 6, 3,padding='same')
+
+        self.maxop = nn.MaxPool3d((1, 2, 2))
 
     def forward(self, x):
         """
@@ -111,22 +114,25 @@ class SqueezingExpandDecoder(nn.Module):
         """
         #assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
 
-        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x, ang,mag,img = x
+        #feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x, ang,mag,img = x
         
-        ang = ang.unsqueeze(0)
-        mag = mag.unsqueeze(0)
+        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x, ang,mag,img1,img2 = x
+
+
+        ang = ang.unsqueeze(0).float()
+        mag = mag.unsqueeze(0).float()
         
         angx = self.convop1(ang)
         angx = self.convop2(angx)
         
         magx = self.convop1(mag)
-        magx = self.convop2(magx)
-        
+        magx = self.convop2(magx) 
         optx = torch.cat((angx,magx),dim=1)
         optx = self.convop3(optx)
+        optx = self.convop4(optx)
         optx = self.maxop(optx)
         optx = self.maxop(optx)
-        
+
 
         feat_map_32x = self.block_32x(feat_map_32x)
 
@@ -153,7 +159,8 @@ class SqueezingExpandDecoder(nn.Module):
             embeddings = (embeddings * 0.25).tanh()
             
         embeddings = torch.cat((embeddings,optx),dim=1)
-        
+        embeddings = self.convop5(embeddings)
+
         embeddings = add_spatiotemporal_offset(embeddings, self.time_scale, self.embedding_dim_mode)
 
         variances = self.conv_variance(x)

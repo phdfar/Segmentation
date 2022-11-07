@@ -10,6 +10,8 @@ def get_nb_embedding_dims(mode):
         return 4
     elif mode in ("xytff", "xyfff"):
         return 5
+    elif mode in ("xyffff", "xyffff"):
+        return 6
     else:
         raise ValueError("Invalid experimental embedding mode: {}".format(mode))
 
@@ -21,6 +23,8 @@ def get_nb_free_dims(mode):
         return 2
     elif mode == "xyfff":
         return 3
+    elif mode == "xyffff":
+        return 4
     else:
         return 0
 

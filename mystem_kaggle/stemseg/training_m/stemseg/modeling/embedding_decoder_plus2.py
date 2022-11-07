@@ -1,37 +1,34 @@
+from stemseg.modeling.embedding_utils import add_spatiotemporal_offset, get_nb_embedding_dims, get_nb_free_dims
+from stemseg.modeling.common import UpsampleTrilinear3D, AtrousPyramid3D, get_temporal_scales, get_pooling_layer_creator
+from stemseg.utils.global_registry import GlobalRegistry
+
 import torch
 import torch.nn as nn
 
-from stemseg.modeling.common import UpsampleTrilinear3D, AtrousPyramid3D, get_pooling_layer_creator, \
-    get_temporal_scales
-from stemseg.utils.global_registry import GlobalRegistry
+EMBEDDING_HEAD_REGISTRY = GlobalRegistry.get("EmbeddingHead")
 
 
-SEMSEG_HEAD_REGISTRY = GlobalRegistry.get("SemsegHead")
-
-
-@SEMSEG_HEAD_REGISTRY.add("squeeze_expand_decoder")
-class SqueezeExpandDecoder(nn.Module):
-    def __init__(self, in_channels, num_classes, inter_channels, feature_scales, foreground_channel=False,
-                 ConvType=nn.Conv3d, PoolType=nn.AvgPool3d, NormType=nn.Identity):
+@EMBEDDING_HEAD_REGISTRY.add("squeeze_expand_decoder")
+class SqueezingExpandDecoder(nn.Module):
+    def __init__(self, in_channels, inter_channels, embedding_size, tanh_activation,
+                 seediness_output, experimental_dims, ConvType=nn.Conv3d,
+                 PoolType=nn.AvgPool3d, NormType=nn.Identity):
         super().__init__()
-        self.is_3d = True
-
-        assert tuple(feature_scales) == (4, 8, 16, 32)
 
         PoolingLayerCallbacks = get_pooling_layer_creator(PoolType)
 
         self.block_32x = nn.Sequential(
-            ConvType(in_channels, inter_channels[0], 3, stride=1, padding=1),
+            ConvType(in_channels, inter_channels[0], 3, stride=1, padding=1, dilation=1),
             NormType(inter_channels[0]),
             nn.ReLU(inplace=True),
             PoolingLayerCallbacks[0](3, stride=(2, 1, 1), padding=1),
 
-            ConvType(inter_channels[0], inter_channels[0], 3, stride=1, padding=1),
+            ConvType(inter_channels[0], inter_channels[0], 3, stride=1, padding=1, dilation=1),
             NormType(inter_channels[0]),
             nn.ReLU(inplace=True),
             PoolingLayerCallbacks[1](3, stride=(2, 1, 1), padding=1),
 
-            ConvType(inter_channels[0], inter_channels[0], 3, stride=1, padding=1),
+            ConvType(inter_channels[0], inter_channels[0], 3, stride=1, padding=1, dilation=1),
             NormType(inter_channels[0]),
             nn.ReLU(inplace=True),
             PoolingLayerCallbacks[2](3, stride=(2, 1, 1), padding=1),
@@ -47,7 +44,6 @@ class SqueezeExpandDecoder(nn.Module):
             NormType(inter_channels[1]),
             nn.ReLU(inplace=True),
             PoolingLayerCallbacks[1](3, stride=(2, 1, 1), padding=1),
-            # ResidualModuleWrapper(NonLocalBlock3DWithDownsamplingV2(inter_channels, 128, 1))
         )
 
         self.block_8x = nn.Sequential(
@@ -67,7 +63,7 @@ class SqueezeExpandDecoder(nn.Module):
 
         # 32x -> 16x
         self.upsample_32_to_16 = nn.Sequential(
-            UpsampleTrilinear3D(scale_factor=(t_scales[0], 2, 2), align_corners=False),
+            UpsampleTrilinear3D(scale_factor=(t_scales[0], 2, 2), align_corners=False)
         )
         self.conv_16 = nn.Conv3d(inter_channels[0] + inter_channels[1], inter_channels[1], 1, bias=False)
 
@@ -83,21 +79,72 @@ class SqueezeExpandDecoder(nn.Module):
         )
         self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
 
-        out_channels = num_classes + 1 if foreground_channel else num_classes
-        self.conv_out = nn.Conv3d(inter_channels[3], out_channels, kernel_size=1, padding=0, bias=False)
+        self.embedding_size = embedding_size
 
-        self.has_foreground_channel = foreground_channel
+        n_free_dims = get_nb_free_dims(experimental_dims)
+        self.variance_channels = self.embedding_size - n_free_dims
+
+        self.embedding_dim_mode = experimental_dims
+        embedding_output_size = get_nb_embedding_dims(self.embedding_dim_mode)
+
+        self.conv_embedding = nn.Conv3d(inter_channels[-1], embedding_output_size-2, kernel_size=1, padding=0, bias=False)
+        self.conv_variance = nn.Conv3d(inter_channels[-1], self.variance_channels, kernel_size=1, padding=0, bias=True)
+
+        self.conv_seediness, self.seediness_channels = None, 0
+        if seediness_output:
+            self.conv_seediness = nn.Conv3d(inter_channels[-1], 1, kernel_size=1, padding=0, bias=False)
+            self.seediness_channels = 1
+
+        self.tanh_activation = tanh_activation
+        self.register_buffer("time_scale", torch.tensor(1.0, dtype=torch.float32))
+        
+
+        self.convop0 = nn.Conv3d(3, 8, 3,padding='same')
+        self.convop1 = nn.Conv3d(1, 8, 3,padding='same')
+        self.convop2 = nn.Conv3d(8, 8, 3,padding='same')
+        self.convop3 = nn.Conv3d(32, 16, 3,padding='same')
+        self.convop4 = nn.Conv3d(16, 2, 3,padding='same')
+        self.convop5 = nn.Conv3d(6, 6, 3,padding='same')
+
+        self.maxop = nn.MaxPool3d((1, 2, 2))
 
     def forward(self, x):
+        """
+        :param x: list of multiscale feature map tensors of shape [N, C, T, H, W]. For this implementation, there
+        should be 4 features maps in increasing order of spatial dimensions
+        :return: embedding map of shape [N, E, T, H, W]
+        """
         #assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
 
-        ang = x[-4]
-        mag = x[-3]
-        img1 = x[-2]
-        img2 = x[-1]
-        x = x[0:4]
+        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x, ang,mag,img1,img2 = x
         
-        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1]
+        ang = ang.unsqueeze(0).float()
+        mag = mag.unsqueeze(0).float()
+
+        img1 = torch.permute(img1,(0,4,1,2,3)).float()
+        img2 = torch.permute(img2,(0,4,1,2,3)).float()
+
+        img1x = self.convop0(img1)
+        img1x = self.convop2(img1x)
+        img2x = self.convop0(img2)
+        img2x = self.convop2(img2x)
+
+        angx = self.convop1(ang)
+        angx = self.convop2(angx)
+        
+        magx = self.convop1(mag)
+        magx = self.convop2(magx)
+
+        optx = torch.cat((angx,magx,img1x,img2x),dim=1)
+
+        optx = self.convop3(optx)
+        optx = self.convop4(optx)
+
+
+        optx = self.maxop(optx)
+        optx = self.maxop(optx)
+
+        
 
         feat_map_32x = self.block_32x(feat_map_32x)
 
@@ -119,15 +166,31 @@ class SqueezeExpandDecoder(nn.Module):
         x = torch.cat((x, feat_map_4x), 1)
         x = self.conv_4(x)
 
-        return self.conv_out(x)
+        embeddings = self.conv_embedding(x)
+        if self.tanh_activation:
+            embeddings = (embeddings * 0.25).tanh()
+            
+        embeddings = torch.cat((embeddings,optx),dim=1)
+        embeddings = self.convop5(embeddings)
+
+        embeddings = add_spatiotemporal_offset(embeddings, self.time_scale, self.embedding_dim_mode)
+
+        variances = self.conv_variance(x)
+
+        if self.conv_seediness is not None:
+            seediness = self.conv_seediness(x).sigmoid()
+            output = torch.cat((embeddings, variances, seediness), dim=1)
+        else:
+            output = torch.cat((embeddings, variances), dim=1)
+
+        return output
 
 
-class SqueezeExpandDilatedDecoder(nn.Module):
-    def __init__(self, in_channels, num_classes, inter_channels, feature_scales, foreground_channel=False,
-                 ConvType=nn.Conv3d, PoolType=nn.AvgPool3d, NormType=nn.Identity):
+class SqueezingExpandDilatedDecoder(nn.Module):
+    def __init__(self, in_channels, inter_channels, embedding_size, tanh_activation,
+                 seediness_output, experimental_dims, ConvType=nn.Conv3d,
+                 PoolType=nn.AvgPool3d, NormType=nn.Identity):
         super().__init__()
-
-        assert tuple(feature_scales) == (4, 8, 16, 32)
 
         PoolingLayerCallbacks = get_pooling_layer_creator(PoolType)
 
@@ -177,7 +240,7 @@ class SqueezeExpandDilatedDecoder(nn.Module):
 
         # 32x -> 16x
         self.upsample_32_to_16 = nn.Sequential(
-            UpsampleTrilinear3D(scale_factor=(t_scales[0], 2, 2), align_corners=False),
+            UpsampleTrilinear3D(scale_factor=(t_scales[0], 2, 2), align_corners=False)
         )
         self.conv_16 = nn.Conv3d(inter_channels[0] + inter_channels[1], inter_channels[1], 1, bias=False)
 
@@ -193,16 +256,33 @@ class SqueezeExpandDilatedDecoder(nn.Module):
         )
         self.conv_4 = nn.Conv3d(inter_channels[2] + inter_channels[3], inter_channels[3], 1, bias=False)
 
-        # output layer
-        out_channels = num_classes + 1 if foreground_channel else num_classes
-        self.conv_out = nn.Conv3d(inter_channels[-1], out_channels, kernel_size=1, padding=0, bias=False)
+        self.embedding_size = embedding_size
+        n_free_dims = get_nb_free_dims(experimental_dims)
+        self.variance_channels = self.embedding_size - n_free_dims
 
-        self.has_foreground_channel = foreground_channel
+        self.experimental_dim_mode = experimental_dims
+        embedding_output_size = get_nb_embedding_dims(self.experimental_dim_mode)
+
+        self.conv_embedding = nn.Conv3d(inter_channels[-1], embedding_output_size, kernel_size=1, padding=0, bias=False)
+        self.conv_variance = nn.Conv3d(inter_channels[-1], self.variance_channels, kernel_size=1, padding=0, bias=True)
+
+        self.conv_seediness, self.seediness_channels = None, 0
+        if seediness_output:
+            self.conv_seediness = nn.Conv3d(inter_channels[-1], 1, kernel_size=1, padding=0, bias=False)
+            self.seediness_channels = 1
+
+        self.tanh_activation = tanh_activation
+        self.register_buffer("time_scale", torch.tensor(1.0, dtype=torch.float32))
 
     def forward(self, x):
-        assert len(x) == 4, "Expected 4 feature maps, got {}".format(len(x))
+        """
+        :param x: list of multiscale feature map tensors of shape [N, C, T, H, W]. For this implementation, there
+        should be 4 features maps in increasing order of spatial dimensions
+        :return: embedding map of shape [N, E, T, H, W]
+        """
+        assert len(x) == 4
 
-        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x[::-1]
+        feat_map_32x, feat_map_16x, feat_map_8x, feat_map_4x = x
 
         feat_map_32x = self.block_32x(feat_map_32x)
 
@@ -224,4 +304,19 @@ class SqueezeExpandDilatedDecoder(nn.Module):
         x = torch.cat((x, feat_map_4x), 1)
         x = self.conv_4(x)
 
-        return self.conv_out(x)
+        embeddings = self.conv_embedding(x)
+        if self.tanh_activation:
+            embeddings = (embeddings * 0.25).tanh()
+
+        # embeddings = embeddings + grid.detach()
+        embeddings = add_spatiotemporal_offset(embeddings, self.time_scale, self.experimental_dim_mode)
+
+        variances = self.conv_variance(x)
+
+        if self.conv_seediness is not None:
+            seediness = self.conv_seediness(x).sigmoid()
+            output = torch.cat((embeddings, variances, seediness), dim=1)
+        else:
+            output = torch.cat((embeddings, variances), dim=1)
+
+        return output
