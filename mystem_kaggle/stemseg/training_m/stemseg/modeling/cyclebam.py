@@ -60,11 +60,11 @@ class ChannelGate(nn.Module):
             else:
                 channel_att_sum = channel_att_sum + channel_att_raw
 
-        scale = F.sigmoid( channel_att_sum ).unsqueeze(2).unsqueeze(3).unsqueeze(4).expand_as(x)
-        #print('F.sigmoid( channel_att_sum )',F.sigmoid(channel_att_sum).shape)
+        scale = torch.sigmoid( channel_att_sum ).unsqueeze(2).unsqueeze(3).unsqueeze(4).expand_as(x)
+        #print('torch.sigmoid( channel_att_sum )',torch.sigmoid(channel_att_sum).shape)
         #print('scale',scale.shape)
         #print('#########')
-        return x * scale,F.sigmoid(channel_att_sum)
+        return x * scale,torch.sigmoid(channel_att_sum)
 class ChannelGateIN(nn.Module):
     def __init__(self, gate_channels, reduction_ratio=16, pool_types=['avg', 'max']):
         super(ChannelGateIN, self).__init__()
@@ -102,7 +102,7 @@ class ChannelGateIN(nn.Module):
             else:
                 channel_att_sum = channel_att_sum + channel_att_raw
 
-        scale = F.sigmoid( channel_att_sum ).unsqueeze(2).unsqueeze(3).unsqueeze(4).expand_as(x)
+        scale = torch.sigmoid( channel_att_sum ).unsqueeze(2).unsqueeze(3).unsqueeze(4).expand_as(x)
         MCIN = MCIN.unsqueeze(2).unsqueeze(3).unsqueeze(4).expand_as(x)
 
         #print('scale',scale.shape)
@@ -130,7 +130,7 @@ class SpatialGate(nn.Module):
     def forward(self, x):
         x_compress = self.compress(x)
         x_out = self.spatial(x_compress)
-        scale = F.sigmoid(x_out) # broadcasting
+        scale = torch.sigmoid(x_out) # broadcasting
         return x * scale
     
 
