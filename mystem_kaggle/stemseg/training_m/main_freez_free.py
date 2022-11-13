@@ -121,14 +121,19 @@ class Trainer(object):
 
     def restore_session(self, restore_dict):
         assert 'model' in restore_dict, "Restore state dict contains no entry named 'model'"
+        
+        a = restore_dict['model']['embedding_loss_criterion.free_dim_bandwidths']
+        restore_dict['model']['embedding_loss_criterion.free_dim_bandwidths'] = torch.cat((a,a),dim=1)
+
         self._model.load_state_dict(restore_dict['model'],strict=False)
+
 
         for name, param in  self._model.named_parameters():
           if name[0:4]=='back':
             param.requires_grad = False
 
-        assert 'optimizer' in restore_dict, "Restore state dict contains no entry named 'optimizer'"
-        self.optimizer.load_state_dict((restore_dict['optimizer']))
+        #assert 'optimizer' in restore_dict, "Restore state dict contains no entry named 'optimizer'"
+        #self.optimizer.load_state_dict((restore_dict['optimizer']))
 
         assert 'lr_scheduler' in restore_dict, "Restore state dict contains no entry named 'lr_scheduler'"
         self.lr_scheduler.load_state_dict(restore_dict['lr_scheduler'])
