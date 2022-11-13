@@ -13,7 +13,7 @@ import numpy as np
 import os
 import torch
 import torch.nn.functional as F
-
+import shutil
 
 class YoutubeVISOutputGenerator(object):
     def __init__(self, output_dir, outlier_label, save_visualization, category_mapping, category_names, *args, **kwargs):
@@ -194,6 +194,11 @@ class YoutubeVISOutputGenerator(object):
             self.save_sequence_visualizations(seq, sequence_instances)
 
         self.instances.extend(sequence_instances)
+        
+        output_json_path = os.path.join(self.output_dir, 'resultsT'+str(seq.id)+'.json')
+        with open(output_json_path, 'w') as fh:
+            json.dump(self.instances, fh)
+        shutil.copy(output_json_path,os.path.join(self.output_dir, 'resultsC'+str(seq.id)+'.json'))
 
     @Timer.exclude_duration("postprocessing")
     def save_sequence_visualizations(self, seq, instances):
