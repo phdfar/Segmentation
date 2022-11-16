@@ -192,9 +192,8 @@ class TrainingModel(nn.Module):
 
         z1 = OrderedDict([(k, v) for k, v in zip(self.feature_map_scales, features)])
         z2 = OrderedDict([(k, v) for k, v in zip(self.feature_map_scales, features2)])
-
         for k in z1:
-          z1[k] = z1[k]+z2[k]
+          z1[k] = z1[k]*0.666+z2[k]*0.333
 
         return z1
 
