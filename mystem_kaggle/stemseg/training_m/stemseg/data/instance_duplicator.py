@@ -17,8 +17,8 @@ class InstanceDuplicator(object):
         try:
             return self._augment(images, masks)
         except Exception as err:
-            print("Exception occurred trying to duplicate instance")
-            print(err)
+            #print("Exception occurred trying to duplicate instance")
+            #print(err)
             return None, None
 
     @staticmethod
