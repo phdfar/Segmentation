@@ -197,15 +197,19 @@ class InferenceModel(nn.Module):
             assert len(idxes) == 1
             frame_id = idxes[0]
             
+            
             height, width = images.tensors.shape[-2:]
             images_tensor = images.tensors.view(images.num_seqs * images.num_frames, 3, height, width)
             img = torch.permute(images_tensor[0],(1,2,0)).detach().cpu().numpy()
             img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
             im = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
             z = torch.permute(torch.tensor(im),(2,0,1)).unsqueeze(0)
-            images = z.to(device='cuda:0').float()
-            
-            backbone_features[frame_id] = self._model.run_backbone(images.cuda())
+            z = z.to(device='cuda:0').float()
+
+
+            #print('images',images.size())
+            backbone_features[frame_id] = self._model.run_backbone(z)
+
 
             if frame_id in current_subseq:
                 current_subseq[frame_id] = True
