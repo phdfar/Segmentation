@@ -6,7 +6,7 @@ from stemseg.utils.timer import Timer
 
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-
+import os
 import cv2
 import torch
 import torch.nn as nn
@@ -147,7 +147,20 @@ class InferenceModel(nn.Module):
 
     @Timer.exclude_duration("inference", "postprocessing")
     def load_images(self, image_paths):
-        return [cv2.imread(path, cv2.IMREAD_COLOR) for path in image_paths]
+        allx=[]
+        for path in image_paths:
+          im = cv2.imread(path, cv2.IMREAD_COLOR)
+          pathopt = path.replace('valid/JPEGImages','valid_optical')
+          pathopt = pathopt.replace('jpg','png')
+          opt = cv2.imread(os.path.join('/content/', pathopt))
+          opt = cv2.resize(opt, (im.shape[1],im.shape[0]), interpolation = cv2.INTER_NEAREST)
+          #print('optshape',opt.shape)
+          #cv2.imwrite('/content/'+str(t)+'.png',opt)
+          imo = np.concatenate((im,opt),axis=2)
+          #print('imo',imo.shape)
+
+          allx.append(imo)
+        return allx
 
     @torch.no_grad()
     def resize_output(self, x):
@@ -196,8 +209,24 @@ class InferenceModel(nn.Module):
         for images, idxes in tqdm(image_loader, total=len(image_loader)):
             assert len(idxes) == 1
             frame_id = idxes[0]
-            backbone_features[frame_id] = self._model.run_backbone(images.cuda())
 
+            #print('images',images.size())
+            height, width = images.tensors.shape[-2:]
+            images_tensor = images.tensors.view(images.num_seqs * images.num_frames, 6, height, width)
+            images_tensorz = images_tensor[:,3:6,:,:]
+            images_tensor = images_tensor[:,0:3,:,:]
+
+            #print('images_tensor',images_tensor.size())
+
+            #backbone_features[frame_id] = self._model.run_backbone(images_tensor.cuda())
+            #print('backbone_features[frame_id]',backbone_features[frame_id].size())
+
+            z1 = self._model.run_backbone(images_tensor.cuda())
+            z2 = self._model.run_backbone(images_tensorz.cuda())
+
+            for k in z1:
+              z1[k] = z1[k]+z2[k]
+            backbone_features[frame_id] = z1;
             if frame_id in current_subseq:
                 current_subseq[frame_id] = True
 
