@@ -139,3 +139,64 @@ def getopticalflow(a,b):
   #plt.imshow(b)
 
   return a,b
+
+
+def getopticalflow_gray(a,b):
+  
+  mask = np.zeros((a.shape[0],a.shape[1],3)).astype('uint8')
+    
+  # Sets image saturation to maximum
+  mask[..., 1] = 255
+
+  def norm(a):
+    dfmax, dfmin = a.max(), a.min()
+    df = (a - dfmin)/(dfmax - dfmin)
+    df = (df*255).astype('uint8')
+    return df
+  # Calculates dense optical flow by Farneback method
+  flow = cv2.calcOpticalFlowFarneback(norm(a), norm(b), 
+                                      None,
+                                      0.5, 5, 5, 3, 5, 1.2, 0)
+    
+  # Computes the magnitude and angle of the 2D vectors
+  magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+    
+  
+  angle[magnitude<5]=0;
+  magnitude[magnitude<5]=0;
+  #magnitude = magnitude * 5
+  
+
+  # Sets image hue according to the optical flow 
+  # direction
+  mask[..., 0] = angle * 180 / np.pi / 2
+
+  
+  # Sets image value according to the optical flow
+  # magnitude (normalized)
+  mask[..., 2] = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX)
+    
+  # Converts HSV to RGB (BGR) color representation
+  rgb = cv2.cvtColor(mask, cv2.COLOR_HSV2BGR)
+
+  """
+  #A = rgb[:,:,2]
+  a = adjust_gamma(rgb[:,:,2], gamma=15.0)
+  b = adjust_gamma(rgb[:,:,0], gamma=15.0)
+  if np.max(a)>0:
+    a = a / np.max(a)
+  if np.max(b)>0:
+    b = b / np.max(b)	
+  rgb[:,:,2] = a;
+  rgb[:,:,0] = b;
+
+  """
+  gray = cv2.cvtColor(rgb, cv2.COLOR_BGR2GRAY)
+  gray = adjust_gamma(gray, gamma=2.0)
+  rgb[:,:,0] = gray;rgb[:,:,1] = gray;rgb[:,:,2] = gray;
+
+  #plt.imshow(a)
+  #plt.figure()
+  #plt.imshow(rgb)
+
+  return rgb
