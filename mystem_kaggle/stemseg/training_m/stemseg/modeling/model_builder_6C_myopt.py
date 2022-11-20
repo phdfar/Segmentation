@@ -197,9 +197,9 @@ class TrainingModel(nn.Module):
           optical_image.append(gray)
           
         images_tensorz = torch.tensor(np.asarray(optical_image)).to(device='cuda:0')#.unsqueeze(0);
-        images_tensorz = torch.permute(images_tensorz,(0,3,1,2))
-        print('images_tensorz',images_tensorz.size())
-        print('images_tensor',images_tensor.size())
+        images_tensorz = torch.permute(images_tensorz,(0,3,1,2)).float()
+        #print('images_tensorz',images_tensorz.size())
+        #print('images_tensor',images_tensor.size())
   
         if cfg.TRAINING.FREEZE_BACKBONE:
             with torch.no_grad():
