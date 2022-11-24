@@ -177,6 +177,9 @@ class GenericVideoSequence(object):
             frame_idxes = list(range(len(self.image_paths)))
 
         images = []
+        masks = self.load_masks(frame_idxes)
+        texid = random.sample(range(1, 21), len(masks[0]))
+
         for t in frame_idxes:
             #print(self.image_paths[t])
             if '_aug' not in self.image_paths[t]:
@@ -184,24 +187,15 @@ class GenericVideoSequence(object):
             else:
                 pathaug = self.image_paths[t].replace('_aug','')
                 im = cv2.imread(os.path.join(self.base_dir, pathaug), cv2.IMREAD_COLOR)
-                texid = random.randint(1,21)
-                
-                cv2.imwrite('im'+str(texid)+'.jpg',im)
 
+                s=0;
+                for m in masks[t]:
+                    tp = np.where(m!=0)
+                    texture = cv2.imread(os.path.join('/kaggle/working/Segmentation/mystem_kaggle/stemseg/training_m/stemseg/data/texture/'+str(texid[s])+'.jpg'), cv2.IMREAD_COLOR)
+                    texture = cv2.resize(texture, (im.shape[1],im.shape[0]))
+                    im[tp]=texture[tp]
+                    s+=1;
 
-                texture = cv2.imread(os.path.join('/kaggle/working/Segmentation/mystem_kaggle/stemseg/training_m/stemseg/data/texture/'+str(texid)+'.jpg'), cv2.IMREAD_COLOR)
-                texture = cv2.resize(texture, (im.shape[1],im.shape[0]))
-                masks = self.load_masks(frame_idxes)
-                maskt = 0
-                for m in masks:
-                    maskt = maskt + m 
-                tp = np.where(maskt!=0)
-                im[tp]=texture[tp]
-                    
-                cv2.imwrite('imt'+str(texid)+'.jpg',im)
-                #cv2.imwrite('maskT'+str(texid)+'.jpg',im)
-
-                
             if im is None:
                 raise ValueError("No image found at path: {}".format(os.path.join(self.base_dir, self.image_paths[t])))
             images.append(im)
