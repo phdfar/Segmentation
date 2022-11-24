@@ -198,11 +198,13 @@ class InferenceModel(nn.Module):
         for images, idxes in tqdm(image_loader, total=len(image_loader)):
             assert len(idxes) == 1
             frame_id = idxes[0]
-            z1 = self._model.run_backbone(images.cuda())
-
 
             height, width = images.tensors.shape[-2:]
-            images_tensor = images.tensors.view(images.num_seqs * images.num_frames, 3, height, width)
+            images_tensor = images.cuda().tensors.view(images.num_seqs * images.num_frames, 3, height, width)
+
+            backbone_features[frame_id] = self._model.run_backbone(images_tensor)
+
+           
             img = torch.permute(images_tensor[0],(1,2,0)).detach().cpu().numpy()
             img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
             all_image.append(img)
@@ -241,15 +243,22 @@ class InferenceModel(nn.Module):
 
                 optical_image.append(gray)
 
-            images_tensorz = torch.tensor(np.asarray(optical_image)).to(device='cuda:0').unsqueeze(0);
+            images_tensorz = torch.tensor(np.asarray(optical_image)).to(device='cuda:0') 
             images_tensorz = torch.permute(images_tensorz,(0,3,1,2)).float()
 
             z2 = self._model.run_backbone(images_tensorz.cuda())
+           
+            s=0;
+            for fr in backbone_features.keys():
+              for k in z2.keys():
+              
+                a = z2[k][s].unsqueeze(0)
+                b = backbone_features[fr][k]
+                backbone_features[fr][k] = a + b
+                
+              s+=1;
 
-            for k in z1:
-              z1[k] = z1[k]+z2[k]
-            backbone_features[frame_id] = z1;
-            
+          
 
             # required feature maps have been generated. Stack the feature maps and run semseg, embedding and seediness
             # heads
