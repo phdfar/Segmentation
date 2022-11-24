@@ -235,9 +235,9 @@ class InferenceModel(nn.Module):
                     pass
 
                 if flag!=0:
-                    gray = opt.getopticalflow_gray(im_out,gray2)
+                    gray = opt.getopticalflow_rgb(im_out,gray2)
                 else:
-                    gray = opt.getopticalflow_gray(gray1,gray2)
+                    gray = opt.getopticalflow_rgb(gray1,gray2)
 
                 optical_image.append(gray)
 
