@@ -251,6 +251,7 @@ class TrainingModel(nn.Module):
             ]
             
             semseg_input_features.append(features['mag'])
+            semseg_input_features.append(features['mag'])
             semseg_input_features.append(features['img1'])
             semseg_input_features.append(features['img2'])
 
