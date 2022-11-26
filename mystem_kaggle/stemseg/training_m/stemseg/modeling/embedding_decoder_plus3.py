@@ -101,8 +101,8 @@ class SqueezingExpandDecoder(nn.Module):
 
         self.convop0 = nn.Conv3d(3, 8, 3,padding='same')
         self.convop1 = nn.Conv3d(3, 8, 3,padding='same')
-        self.convop2 = nn.Conv3d(8, 16, 3,padding='same')
-        self.convop3 = nn.Conv3d(32, 16, 3,padding='same')
+        self.convop2 = nn.Conv3d(8, 8, 3,padding='same')
+        self.convop3 = nn.Conv3d(24, 16, 3,padding='same')
         self.convop4 = nn.Conv3d(16, 2, 3,padding='same')
         self.convop5 = nn.Conv3d(6, 6, 3,padding='same')
 
