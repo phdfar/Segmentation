@@ -206,7 +206,6 @@ class TrainingModel(nn.Module):
         backbone_type = cfg.MODEL.BACKBONE.TYPE
         backbone_builder = BACKBONE_REGISTRY[backbone_type]
         backbone2 = backbone_builder(cfg)
-        print(cfg)
         backbone2.load_state_dict(restore_dict, strict=True)
         backbone2 = backbone2.to(device='cuda:1')
         
@@ -228,7 +227,7 @@ class TrainingModel(nn.Module):
         z2 = OrderedDict([(k, v) for k, v in zip(self.feature_map_scales, features2)])
 
         for k in z1:
-          z1[k] = z1[k]+z2[k]
+          z1[k] = z1[k]+z2[k].to(device='cuda:0')
 
         return z1
 
