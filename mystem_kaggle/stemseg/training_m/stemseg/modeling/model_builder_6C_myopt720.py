@@ -211,6 +211,8 @@ class TrainingModel(nn.Module):
         backbone2 = backbone2.to(device='cuda:1')
         """
         
+        self.backbone2 = self.backbone2.to(device='cuda:1')
+        
         if cfg.TRAINING.FREEZE_BACKBONE:
             with torch.no_grad():
                 features = self.backbone(images_tensor)
@@ -425,7 +427,7 @@ def build_model(restore_pretrained_backbone_wts=False, logger=None):
 
     return TrainingModel(
         backbone=backbone,
-        backbone2 = backbone2,
+        backbone2= backbone2,
         embedding_head=embedding_head,
         embedding_head_feature_map_scale=cfg.MODEL.EMBEDDINGS.SCALE,
         embedding_loss_criterion=embedding_loss_criterion,
