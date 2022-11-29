@@ -201,6 +201,7 @@ class TrainingModel(nn.Module):
         #print('images_tensorz',images_tensorz.size())
         #print('images_tensor',images_tensor.size())
   
+        self.backbone2 = self.backbone.to(device='cuda:1')
         if cfg.TRAINING.FREEZE_BACKBONE:
             with torch.no_grad():
                 features = self.backbone(images_tensor)
@@ -209,9 +210,9 @@ class TrainingModel(nn.Module):
 
         if cfg.TRAINING.FREEZE_BACKBONE:
             with torch.no_grad():
-                features2 = self.backbone(images_tensorz)
+                features2 = self.backbone2(images_tensorz)
         else:
-            features2 = self.backbone(images_tensorz)
+            features2 = self.backbone2(images_tensorz)
 
 
 
