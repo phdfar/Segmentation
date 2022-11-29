@@ -202,6 +202,14 @@ class TrainingModel(nn.Module):
         #print('images_tensor',images_tensor.size())
         self.backbone2 = self.backbone.clone()
         self.backbone2 = self.backbone2.to(device='cuda:1')
+        
+        restore_dict = torch.load('/kaggle/working/pretrained/mask_rcnn_R_101_FPN_backbone.pth',map_location="cuda:1")
+        backbone_type = cfg.MODEL.BACKBONE.TYPE
+        backbone_builder = BACKBONE_REGISTRY[backbone_type]
+        backbone2 = backbone_builder(cfg)
+        backbone2.load_state_dict(restore_dict, strict=True)
+            
+        
         if cfg.TRAINING.FREEZE_BACKBONE:
             with torch.no_grad():
                 features = self.backbone(images_tensor)
