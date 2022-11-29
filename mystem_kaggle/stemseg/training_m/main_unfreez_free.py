@@ -128,8 +128,8 @@ class Trainer(object):
         self._model.load_state_dict(restore_dict['model'],strict=False)
 
 
-        #assert 'optimizer' in restore_dict, "Restore state dict contains no entry named 'optimizer'"
-        #self.optimizer.load_state_dict((restore_dict['optimizer']))
+        assert 'optimizer' in restore_dict, "Restore state dict contains no entry named 'optimizer'"
+        self.optimizer.load_state_dict((restore_dict['optimizer']))
 
         assert 'lr_scheduler' in restore_dict, "Restore state dict contains no entry named 'lr_scheduler'"
         self.lr_scheduler.load_state_dict(restore_dict['lr_scheduler'])
