@@ -206,6 +206,7 @@ class TrainingModel(nn.Module):
         backbone_type = cfg.MODEL.BACKBONE.TYPE
         backbone_builder = BACKBONE_REGISTRY[backbone_type]
         backbone2 = backbone_builder(cfg)
+        print(cfg)
         backbone2.load_state_dict(restore_dict, strict=True)
         backbone2 = backbone2.to(device='cuda:1')
         
@@ -217,9 +218,9 @@ class TrainingModel(nn.Module):
 
         if cfg.TRAINING.FREEZE_BACKBONE:
             with torch.no_grad():
-                features2 = backbone2(images_tensorz.cuda())
+                features2 = backbone2(images_tensorz)
         else:
-            features2 = backbone2(images_tensorz.cuda())
+            features2 = backbone2(images_tensorz)
 
 
 
