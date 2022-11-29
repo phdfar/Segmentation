@@ -229,7 +229,7 @@ class TrainingModel(nn.Module):
         z2 = OrderedDict([(k, v) for k, v in zip(self.feature_map_scales, features2)])
 
         for k in z1:
-          z1[k] = z1[k]+z2[k].to(device='cuda:1')
+          z1[k] = z1[k]+z2[k].to(device='cuda:0')
 
         return z1
 
