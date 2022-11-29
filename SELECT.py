@@ -12,12 +12,18 @@ def init(args):
     os.system('cp /content/Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/inference_model_6C.py /content/Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/inference_model.py')
     
 
-
   if args.mode=='emcy2':
     os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/embedding_decoder_cyclebam2.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/embedding_decoder.py')
     
   if args.mode=='emcy4':
     os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/embedding_decoder_cyclebam4.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/embedding_decoder.py')
+    
+  if args.mode=='reset':
+    os.system('rm -rf Segmentation')
+    os.system('git clone https://github.com/phdfar/Segmentation')
+    os.system('cp /content/Segmentation/mystem_kaggle/stemseg/training_m/stemseg/config/youtube_vis_fake.yaml /content/Segmentation/mystem_colab/stemseg/inference/stemseg/config/youtube_vis.yaml')
+    os.system('rm -rf *.pth')
+
     
      
 if __name__ == '__main__':
