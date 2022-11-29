@@ -37,12 +37,13 @@ NORM_REGISTRY.add("gn", lambda num_groups: partial(nn.GroupNorm, num_groups))
 
 
 class TrainingModel(nn.Module):
-    def __init__(self, backbone, embedding_head, embedding_head_feature_map_scale, embedding_loss_criterion, semseg_head,
+    def __init__(self, backboneT, embedding_head, embedding_head_feature_map_scale, embedding_loss_criterion, semseg_head,
                  semseg_feature_map_scale, semseg_loss_criterion, seediness_head,
                  seediness_head_feature_map_scale, multiclass_semseg_output, output_resize_scale, logger):
         super(self.__class__, self).__init__()
 
-        self.backbone = backbone
+        self.backbone = backboneT[0]
+        self.backbone2 = backboneT[1]
 
         # tracker related
         self.embedding_head = embedding_head
@@ -202,12 +203,7 @@ class TrainingModel(nn.Module):
         #print('images_tensor',images_tensor.size())
         
         
-        restore_dict = torch.load('/kaggle/working/pretrained/mask_rcnn_R_101_FPN_backbone.pth',map_location="cuda:1")
-        backbone_type = cfg.MODEL.BACKBONE.TYPE
-        backbone_builder = BACKBONE_REGISTRY[backbone_type]
-        backbone2 = backbone_builder(cfg)
-        backbone2.load_state_dict(restore_dict, strict=True)
-        backbone2 = backbone2.to(device='cuda:1')
+
         
         if cfg.TRAINING.FREEZE_BACKBONE:
             with torch.no_grad():
@@ -217,9 +213,9 @@ class TrainingModel(nn.Module):
 
         if cfg.TRAINING.FREEZE_BACKBONE:
             with torch.no_grad():
-                features2 = backbone2(images_tensorz)
+                features2 = self.backbone2(images_tensorz)
         else:
-            features2 = backbone2(images_tensorz)
+            features2 = self.backbone2(images_tensorz)
 
 
 
@@ -318,6 +314,10 @@ def build_model(restore_pretrained_backbone_wts=False, logger=None):
     backbone_type = cfg.MODEL.BACKBONE.TYPE
     backbone_builder = BACKBONE_REGISTRY[backbone_type]
     backbone = backbone_builder(cfg)
+    backbone2 = backbone_builder(cfg)
+    
+
+        
 
     info_to_print = [
         "Backbone type: {}".format(cfg.MODEL.BACKBONE.TYPE),
@@ -331,6 +331,11 @@ def build_model(restore_pretrained_backbone_wts=False, logger=None):
         if os.path.exists(pretrained_wts_file):
             restore_dict = torch.load(pretrained_wts_file)
             backbone.load_state_dict(restore_dict, strict=True)
+            
+            restore_dict = torch.load(pretrained_wts_file,map_location="cuda:1")
+            backbone2.load_state_dict(restore_dict, strict=True)
+            backbone2 = backbone2.to(device='cuda:1')
+    
         else:
             raise ValueError("Could not find pre-trained backbone weights file at expected location: '{}'".format(
                 pretrained_wts_file))
@@ -416,8 +421,9 @@ def build_model(restore_pretrained_backbone_wts=False, logger=None):
     print_fn("Model configuration\n"
              "{}\n".format("\n".join(["  - {}".format(line) for line in info_to_print])))
 
+    backboneT = [backbone,backbone2]
     return TrainingModel(
-        backbone=backbone,
+        backbone=backboneT,
         embedding_head=embedding_head,
         embedding_head_feature_map_scale=cfg.MODEL.EMBEDDINGS.SCALE,
         embedding_loss_criterion=embedding_loss_criterion,
