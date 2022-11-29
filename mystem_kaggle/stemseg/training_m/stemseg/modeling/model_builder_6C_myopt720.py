@@ -219,9 +219,9 @@ class TrainingModel(nn.Module):
 
         if cfg.TRAINING.FREEZE_BACKBONE:
             with torch.no_grad():
-                features2 = backbone2(images_tensorz)
+                features2 = self.backbone2(images_tensorz)
         else:
-            features2 = backbone2(images_tensorz)
+            features2 = self.backbone2(images_tensorz)
 
 
 
@@ -335,6 +335,7 @@ def build_model(restore_pretrained_backbone_wts=False, logger=None):
             restore_dict = torch.load(pretrained_wts_file)
             backbone.load_state_dict(restore_dict, strict=True)
 
+            restore_dict = torch.load(pretrained_wts_file,map_location="cuda:1")
             backbone2.load_state_dict(restore_dict, strict=True)
             backbone2 = backbone2.to(device='cuda:1')
         else:
