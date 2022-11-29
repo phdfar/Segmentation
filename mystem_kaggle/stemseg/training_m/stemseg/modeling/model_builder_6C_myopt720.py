@@ -217,9 +217,9 @@ class TrainingModel(nn.Module):
 
         if cfg.TRAINING.FREEZE_BACKBONE:
             with torch.no_grad():
-                features2 = self.backbone2(images_tensorz)
+                features2 = backbone2(images_tensorz)
         else:
-            features2 = self.backbone2(images_tensorz)
+            features2 = backbone2(images_tensorz)
 
 
 
