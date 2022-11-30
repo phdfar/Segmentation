@@ -30,7 +30,7 @@ def init(args):
     os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/semseg_decoder_plus.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/semseg_decoder.py')
     os.system('cp /content/Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/inference_model_plus3.py /content/Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/inference_model.py')
     os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/opt.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/opt.py')
-    os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/embedding_utils.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/embedding_utils.py'')
+    os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/embedding_utils.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/embedding_utils.py')
     
 
     
