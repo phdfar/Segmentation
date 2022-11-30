@@ -23,6 +23,15 @@ def init(args):
     os.system('git clone https://github.com/phdfar/Segmentation')
     os.system('cp /content/Segmentation/mystem_kaggle/stemseg/training_m/stemseg/config/youtube_vis_fake.yaml /content/Segmentation/mystem_colab/stemseg/inference/stemseg/config/youtube_vis.yaml')
     os.system('rm -rf *.pth')
+   
+  if args.mode=='freez[cnt+myopt]':
+    os.system('cp /content/Segmentation/mystem_kaggle/stemseg/training_m/stemseg/config/youtube_vis_plus.yaml /content/Segmentation/mystem_colab/stemseg/inference/stemseg/config/youtube_vis.yaml')
+    os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/embedding_decoder_plus3.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/embedding_decoder.py')
+    os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/semseg_decoder_plus.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/semseg_decoder.py')
+    os.system('cp /content/Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/inference_model_plus3.py /content/Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/inference_model.py')
+    os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/opt.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/opt.py')
+    os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/embedding_utils.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/embedding_utils.py'')
+    
 
     
      
