@@ -7,7 +7,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sklearn
 import sklearn.metrics
-
+import random
+import numpy as np
 
 class EmbeddingLoss(nn.Module):
     def __init__(self, embedding_map_scale, **kwargs):
@@ -103,8 +104,7 @@ class EmbeddingLoss(nn.Module):
 
             total_instances += len(nonzero_mask_pts)
 
-            import random
-            import numpy as np
+
             #instance_embeddingsx = instance_embeddings.detach().cpu()
             Xtrain=[];Ytrain=[];Xtest=[];Ytest=[];
             for n in range(len(instance_embeddings)):

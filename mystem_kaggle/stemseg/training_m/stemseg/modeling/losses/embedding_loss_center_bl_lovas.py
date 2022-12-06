@@ -5,9 +5,14 @@ from stemseg.modeling.losses._lovasz import LovaszHingeLoss
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+import sklearn
+import sklearn.metrics
+from sklearn import metrics
+from sklearn.cluster import KMeans
+from sklearn.metrics import mean_squared_error
 import random
 import numpy as np
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 class EmbeddingLoss(nn.Module):
     def __init__(self, embedding_map_scale, **kwargs):
@@ -57,6 +62,8 @@ class EmbeddingLoss(nn.Module):
         lovasz_loss = 0.
         seediness_loss = 0.
         bandwidth_smoothness_loss = 0.
+        center_loss_mse = 0.
+        center_loss_lovas = 0.
 
         torch_zero = torch.tensor(0).to(embedding_map).requires_grad_(False)
 
@@ -102,12 +109,13 @@ class EmbeddingLoss(nn.Module):
             ]  # list(tensor[I, E])
 
             total_instances += len(nonzero_mask_pts)
-
-            #instance_embeddingsx = instance_embeddings.detach().cpu()
+            
+            #BL Loss
+            
             Xtrain=[];Ytrain=[];Xtest=[];Ytest=[];
             for n in range(len(instance_embeddings)):
                 ln = len(instance_embeddings[n])
-                index = random.sample(range(1, ln), int(0.20*ln))
+                index = random.sample(range(1, ln), int(0.40*ln))
                 idx_train = index[:len(index)//2]
                 idx_test = index[len(index)//2:]
                 if n == 0:
@@ -130,15 +138,69 @@ class EmbeddingLoss(nn.Module):
             random.Random(1337).shuffle(Xtrain)
             random.Random(1337).shuffle(Ytrain)
 
-            
-            wscore = 0.
+
+            bl_loss = 0.
             try:
-              clf = LinearDiscriminantAnalysis()
-              clf.fit(Xtrain,Ytrain.ravel())
-              wscore = clf.score(Xtest,Ytest.ravel())
+                bl_loss1 = sklearn.metrics.davies_bouldin_score(Xtrain,Ytrain.ravel())
+                bl_loss2 = sklearn.metrics.davies_bouldin_score(Xtest,Ytest.ravel())
+                bl_loss = (bl_loss1 + bl_loss2)/2
             except:
-              pass
-            #print('wscore : ', wscore)
+                pass
+            
+            #Center 
+            try:
+              #maskc = torch.clone(masks)
+              unmask = torch.zeros_like(masks[0])
+              bg_mask_ptsx = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
+              unmask[bg_mask_ptsx]=1
+              unmask = unmask.unsqueeze(0)
+              #masks = torch.cat((masks, unmask), 0)
+              ds = (bg_mask_ptsx[0],bg_mask_ptsx[1],bg_mask_ptsx[2])
+              nonzero_mask_ptsz = list(nonzero_mask_pts);
+              nonzero_mask_ptsz.append(ds)
+              nonzero_mask_ptsz = tuple(nonzero_mask_ptsz)
+              
+              instance_embeddingsd = [
+                  embeddings_per_seq[nonzero_mask_ptsz[n]]
+                  for n in range(len(nonzero_mask_ptsz))
+              ]
+                        
+              instance_embeddingsz = []
+              labels_true = []
+              center=[]
+              for n in range(len(instance_embeddingsd)):
+                  emb = instance_embeddingsd[n]
+                  labels_true.append(np.zeros((len(emb),1)).astype('int')+n)
+                  emb = emb.detach().cpu().numpy()
+                  instance_embeddingsz.append(emb)
+
+                  center.append(np.mean(emb,axis=0))
+                  
+              center = np.asarray(center)
+  
+              arr = np.vstack(instance_embeddingsz)
+              kmeans = KMeans(n_clusters=len(instance_embeddingsd), random_state=0).fit(arr)
+              labels = kmeans.labels_
+              cnp = kmeans.cluster_centers_
+              labels_true = np.vstack(labels_true).ravel()
+              
+
+              gt = cnp[labels]
+              pt = center[labels_true]
+
+
+              d_center = np.mean(np.square(np.subtract(gt,pt)),axis=1)
+
+
+              d_center = torch.from_numpy(np.asarray(d_center))
+              d_center = d_center.to(torch.device('cuda:0'))
+
+              
+              #center_loss_mse = F.mse_loss(d_center, torch.zeros_like(d_center), reduction='mean')
+              center_loss_lovas = self.lovasz_hinge_loss(d_center, torch.zeros_like(d_center))
+            except:
+              print('XXXX -> error')
+            
 
             # regress seediness values for background to 0
             bg_mask_pts = (masks == 0).all(0).nonzero(as_tuple=False).unbind(1)
@@ -174,18 +236,21 @@ class EmbeddingLoss(nn.Module):
             lovasz_loss = (bandwidth_map.sum() + embedding_map.sum()) * 0
             bandwidth_smoothness_loss = bandwidth_map.sum() * 0
             seediness_loss = seediness_map.sum() * 0
+            center_loss_mse = center_loss_mse.sum() * 0 
+            center_loss_lovas = center_loss_lovas.sum() * 0
+
         else:
             # compute weighted sum of lovasz and variance losses based on number of instances per batch sample
             lovasz_loss = lovasz_loss / total_instances
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
             seediness_loss = seediness_loss / float(total_instances + 1)
 
-        total_loss = (lovasz_loss * (self.w_lovasz + (1-wscore)) ) + \
+        total_loss = (lovasz_loss * self.w_lovasz ) + center_loss_lovas*( 1+ (1-bl_loss)) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
 
         output_dict[ModelOutputConsts.OPTIMIZATION_LOSSES] = {
-            LossConsts.EMBEDDING: total_loss * (self.w + (1-wscore))
+            LossConsts.EMBEDDING: total_loss * (self.w)
         }
 
         output_dict[ModelOutputConsts.OTHERS] = {
