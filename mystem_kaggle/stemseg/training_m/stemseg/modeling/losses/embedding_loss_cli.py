@@ -5,8 +5,10 @@ from stemseg.modeling.losses._lovasz import LovaszHingeLoss
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-
+import sklearn
+import sklearn.metrics
+import random
+import numpy as np
 
 class EmbeddingLoss(nn.Module):
     def __init__(self, embedding_map_scale, **kwargs):
@@ -102,13 +104,12 @@ class EmbeddingLoss(nn.Module):
 
             total_instances += len(nonzero_mask_pts)
 
-            import random
-            import numpy as np
+
             #instance_embeddingsx = instance_embeddings.detach().cpu()
             Xtrain=[];Ytrain=[];Xtest=[];Ytest=[];
             for n in range(len(instance_embeddings)):
                 ln = len(instance_embeddings[n])
-                index = random.sample(range(1, ln), int(0.20*ln))
+                index = random.sample(range(1, ln), int(0.40*ln))
                 idx_train = index[:len(index)//2]
                 idx_test = index[len(index)//2:]
                 if n == 0:
@@ -131,13 +132,27 @@ class EmbeddingLoss(nn.Module):
             random.Random(1337).shuffle(Xtrain)
             random.Random(1337).shuffle(Ytrain)
 
-            wscore = 0.
+            # from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+            # wscore = 0.
+            # try:
+            #   clf = LinearDiscriminantAnalysis()
+            #   clf.fit(Xtrain,Ytrain.ravel())
+            #   wscore = clf.score(Xtest,Ytest.ravel())
+            # except:
+            #   pass
+            cl_loss = 0.
             try:
-              clf = LinearDiscriminantAnalysis()
-              clf.fit(Xtrain,Ytrain.ravel())
-              wscore = clf.score(Xtest,Ytest.ravel())
+                cl_loss1 = sklearn.metrics.calinski_harabasz_score(Xtrain,Ytrain.ravel())
+                cl_loss2 = sklearn.metrics.calinski_harabasz_score(Xtest,Ytest.ravel())
+                cl_loss = (cl_loss1 + cl_loss2)/2
+                clsx =  (cl_loss) / (len(Ytrain.ravel()) + len(Ytest.ravel()))*50
+                
+                if clsx!=0:
+                    cl_loss = 1/clsx
+                else:
+                    cl_loss = 0.
             except:
-              pass
+                pass
             #print('wscore : ', wscore)
 
             # regress seediness values for background to 0
@@ -180,12 +195,12 @@ class EmbeddingLoss(nn.Module):
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
             seediness_loss = seediness_loss / float(total_instances + 1)
 
-        total_loss = (lovasz_loss * (self.w_lovasz + (1-wscore)) ) + \
+        total_loss = (lovasz_loss * (self.w_lovasz + cl_loss) ) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
 
         output_dict[ModelOutputConsts.OPTIMIZATION_LOSSES] = {
-            LossConsts.EMBEDDING: total_loss * self.w
+            LossConsts.EMBEDDING: total_loss * (self.w)
         }
 
         output_dict[ModelOutputConsts.OTHERS] = {

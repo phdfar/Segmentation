@@ -7,7 +7,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sklearn
 import sklearn.metrics
-
+import random
+import numpy as np
 
 class EmbeddingLoss(nn.Module):
     def __init__(self, embedding_map_scale, **kwargs):
@@ -103,8 +104,7 @@ class EmbeddingLoss(nn.Module):
 
             total_instances += len(nonzero_mask_pts)
 
-            import random
-            import numpy as np
+
             #instance_embeddingsx = instance_embeddings.detach().cpu()
             Xtrain=[];Ytrain=[];Xtest=[];Ytest=[];
             for n in range(len(instance_embeddings)):
@@ -188,8 +188,8 @@ class EmbeddingLoss(nn.Module):
             lovasz_loss = lovasz_loss / total_instances
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
             seediness_loss = seediness_loss / float(total_instances + 1)
-
-        total_loss = (lovasz_loss * (self.w_lovasz + (1-bl_loss)) ) + \
+            
+        total_loss = (lovasz_loss * (self.w_lovasz + bl_loss) ) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
 
