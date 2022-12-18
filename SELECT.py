@@ -50,6 +50,12 @@ def init(args):
     os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/opt.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/opt.py')
     os.system('cp /content/Segmentation/mystem_kaggle/stemseg/training_m/stemseg/config/youtube_vis_fake.yaml /content/Segmentation/mystem_colab/stemseg/inference/stemseg/config/youtube_vis.yaml')
 
+  if args.mode=='myoptwap':
+    os.system('cp /content/Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/model_builder_color.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/model_builder.py')
+    os.system('cp /content/Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/inference_model_myopt_wap.py /content/Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/inference_model.py')
+    os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/opt.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/opt.py')
+    os.system('cp /content/Segmentation/mystem_kaggle/stemseg/training_m/stemseg/config/youtube_vis_fake.yaml /content/Segmentation/mystem_colab/stemseg/inference/stemseg/config/youtube_vis.yaml')
+  
     
      
 if __name__ == '__main__':
