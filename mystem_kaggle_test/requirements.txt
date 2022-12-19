@@ -1,0 +1,10 @@
+tqdm==4.46.0
+torch==1.4.0
+scipy==1.4.1
+pycocotools==2.0.1
+imgaug==0.4.0
+numpy==1.18.1
+apex==0.9.10dev
+Pillow==8.3.2
+PyYAML==5.4
+tensorboardX==2.1
