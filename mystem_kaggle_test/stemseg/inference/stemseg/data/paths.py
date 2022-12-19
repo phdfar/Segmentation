@@ -39,7 +39,7 @@ class YoutubeVISPaths(object):
 
     @staticmethod
     def val_vds_file():
-        return os.path.join(_get_env_var(''/kaggle/working/'), 'youtube_vis_val.json')
+        return os.path.join(_get_env_var('/kaggle/working/'), 'youtube_vis_val.json')
 
 
 class DavisUnsupervisedPaths(object):
