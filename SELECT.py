@@ -17,6 +17,10 @@ def init(args):
     
   if args.mode=='emcy4':
     os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/embedding_decoder_cyclebam4.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/embedding_decoder.py')
+
+  if args.mode=='cbam':
+    os.system('cp Segmentation/mystem_kaggle/stemseg/training_m/stemseg/modeling/embedding_decoder_cbam.py Segmentation/mystem_colab/stemseg/inference/stemseg/modeling/embedding_decoder.py')
+
     
   if args.mode=='reset':
     os.system('rm -rf Segmentation')
