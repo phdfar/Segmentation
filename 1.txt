@@ -2,3 +2,4 @@ git add README.md
 git commit -m "first commit"
 git remote add origin https://github.com/phdfar/stemseg.git
 git push -u origin master
+https://vcf22j41.r.us-west-2.awstrack.me/L0/https:%2F%2Fwww.dailyrewards.com%2Fverify-email.html%3Fkey=3ZilV8ViGXgbgd%26md=134597444%26cmp=2021/2/010101856c8dd959-b9af69ac-e59e-4f3f-a264-9daf1d9f1b6f-000000/sbAZuxyBekvYp08hU1QDu2y6EwY=303
