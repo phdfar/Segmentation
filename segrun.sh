@@ -1,6 +1,6 @@
 #PBS -N iplvisjob
 #PBS -m abe
-#PBS -M far.arefi@sharif.edu
+#PBS -M fa..@...
 #PBS -l nodes=1:ppn=1:gpus=1
 #PBS -q CE-gpu
 cd /home/kasaei2/FarnooshArefi/VIS/
