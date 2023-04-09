@@ -38,6 +38,16 @@ class EmbeddingLoss(nn.Module):
         self.split_sizes = (self.embedding_size, self.embedding_size - self.n_free_dims, 1)
         self.num_input_channels = sum(self.split_sizes)
 
+    def dice_coefficient(self,x, target):
+        eps = 1e-5
+        n_inst = x.size(0)
+        x = x.reshape(n_inst, -1)
+        target = target.reshape(n_inst, -1)
+        intersection = (x * target).sum(dim=1)
+        union = (x**2.0).sum(dim=1) + (target**2.0).sum(dim=1) + eps
+        loss = 1. - (2 * intersection / union)
+        return loss
+
     def forward(self, embedding_map, targets, output_dict, *args, **kwargs):
         """
         Computes the embedding loss.
@@ -59,6 +69,7 @@ class EmbeddingLoss(nn.Module):
 
         total_instances = 0.
         lovasz_loss = 0.
+        dice_loss = 0.
         seediness_loss = 0.
         bandwidth_smoothness_loss = 0.
         center_loss_mse = 0.
@@ -189,12 +200,14 @@ class EmbeddingLoss(nn.Module):
                     continue
 
                 lovasz_loss = lovasz_loss + self.lovasz_hinge_loss(logits_map.flatten(), instance_target)
+                dice_loss = dice_loss +  self.dice_coefficient(logits_map.unsqueeze(0),masks[n].unsqueeze(0)).mean()
                 instance_probs = probs_map.unsqueeze(3)[nonzero_mask_pts[n]].detach()
                 seediness_loss = seediness_loss + F.mse_loss(instance_seediness[n], instance_probs, reduction='mean')
 
         if total_instances == 0:
             print("Process {}: Zero instances case occurred embedding loss".format(dist_utils.get_rank()))
             lovasz_loss = (bandwidth_map.sum() + embedding_map.sum()) * 0
+            dice_loss = lovasz_loss;
             bandwidth_smoothness_loss = bandwidth_map.sum() * 0
             seediness_loss = seediness_map.sum() * 0
             center_loss_mse = center_loss_mse.sum() * 0 
@@ -203,10 +216,11 @@ class EmbeddingLoss(nn.Module):
         else:
             # compute weighted sum of lovasz and variance losses based on number of instances per batch sample
             lovasz_loss = lovasz_loss / total_instances
+            dice_loss =  dice_loss / total_instances;
             bandwidth_smoothness_loss = bandwidth_smoothness_loss / embedding_map.shape[0]  # divide by batch size
             seediness_loss = seediness_loss / float(total_instances + 1)
 
-        total_loss = (lovasz_loss * self.w_lovasz ) + center_loss_lovas + \
+        total_loss = (lovasz_loss * self.w_lovasz ) + center_loss_lovas + (dice_loss * self.w_lovasz) + \
                      (bandwidth_smoothness_loss * self.w_variance_smoothness) + \
                      (seediness_loss * self.w_seediness)
 
