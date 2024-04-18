@@ -41,7 +41,7 @@ except:
 # exclude extremly large displacements
 MAX_FLOW = 400
 SUM_FREQ = 100
-VAL_FREQ = 200
+VAL_FREQ = 5000
 
 
 def sequence_loss(flow_preds, flow_gt, valid, gamma=0.8, max_flow=MAX_FLOW):
@@ -147,7 +147,6 @@ def train(args):
     if args.stage != 'chairs':
         model.module.freeze_bn()
 
-
     # Assuming your model is named 'model'
     for param in model.module.fnet.parameters():
         param.requires_grad = False
@@ -156,9 +155,6 @@ def train(args):
         param.requires_grad = False
 
     print("Parameter Count: %d" % count_parameters(model))
-    
-    #print('model',model)
-    #print(asd)
     
     train_loader = datasets.fetch_dataloader(args)
     optimizer, scheduler = fetch_optimizer(args, model)
