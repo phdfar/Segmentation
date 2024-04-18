@@ -159,7 +159,7 @@ class FlyingThings3D(FlowDataset):
       
 
 class KITTI(FlowDataset):
-    def __init__(self, aug_params=None, split='training', root='datasetsx/KITTI'):
+    def __init__(self, aug_params=None, split='training', root='/kaggle/input/kitti-flow/KITTI'):
         super(KITTI, self).__init__(aug_params, sparse=True)
         if split == 'testing':
             self.is_test = True
@@ -178,7 +178,7 @@ class KITTI(FlowDataset):
 
 
 class HD1K(FlowDataset):
-    def __init__(self, aug_params=None, root='datasetsx/HD1k'):
+    def __init__(self, aug_params=None, root='/kaggle/input/hd1k-flow/HD1k'):
         super(HD1K, self).__init__(aug_params, sparse=True)
 
         seq_ix = 0
