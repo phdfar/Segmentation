@@ -178,7 +178,7 @@ class KITTI(FlowDataset):
 
 
 class HD1K(FlowDataset):
-    def __init__(self, aug_params=None, root='datasets/HD1k'):
+    def __init__(self, aug_params=None, root='datasetsx/HD1k'):
         super(HD1K, self).__init__(aug_params, sparse=True)
 
         seq_ix = 0
