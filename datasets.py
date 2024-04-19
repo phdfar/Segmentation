@@ -233,6 +233,15 @@ def fetch_dataloader(args, TRAIN_DS='C+T+K+S+H'):
         hd1k = HD1K({'crop_size': args.image_size, 'min_scale': -0.5, 'max_scale': 0.2, 'do_flip': True})
         train_dataset = 100*sintel_clean + 100*sintel_final + 5*hd1k
 
+
+    elif args.stage == 'kshd1k':
+        aug_params = {'crop_size': args.image_size, 'min_scale': -0.2, 'max_scale': 0.6, 'do_flip': True}
+        sintel_clean = MpiSintel(aug_params, split='training', dstype='clean')
+        sintel_final = MpiSintel(aug_params, split='training', dstype='final') 
+        hd1k = HD1K({'crop_size': args.image_size, 'min_scale': -0.5, 'max_scale': 0.2, 'do_flip': True})
+        kitti = KITTI({'crop_size': args.image_size, 'min_scale': -0.3, 'max_scale': 0.5, 'do_flip': True})
+        train_dataset = 100*sintel_clean + 100*sintel_final + 200*kitti + 5*hd1k
+
     
     elif args.stage == 'kitti':
         aug_params = {'crop_size': args.image_size, 'min_scale': -0.2, 'max_scale': 0.4, 'do_flip': False}
