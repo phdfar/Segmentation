@@ -144,11 +144,10 @@ class LookupScaler(nn.Module):
         self.output_dim = output_dim
         self.max_multiplier = max_multiplier
         self.max_translation = max_translation
-        self.convert_conv = nn.Conv2d(2 * input_dim, 2 * input_dim, 1
-
-        self.model_scale = nn.Sequential(nn.Linear(4 * input_dim, (output_dim // 2) * output_size),nn.Dropout(p=0.2),
+        self.convert_conv = nn.Conv2d(2 * input_dim, 2 * input_dim, 1)
+        self.model_scale = nn.Sequential(nn.Linear(4 * input_dim, (output_dim // 2) * output_size), nn.Dropout(p=0.2),
                                    nn.Sigmoid())
-        self.model_add = nn.Sequential(nn.Linear(4 * input_dim, (output_dim // 2) * output_size),nn.Dropout(p=0.2),
+        self.model_add = nn.Sequential(nn.Linear(4 * input_dim, (output_dim // 2) * output_size), nn.Dropout(p=0.2),
                                    nn.Sigmoid())
     
     def forward(self, context_map, hidden_state):
