@@ -96,7 +96,7 @@ def extract_features(
     
 
     # Prepare
-    accelerator = Accelerator(fp16=True, cpu=True)
+    accelerator = Accelerator(fp16=True, cpu=False)
     # model, dataloader = accelerator.prepare(model, dataloader)
     model = model.to(accelerator.device)
 
