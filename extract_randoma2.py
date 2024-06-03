@@ -235,7 +235,7 @@ def _extract_eig(
     for record in data_dict[which_features]:
         feats = record['feature'].squeeze().cuda()
         
-        print('feats',feats.size())
+        #print('feats',feats.size())
         
         #feats = data_dict[which_features].squeeze().cuda()
         if normalize:
