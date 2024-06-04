@@ -155,7 +155,12 @@ def extract_features(
         output_dict['shape'] = (B, C, H, W)
         output_dict = {k: (v.detach().cpu() if torch.is_tensor(v) else v) for k, v in output_dict.items()}
         
-        desires=[];statics=[];randomnumber = 40
+        desires=[];statics=[];
+        if 's' in model_name:
+            randomnumber = 40
+        else:
+            randomnumber = 80
+            
         for _ in range(0,10):
             index = np.random.choice(np.arange(0, output_dict['k'].shape[2]), size=randomnumber, replace=True)
             #print('XXXXXXX',output_dict['k'].size())
