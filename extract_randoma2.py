@@ -161,7 +161,7 @@ def extract_features(
         else:
             randomnumber = 80
             
-        for _ in range(0,10):
+        for _ in range(0,5):
             index = np.random.choice(np.arange(0, output_dict['k'].shape[2]), size=randomnumber, replace=True)
             #print('XXXXXXX',output_dict['k'].size())
             desire = output_dict['k'][:,:,index]
