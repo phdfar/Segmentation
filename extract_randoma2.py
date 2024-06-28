@@ -160,13 +160,18 @@ def extract_features(
             randomnumber = 40
         else:
             randomnumber = 80
+
+        if '16' in model_name:
+            sdd = 16;
+        else:
+            sdd = 8;
             
         for _ in range(0,5):
             index = np.random.choice(np.arange(0, output_dict['k'].shape[2]), size=randomnumber, replace=True)
             #print('XXXXXXX',output_dict['k'].size())
             desire = output_dict['k'][:,:,index]
             #print('YYYYYYY',desire.size())
-            x = desire[0].reshape(int(H//16),int(W//16),randomnumber).detach().cpu().numpy()
+            x = desire[0].reshape(int(H//sdd),int(W//sdd),randomnumber).detach().cpu().numpy()
             
             stf={}
             for ch in range(x.shape[2]):
