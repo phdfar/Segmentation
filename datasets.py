@@ -1,3 +1,5 @@
+#%%writefile datasets.py
+# %load datasets.py
 # Data loading based on https://github.com/NVIDIA/flownet2-pytorch
 
 import numpy as np
@@ -118,9 +120,9 @@ class MpiSintel(FlowDataset):
                 self.flow_list += sorted(glob(osp.join(flow_root, scene, '*.flo')))
 
 
-class FlyingChairs(FlowDataset):
+class FlyingChairsold(FlowDataset):
     def __init__(self, aug_params=None, split='train', root='datasets/FlyingChairs_release/data'):
-        super(FlyingChairs, self).__init__(aug_params)
+        super(FlyingChairsold, self).__init__(aug_params)
 
         images = sorted(glob(osp.join(root, '*.ppm')))
         flows = sorted(glob(osp.join(root, '*.flo')))
@@ -134,6 +136,20 @@ class FlyingChairs(FlowDataset):
                 self.image_list += [ [images[2*i], images[2*i+1]] ]
 
 
+class FlyingChairs(FlowDataset):
+    def __init__(self, aug_params=None, split='train', root='/kaggle/input/flying-chairs-val/val'):
+        super(FlyingChairs, self).__init__(aug_params)
+
+        flows = sorted(glob(osp.join(root, '*.flo')))
+        for i in range(len(flows)):
+            self.flow_list += [ flows[i] ]
+            ty = flows[i].split('_')[-1]
+            a = flows[i].replace('flow','img').replace(ty,ty[0]+'.png')
+            b = flows[i].replace('flow','img').replace(ty,ty[1]+'.png')
+
+            self.image_list += [ [a, b] ]
+    
+    
 class FlyingThings3D(FlowDataset):
     def __init__(self, aug_params=None, root='datasets/FlyingThings3D', dstype='frames_cleanpass'):
         super(FlyingThings3D, self).__init__(aug_params)
